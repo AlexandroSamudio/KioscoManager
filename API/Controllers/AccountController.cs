@@ -41,7 +41,7 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
-        var user = await userManager.Users.SingleOrDefaultAsync(x => x.Email == loginDto.Email.ToLower());
+        var user = await userManager.FindByEmailAsync(loginDto.Email);
 
         if (user == null) return Unauthorized("Invalid email");
 
@@ -59,11 +59,13 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
 
     private async Task<bool> UserExists(string username)
     {
-        return await userManager.Users.AnyAsync(x => x.UserName == username.ToLower());
+        var existingUser = await userManager.FindByNameAsync(username);
+        return existingUser != null;
     }
-    
+
     private async Task<bool> EmailExists(string email)
     {
-        return await userManager.Users.AnyAsync(x => x.Email == email.ToLower());
+        var existingUser = await userManager.FindByEmailAsync(email);
+        return existingUser != null;
     }
 }
