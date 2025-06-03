@@ -1,0 +1,30 @@
+[
+    {
+        "id": 1,
+        "nombre": "Golosinas"
+    },
+    {
+        "id": 2,
+        "nombre": "Snacks"
+    },
+    {
+        "id": 3,
+        "nombre": "Bebidas-Sin-Alcohol"
+    },
+    {
+        "id": 4,
+        "nombre": "Bebidas-Alcoholicas"
+    },
+    {
+        "id": 5,
+        "nombre": "Cigarrillos"
+    },
+    {
+        "id": 6,
+        "nombre": "Lacteos"
+    },
+    {
+        "id": 7,
+        "nombre": "Higiene-Personal"
+    }
+]

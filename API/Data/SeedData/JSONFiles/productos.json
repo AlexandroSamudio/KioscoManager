@@ -1,0 +1,82 @@
+[
+    {
+        "id": 1,
+        "nombre": "Fideos",
+        "descripcion": "Fideos de trigo, ideales para sopas y guisos.",
+        "precio": 47,
+        "stock": 7,
+        "categoriaId": 2
+    },
+    {
+        "id": 2,
+        "nombre": "Leche Entera",
+        "descripcion": "Leche fresca entera, rica en calcio y vitaminas.",
+        "precio": 66,
+        "stock": 6,
+        "categoriaId": 6
+    },
+    {
+        "id": 3,
+        "nombre": "Yogur Natural",
+        "descripcion": "Yogur cremoso natural, sin azúcares añadidos.",
+        "precio": 15,
+        "stock": 3,
+        "categoriaId": 6
+    },
+    {
+        "id": 4,
+        "nombre": "Galletas de Avena",
+        "descripcion": "Galletas saludables de avena",
+        "precio": 74,
+        "stock": 6,
+        "categoriaId": 2
+    },
+    {
+        "id": 5,
+        "nombre": "Agua mineral con gas",
+        "descripcion": "Agua mineral con gas de 500ml",
+        "precio": 26,
+        "stock": 7,
+        "categoriaId": 3
+    },
+    {
+        "id": 6,
+        "nombre": "Barra chocolate",
+        "descripcion": "Barra de chocolate con leche",
+        "precio": 4,
+        "stock": 2,
+        "categoriaId": 2
+    },
+    {
+        "id": 7,
+        "nombre": "Cigarillo de Menta",
+        "descripcion": "Cigarillo de menta suave y refrescante",
+        "precio": 43,
+        "stock": 6,
+        "categoriaId": 5
+    },
+    {
+        "id": 8,
+        "nombre": "Desodorante",
+        "descripcion": "Desodorante en barra, 50ml",
+        "precio": 61,
+        "stock": 6,
+        "categoriaId": 7
+    },
+    {
+        "id": 9,
+        "nombre": "Alfajor de Dulce de Leche",
+        "descripcion": "Alfajor relleno de dulce de leche con cobertura de chocolate",
+        "precio": 28,
+        "stock": 9,
+        "categoriaId": 1
+    },
+    {
+        "id": 10,
+        "nombre": "Galletas saladas",
+        "descripcion": "Galletas saladas con sabor a queso",
+        "precio": 50,
+        "stock": 2,
+        "categoriaId": 2
+    }
+]
