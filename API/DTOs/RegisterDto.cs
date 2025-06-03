@@ -8,12 +8,10 @@ public class RegisterDto
     [EmailAddress]
     public required string Email { get; set; }
 
-    [Required]
-    // La contraseña debe tener 1 mayúscula, 1 minúscula, 1 número y tener entre 4 y 8 caracteres de longitud.
-    [RegularExpression("(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{4,8}$", ErrorMessage = "La contraseña debe cumplir con los requisitos de complejidad: 1 mayúscula, 1 minúscula, 1 número, 4-8 caracteres.")]
-    public required string Password { get; set; }
+    // La contraseña debe tener 1 mayúscula, 1 minúscula, 1 número, 1 carácter especial y tener entre 8 y 128 caracteres de longitud.
+    [RegularExpression("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W_]).{8,128}$", ErrorMessage = "La contraseña debe contener al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y tener entre 8 y 128 caracteres.")]
+     public required string Password { get; set; }
     
-    [Required]
-    public required string Username { get; set; }
+     public required string Username { get; set; }
 }
 
