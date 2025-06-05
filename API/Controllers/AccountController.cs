@@ -4,7 +4,6 @@ using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -27,15 +26,12 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
         if (!result.Succeeded) return BadRequest(result.Errors);
 
         var roleResult = await userManager.AddToRoleAsync(user, "Empleado");
-        
-        if (!roleResult.Succeeded) return BadRequest(roleResult.Errors);
+          if (!roleResult.Succeeded) return BadRequest(roleResult.Errors);
 
-        return new UserDto
-        {
-            Username = user.UserName!,
-            Token = tokenService.CreateToken(user),
-            Email = user.Email!
-        };
+        var userDto = mapper.Map<UserDto>(user);
+        userDto.Token = tokenService.CreateToken(user);
+        
+        return userDto;
     }
 
     [HttpPost("login")]
@@ -43,18 +39,16 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
     {
         var user = await userManager.FindByEmailAsync(loginDto.Email);
 
-        if (user == null) return Unauthorized("Invalid email");
+        if (user == null) return Unauthorized("Email invalido");
 
         var result = await userManager.CheckPasswordAsync(user, loginDto.Password);
 
-        if (!result) return Unauthorized("Invalid password");
+        if (!result) return Unauthorized("Contraseña invalida");
 
-        return new UserDto
-        {
-            Username = user.UserName!,
-            Token = tokenService.CreateToken(user),
-            Email = user.Email!
-        };
+        var userDto = mapper.Map<UserDto>(user);
+        userDto.Token = tokenService.CreateToken(user);
+        
+        return userDto;
     }
 
     private async Task<bool> UserExists(string username)
