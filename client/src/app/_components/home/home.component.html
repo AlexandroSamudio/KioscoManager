@@ -1,0 +1,385 @@
+<header class="bg-white/80 backdrop-blur-sm border-b border-amber-200 sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <svg class="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        <span class="text-2xl font-bold text-amber-900">KioscoManager</span>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-8">
+        <a (click)="scrollToSection('features')"
+           class="text-amber-800 hover:text-amber-600 transition-colors cursor-pointer">
+          Características
+        </a>
+        <a (click)="scrollToSection('testimonials')"
+           class="text-amber-800 hover:text-amber-600 transition-colors cursor-pointer">
+          Testimonios
+        </a>
+        <a (click)="scrollToSection('contact')"
+           class="text-amber-800 hover:text-amber-600 transition-colors cursor-pointer">
+          Contacto
+        </a>
+      </nav>
+
+      <div class="flex items-center space-x-4">        <button class="text-amber-800 hover:text-amber-600 px-4 py-2 rounded-md transition-all duration-200 hover:-translate-y-0.5"
+                (click)="redirectTo('/login')">
+          Iniciar Sesión
+        </button>
+        <button class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-md transition-all duration-200 hover:-translate-y-0.5"
+                (click)="redirectTo('/register')">
+          Registrarse
+        </button>
+      </div>
+
+      <button class="md:hidden" (click)="toggleMenu()">
+        <svg class="h-6 w-6 text-amber-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+
+    <div *ngIf="isMenuOpen()" class="md:hidden mt-4 pb-4 border-t border-amber-200">
+      <nav class="flex flex-col space-y-2 pt-4" aria-label="Menú móvil">        <a (click)="scrollToSection('features')"
+           class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
+          Características
+        </a>
+        <a (click)="scrollToSection('testimonials')"
+           class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
+          Testimonios
+        </a>
+        <a (click)="scrollToSection('contact')"
+           class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
+          Contacto
+        </a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<section class="py-20 px-4">
+  <div class="max-w-7xl mx-auto text-center">
+
+    <h1 class="text-5xl md:text-6xl font-bold text-amber-900 mb-6 leading-tight">
+      Gestiona tu Kiosco con
+      <span class="text-amber-600 block">Inteligencia Total</span>
+    </h1>
+
+    <p class="text-xl text-amber-700 mb-8 max-w-3xl mx-auto leading-relaxed">
+      Sistema completo de gestión de inventario diseñado específicamente para kioscos.
+      Controla productos, ventas, stock y genera reportes automáticos para maximizar tus ganancias.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">      <button
+        class="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-200 hover:-translate-y-0.5"
+        (click)="redirectTo('/login')">
+        Iniciar Sesión
+      </button>
+      <button
+        class="border-2 border-amber-600 text-amber-600 hover:bg-amber-50 px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-200 hover:-translate-y-0.5"
+        (click)="redirectTo('/register')">
+        Registrarse
+      </button>
+    </div>
+    </div>
+</section>
+
+<section id="features" class="py-20 px-4 bg-white">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl font-bold text-amber-900 mb-4">
+        Todo lo que necesitas para tu kiosco
+      </h2>
+      <p class="text-xl text-amber-700 max-w-2xl mx-auto">
+        Herramientas profesionales diseñadas para simplificar la gestión diaria de tu negocio
+      </p>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div
+        *ngFor="let feature of features; trackBy: trackByFeatureTitle"
+        class="bg-white border border-amber-200 rounded-lg p-6 hover:shadow-xl transition-all duration-300">
+
+        <svg class="h-12 w-12 text-amber-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIconPath(feature.icon)"/>
+        </svg>
+
+        <h3 class="text-xl font-semibold text-amber-900 mb-3">{{ feature.title }}</h3>
+
+        <p class="text-amber-700 leading-relaxed">{{ feature.description }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" class="py-20 px-4 bg-gradient-to-r from-amber-50 to-orange-50">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl font-bold text-amber-900 mb-4">
+        Lo que dicen nuestros clientes
+      </h2>
+      <p class="text-xl text-amber-700 max-w-2xl mx-auto">
+        Más de 1,000 kioscos confían en KioscoManager para optimizar su gestión diaria
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+      <div
+        *ngFor="let testimonial of testimonials; trackBy: trackByTestimonialId"
+        class="bg-white rounded-lg shadow-lg border border-amber-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+        tabindex="0"
+        role="article">
+
+        <div class="flex items-center mb-4" [attr.aria-label]="'Calificación: ' + testimonial.rating + ' estrellas'">
+          <svg
+            *ngFor="let star of getStarsArray(testimonial.rating)"
+            class="h-5 w-5 text-amber-400 fill-current mr-1"
+            viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+
+        <blockquote class="text-amber-800 mb-6 leading-relaxed italic">
+          "{{ testimonial.comment }}"
+        </blockquote>
+
+        <div class="flex items-center">
+          <div class="w-12 h-12 bg-gradient-to-br from-amber-200 to-amber-300 rounded-full mr-4 flex items-center justify-center overflow-hidden">
+            <img *ngIf="testimonial.avatar;"
+                 ngSrc="{{ testimonial.avatar }}"
+                 [alt]="testimonial.name"
+                 width="48"
+                 height="48"
+                 class="w-full h-full object-cover rounded-full" />
+          </div>
+
+          <div>
+            <div class="font-semibold text-amber-900 text-lg">
+              {{ testimonial.name }}
+            </div>
+            <div class="text-amber-700 text-sm">
+              {{ testimonial.business }}
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex items-center text-amber-600 text-sm">
+          <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>Cliente verificado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-20 px-4 bg-gradient-to-r from-amber-100 to-orange-100">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+      <div>
+        <h2 class="text-4xl font-bold text-amber-900 mb-8">
+          Optimiza tu kiosco en tiempo real
+        </h2>        <div class="space-y-8">
+          <div
+            *ngFor="let benefit of benefits; trackBy: trackByBenefit"
+            class="flex items-start space-x-4 group">
+
+            <div class="flex-shrink-0 w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center group-hover:bg-amber-700 transition-colors">
+              <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIconPath(benefit.icon)"/>
+              </svg>
+            </div>
+
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-semibold text-amber-900 text-lg">
+                  {{ benefit.title }}
+                </h3>
+                <span
+                  *ngIf="benefit.metric"
+                  class="bg-amber-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {{ benefit.metric }}
+                </span>
+              </div>
+              <p class="text-amber-700 leading-relaxed mb-3">
+                {{ benefit.description }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="relative">
+        <div class="bg-white rounded-2xl shadow-xl p-8 border border-amber-200">
+          <img
+            ngSrc="https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Panel de gestión de inventario en kiosco"
+            width="600"
+            height="400"
+            priority
+            class="rounded-lg w-full h-auto">
+        </div>
+
+        <div class="absolute -top-6 -right-6 bg-white rounded-lg shadow-lg p-4 border border-amber-200">
+          <div class="flex items-center space-x-2">
+            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span class="text-sm font-medium text-amber-900">Sistema Activo</span>
+          </div>
+        </div>
+
+        <div class="absolute -bottom-6 -left-6 bg-white rounded-lg shadow-lg p-4 border border-amber-200">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-amber-600">+40%</div>
+            <div class="text-xs text-amber-700">Aumento en ventas</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact"  class="py-20 px-4 bg-gradient-to-r from-amber-600 to-orange-600 relative overflow-hidden">
+  <div class="absolute inset-0 opacity-10">
+    <svg class="w-full h-full" viewBox="0 0 100 100" fill="none">
+      <defs>
+        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="100" height="100" fill="url(#grid)"/>
+    </svg>
+  </div>
+
+  <div class="max-w-7xl mx-auto text-center relative z-10">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+        ¿Listo para transformar tu kiosco?
+      </h2>
+
+      <p class="text-xl text-amber-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+        Únete a más de 1000 kioscos que ya optimizaron su gestión con KioscoManager
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+        <button
+          class="bg-white text-amber-600 hover:bg-amber-50 px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+          (click)="redirectTo('/login')">
+          <span class="flex items-center justify-center">
+            Iniciar Sesión
+          </span>
+        </button>
+
+        <button
+          class="border-2 border-white text-white hover:bg-white hover:text-amber-600 px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+          (click)="redirectTo('/register')">
+          <span class="flex items-center justify-center">
+            Registrarse
+          </span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
+        <div class="text-center">
+          <div class="text-3xl font-bold text-white mb-2">
+            1000+
+          </div>
+          <div class="text-amber-100 text-sm">
+            Kioscos activos
+          </div>
+        </div>
+
+        <div class="text-center">
+          <div class="text-3xl font-bold text-white mb-2">
+            99%
+          </div>
+          <div class="text-amber-100 text-sm">
+            Tasa de éxito
+          </div>
+        </div>
+
+        <div class="text-center">
+          <div class="text-3xl font-bold text-white mb-2">
+            24/7
+          </div>
+          <div class="text-amber-100 text-sm">
+            Soporte disponible
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-amber-900 text-amber-100">
+  <div class="max-w-7xl mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+
+      <div class="lg:col-span-2">
+        <div class="flex items-center space-x-2 mb-6">
+          <svg class="h-8 w-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+          <span class="text-2xl font-bold text-white">KioscoManager</span>
+        </div>
+
+        <p class="text-amber-300 mb-6 leading-relaxed max-w-sm">
+          La solución completa para la gestión inteligente de tu kiosco.
+          Optimiza inventario, ventas y reportes en una sola plataforma.
+        </p>
+
+        <div class="flex space-x-4">
+          <a
+            *ngFor="let social of socialLinks"
+            [attr.aria-label]="social.name"
+            class="w-10 h-10 bg-amber-800 hover:bg-amber-700 rounded-lg flex items-center justify-center transition-colors cursor-pointer"
+            tabindex="0"
+            role="button">
+            <svg class="h-5 w-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getSocialIconPath(social.icon)"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <div
+        *ngFor="let section of footerSections; trackBy: trackBySection"
+        class="lg:col-span-1">
+        <h3 class="text-white font-semibold mb-4">{{ section.title }}</h3>
+        <ul class="space-y-3">
+          <li *ngFor="let link of section.links; trackBy: trackByLink">
+            <a
+              (click)="onLinkClick(link)"
+              class="text-amber-300 hover:text-amber-200 transition-colors cursor-pointer text-sm"
+              [attr.aria-label]="link.text"
+              tabindex="0"
+              role="link">
+              {{ link.text }}
+              <svg
+                *ngIf="link.external"
+                class="inline h-3 w-3 ml-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 13v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3h6m0 0v6m0-6L10 14"/>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="border-t border-amber-800">
+    <div class="max-w-7xl mx-auto px-4 py-6">
+      <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <div class="text-amber-300 text-sm">
+          © {{ currentYear }} KioscoManager. Todos los derechos reservados.
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
