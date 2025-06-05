@@ -8,11 +8,12 @@ namespace API.Helpers
     {
         public AutoMapperProfiles()
         {
-            CreateMap<Producto, ProductoDto>()
-                .ForMember(dest => dest.CategoriaNombre,
-                           opt => opt.MapFrom(src => src.Categoria != null ? src.Categoria.Nombre : null));
+            CreateMap<RegisterDto, AppUser>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
+                .ForSourceMember(src => src.Password, opt => opt.DoNotValidate());
 
-            CreateMap<RegisterDto, AppUser>();
+            CreateMap<AppUser, UserDto>()
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName));
         }
     }
 }
