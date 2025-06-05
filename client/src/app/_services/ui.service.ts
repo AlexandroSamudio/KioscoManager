@@ -1,16 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 
-export interface ScrollPosition {
-  x: number;
-  y: number;
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class UiService {
-  readonly scrollPosition = signal<ScrollPosition>({ x: 0, y: 0 });
-  readonly isScrolled = signal(false);
 
   scrollToElement(elementId: string, offset: number = 0): void {
     if (typeof document === 'undefined' || typeof window === 'undefined') {

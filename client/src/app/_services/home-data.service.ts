@@ -145,7 +145,6 @@ export class HomeDataService {
       links: [
         { text: 'Acerca de Nosotros', url: '/about' },
         { text: 'Blog', url: '/blog' },
-
       ]
     },
     {
