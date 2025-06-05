@@ -33,6 +33,12 @@ export interface Testimonial {
   avatar?: string;
 }
 
+export interface SocialLink {
+  name: string;
+  url: string;
+  icon: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -78,7 +84,7 @@ export class HomeDataService {
       business: 'Kiosco El Rincón',
       rating: 5,
       comment: 'Desde que uso KioscoManager, mis ventas aumentaron 40%. Las alertas de stock me salvaron de perder muchas ventas.',
-      avatar: 'https://randomuser.me/api/portraits/women/44.jpg'
+      avatar: 'women-avatar-1.jpg'
     },
     {
       id: 2,
@@ -86,7 +92,7 @@ export class HomeDataService {
       business: 'Minimarket San José',
       rating: 5,
       comment: 'La facilidad de uso es increíble. En una semana ya tenía todo configurado y funcionando perfectamente.',
-      avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
+      avatar: 'men-avatar.avif'
     },
     {
       id: 3,
@@ -94,7 +100,7 @@ export class HomeDataService {
       business: 'Kiosco Central',
       rating: 5,
       comment: 'Los reportes me ayudan a tomar mejores decisiones. Ahora sé exactamente qué productos comprar y cuándo.',
-      avatar: 'https://randomuser.me/api/portraits/women/65.jpg'
+      avatar: 'woman-avatar-2.avif'
     }
   ] as const;
 
@@ -151,7 +157,7 @@ export class HomeDataService {
     }
   ] as const;
 
-  readonly socialLinks = [
+  readonly socialLinks: readonly SocialLink[] = [
     {
       name: 'Facebook',
       url: 'https://facebook.com/kiosco-manager',

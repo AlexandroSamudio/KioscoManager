@@ -24,6 +24,7 @@ export class HomeComponent{
   readonly footerSections = this.homeDataService.footerSections;
   readonly testimonials = this.homeDataService.testimonials;
   readonly socialLinks = this.homeDataService.socialLinks;
+  readonly features = this.homeDataService.features;
 
 
   toggleMenu(): void {
@@ -34,7 +35,8 @@ export class HomeComponent{
     this.uiService.scrollToElement(sectionId);
     this.isMenuOpen.set(false);
   }
-  readonly features = this.homeDataService.features;
+
+
   getIconPath(iconName: string): string {
     const iconPaths: Record<string, string> = {
       'package': 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
@@ -98,7 +100,12 @@ export class HomeComponent{
     return benefit.title;
   }
 
-  redirectTo(path:string){
+  redirectTo(path: string): void {
     this.router.navigate([path]);
-  }
+    this.router.navigate([path]).catch(error => {
+     console.error('Error en la navegación:', error);
+   });
+
+
+ }
 }

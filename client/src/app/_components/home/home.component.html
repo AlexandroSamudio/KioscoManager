@@ -47,11 +47,7 @@
         <a (click)="scrollToSection('features')"
            class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
           Características
-        </a>
-        <a (click)="scrollToSection('pricing')"
-           class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
-          Precios
-        </a>
+        </a>>
         <a (click)="scrollToSection('testimonials')"
            class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
           Testimonios
@@ -65,7 +61,7 @@
   </div>
 </header>
 
-<section class="py-20 px-4">
+<section class="py-20 px-4 scroll-smooth">
   <div class="container mx-auto text-center">
 
     <h1 class="text-5xl md:text-6xl font-bold text-amber-900 mb-6 leading-tight">
@@ -93,7 +89,7 @@
     </div>
 </section>
 
-<section id="features" class="py-20 px-4 bg-white">
+<section id="features" class="py-20 px-4 bg-white scroll-smooth">
   <div class="container mx-auto">
     <div class="text-center mb-16">
       <h2 class="text-4xl font-bold text-amber-900 mb-4">
@@ -120,7 +116,7 @@
   </div>
 </section>
 
-<section id="testimonials" class="py-20 px-4 bg-gradient-to-r from-amber-50 to-orange-50">
+<section id="testimonials" class="py-20 px-4 bg-gradient-to-r from-amber-50 to-orange-50 scroll-smooth">
   <div class="container mx-auto">
     <div class="text-center mb-16">
       <h2 class="text-4xl font-bold text-amber-900 mb-4">
@@ -279,7 +275,8 @@
         </button>
 
         <button
-          class="border-2 border-white text-white hover:bg-white hover:text-amber-600 px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-300 transform hover:scale-105">
+          class="border-2 border-white text-white hover:bg-white hover:text-amber-600 px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+          (click)="redirectTo('/register')">
           <span class="flex items-center justify-center">
             Registrarse
           </span>
