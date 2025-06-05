@@ -13,13 +13,20 @@ export class AccountService {
   private baseUrl = environment.apiUrl;
   currentUser = signal<User | null>(null);
   roles = computed(() => {
-    const user = this.currentUser();
-    if (user && user.token) {
-      const role = JSON.parse(atob(user.token.split('.')[1])).role;
-      return Array.isArray(role) ? role : [role];
-    }
-    return [];
+      const user = this.currentUser();
+      if (user && user.token) {
+      try {
+        const payload = JSON.parse(atob(user.token.split('.')[1]));
+        const role = payload.role;
+        return Array.isArray(role) ? role : [role];
+      } catch (error) {
+        console.error('Error al parsear el JWT token:', error);
+        return [];
+      }
+      }
+      return [];
   });
+
   login(model: any) {
     return this.http.post<User>(this.baseUrl + 'account/login', model).pipe(
       map(user => {

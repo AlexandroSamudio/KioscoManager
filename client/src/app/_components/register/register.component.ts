@@ -3,6 +3,8 @@ import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, Validati
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
+import { timer } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 interface RegisterForm {
   username: string;
@@ -87,21 +89,24 @@ export class RegisterComponent {
     this.errorMessage.set(null);
     this.successMessage.set(null);
 
-    this.accountService.register(registerData).subscribe({
-      next: (user) => {
-        this.isLoading.set(false);
-        if (user) {
-          this.successMessage.set('Cuenta creada exitosamente. Redirigiendo...');
-          setTimeout(() => {
-            this.router.navigate(['/dashboard']);
-          }, 1500);
-        }
-      },
-      error: (error) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(this.getErrorMessage(error));
+
+  this.accountService.register(registerData).subscribe({
+    next: (user) => {
+      this.isLoading.set(false);
+      if (user) {
+        this.successMessage.set('Cuenta creada exitosamente. Redirigiendo...');
+        timer(1500).pipe(
+          takeUntilDestroyed()
+        ).subscribe(() => {
+          this.router.navigate(['/dashboard']);
+        });
       }
-    });
+    },
+    error: (error) => {
+      this.isLoading.set(false);
+      this.errorMessage.set(this.getErrorMessage(error));
+    }
+      });
   }
 
   private markFormGroupTouched(): void {
