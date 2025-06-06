@@ -1,5 +1,5 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
@@ -33,20 +33,13 @@ export class RegisterComponent {
     username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, this.passwordStrengthValidator]],
-    confirmPassword: ['', [Validators.required]]
-  }, {
-    validators: this.passwordMatchValidator
+    confirmPassword: ['', [Validators.required, this.matchValues('password')]]
   });
 
-  private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password');
-    const confirmPassword = control.get('confirmPassword');
-
-    if (password && confirmPassword && password.value !== confirmPassword.value) {
-      return { passwordMismatch: true };
-    }
-
-    return null;
+  constructor() {
+    this.registerForm.controls['password'].valueChanges.subscribe({
+      next: () => this.registerForm.controls['confirmPassword'].updateValueAndValidity()
+    });
   }
 
   private passwordStrengthValidator(control: AbstractControl): ValidationErrors | null {
@@ -146,24 +139,22 @@ export class RegisterComponent {
       if (field.errors['passwordStrength']) {
         return 'La contraseña debe contener al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y tener mínimo 8 caracteres';
       }
+      if (fieldName === 'confirmPassword' && field.errors['isMatching']) {
+        return 'Las contraseñas no coinciden';
+      }
     }
-
-    if (fieldName === 'confirmPassword' && this.registerForm.errors?.['passwordMismatch'] && field?.touched) {
-      return 'Las contraseñas no coinciden';
-    }
-
     return null;
   }
 
   isFieldInvalid(fieldName: string): boolean {
     const field = this.registerForm.get(fieldName);
-    const isFieldInvalid = !!(field?.touched && field?.invalid);
+    let isInvalid = !!(field?.touched && field?.invalid);
 
-    if (fieldName === 'confirmPassword') {
-      return isFieldInvalid || !!(this.registerForm.errors?.['passwordMismatch'] && field?.touched);
+    if (fieldName === 'confirmPassword' && field?.touched && field?.hasError('isMatching')) {
+      isInvalid = true;
     }
 
-    return isFieldInvalid;
+    return isInvalid;
   }
 
   passwordsMatch(): boolean {
@@ -180,5 +171,11 @@ export class RegisterComponent {
     const confirmPasswordTouched = this.registerForm.get('confirmPassword')?.touched;
 
     return !!(password && confirmPassword && password !== confirmPassword && confirmPasswordTouched);
+  }
+
+  matchValues(matchTo:string): ValidatorFn{
+     return (control:AbstractControl) =>{
+      return control.value === control.parent?.get(matchTo)?.value ? null : {isMatching:true};
+     }
   }
 }
