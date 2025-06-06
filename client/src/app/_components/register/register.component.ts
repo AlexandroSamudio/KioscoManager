@@ -1,10 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
-import { timer } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 interface RegisterForm {
   username: string;
@@ -95,11 +93,9 @@ export class RegisterComponent {
       this.isLoading.set(false);
       if (user) {
         this.successMessage.set('Cuenta creada exitosamente. Redirigiendo...');
-        timer(1500).pipe(
-          takeUntilDestroyed()
-        ).subscribe(() => {
+        setTimeout(() => {
           this.router.navigate(['/dashboard']);
-        });
+        }, 1500);
       }
     },
     error: (error) => {
