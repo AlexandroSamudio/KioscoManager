@@ -1,8 +1,10 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 interface RegisterForm {
   username: string;
@@ -18,7 +20,7 @@ interface RegisterForm {
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly accountService = inject(AccountService);
   private readonly router = inject(Router);
@@ -29,6 +31,8 @@ export class RegisterComponent {
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
 
+  private destroy$ = new Subject<void>();
+
   readonly registerForm = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(50)]],
     email: ['', [Validators.required, Validators.email]],
@@ -37,9 +41,16 @@ export class RegisterComponent {
   });
 
   constructor() {
-    this.registerForm.controls['password'].valueChanges.subscribe({
+    this.registerForm.controls['password'].valueChanges.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
       next: () => this.registerForm.controls['confirmPassword'].updateValueAndValidity()
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private passwordStrengthValidator(control: AbstractControl): ValidationErrors | null {

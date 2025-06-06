@@ -6,7 +6,7 @@ import { AccountService } from './_services/account.service';
   selector: 'app-root',
   imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
   accountService = inject(AccountService);
@@ -18,8 +18,15 @@ export class AppComponent implements OnInit {
   setCurrentUser() {
     const userString = localStorage.getItem('user');
     if (!userString) return;
-    const user = JSON.parse(userString);
-    this.accountService.setCurrentUser(user);
+    try {
+      const user = JSON.parse(userString);
+      this.accountService.setCurrentUser(user);
+    } catch (error) {
+      console.warn(
+        'Error al parsear datos de usuario desde localStorage:',
+        error
+      );
+      localStorage.removeItem('user');
+    }
   }
-
 }
