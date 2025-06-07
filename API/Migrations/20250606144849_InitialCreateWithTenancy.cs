@@ -134,7 +134,7 @@ namespace API.Migrations
                         column: x => x.KioscoId,
                         principalTable: "Kioscos",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -247,7 +247,7 @@ namespace API.Migrations
                         column: x => x.KioscoId,
                         principalTable: "Kioscos",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(

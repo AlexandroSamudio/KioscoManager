@@ -5,7 +5,8 @@
         "descripcion": "Fideos de trigo, ideales para sopas y guisos.",
         "precio": 47,
         "stock": 7,
-        "categoriaId": 2
+        "categoriaId": 2,
+        "kioscoId": 1
     },
     {
         "id": 2,
@@ -13,7 +14,8 @@
         "descripcion": "Leche fresca entera, rica en calcio y vitaminas.",
         "precio": 66,
         "stock": 6,
-        "categoriaId": 6
+        "categoriaId": 6,
+        "kioscoId": 1
     },
     {
         "id": 3,
@@ -21,7 +23,8 @@
         "descripcion": "Yogur cremoso natural, sin azúcares añadidos.",
         "precio": 15,
         "stock": 3,
-        "categoriaId": 6
+        "categoriaId": 6,
+        "kioscoId": 1
     },
     {
         "id": 4,
@@ -29,7 +32,8 @@
         "descripcion": "Galletas saludables de avena",
         "precio": 74,
         "stock": 6,
-        "categoriaId": 2
+        "categoriaId": 2,
+        "kioscoId": 1
     },
     {
         "id": 5,
@@ -37,7 +41,8 @@
         "descripcion": "Agua mineral con gas de 500ml",
         "precio": 26,
         "stock": 7,
-        "categoriaId": 3
+        "categoriaId": 3,
+        "kioscoId": 1
     },
     {
         "id": 6,
@@ -45,7 +50,8 @@
         "descripcion": "Barra de chocolate con leche",
         "precio": 4,
         "stock": 2,
-        "categoriaId": 2
+        "categoriaId": 2,
+        "kioscoId": 1
     },
     {
         "id": 7,
@@ -53,7 +59,8 @@
         "descripcion": "Cigarillo de menta suave y refrescante",
         "precio": 43,
         "stock": 6,
-        "categoriaId": 5
+        "categoriaId": 5,
+        "kioscoId": 1
     },
     {
         "id": 8,
@@ -61,7 +68,8 @@
         "descripcion": "Desodorante en barra, 50ml",
         "precio": 61,
         "stock": 6,
-        "categoriaId": 7
+        "categoriaId": 7,
+        "kioscoId": 1
     },
     {
         "id": 9,
@@ -69,7 +77,8 @@
         "descripcion": "Alfajor relleno de dulce de leche con cobertura de chocolate",
         "precio": 28,
         "stock": 9,
-        "categoriaId": 1
+        "categoriaId": 1,
+        "kioscoId": 1
     },
     {
         "id": 10,
@@ -77,6 +86,7 @@
         "descripcion": "Galletas saladas con sabor a queso",
         "precio": 50,
         "stock": 2,
-        "categoriaId": 2
+        "categoriaId": 2,
+        "kioscoId": 1
     }
 ]

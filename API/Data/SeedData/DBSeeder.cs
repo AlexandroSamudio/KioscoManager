@@ -17,6 +17,7 @@ public class DBSeeder
         var categoriaLogger = loggerFactory.CreateLogger("SeedCategorias");
         var productoLogger = loggerFactory.CreateLogger("SeedProductos");
         var userAndRoleLogger = loggerFactory.CreateLogger("SeedUsersAndRoles");
+        var kioscoLogger = loggerFactory.CreateLogger("SeedKioscos");
 
         await context.Database.MigrateAsync();
 
@@ -25,6 +26,7 @@ public class DBSeeder
 
         await JsonDataSeeder.SeedAsync<Categoria>(context, "categorias.json", categoriaLogger);
         await JsonDataSeeder.SeedAsync<Producto>(context, "productos.json", productoLogger);
+        await JsonDataSeeder.SeedAsync<Kiosco>(context, "kioscos.json", productoLogger);
     }
 
 }
