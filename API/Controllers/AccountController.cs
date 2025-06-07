@@ -6,10 +6,11 @@ using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+
 namespace API.Controllers;
 
 public class AccountController(UserManager<AppUser> userManager,ITokenService tokenService
-    ,IMapper mapper, DataContext context) : BaseApiController
+    ,IMapper mapper, DataContext context,ILogger logger) : BaseApiController
 {
 
     [HttpPost("register")]
@@ -26,7 +27,7 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
 
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        var roleResult = await userManager.AddToRoleAsync(user, "Miembro");
+        var roleResult = await userManager.AddToRoleAsync(user, "miembro");
           if (!roleResult.Succeeded) return BadRequest(roleResult.Errors);
 
         var userDto = mapper.Map<UserDto>(user);
@@ -64,30 +65,61 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
 
         var user = await userManager.FindByIdAsync(userId);
         
-        if (user == null) return Unauthorized();
+        if (user == null) return Unauthorized("Usuario no encontrado.");
 
-        if (await userManager.IsInRoleAsync(user, "administrador"))
+        if (await userManager.IsInRoleAsync(user, "administrador") || user.KioscoId.HasValue)
         {
-            return BadRequest("El usuario ya es un administrador de un kiosco.");
+            return BadRequest("El usuario ya es un administrador o ya está asignado a un kiosco.");
         }
 
-        var kiosco = new Kiosco
+        await using var transaction = await context.Database.BeginTransactionAsync();
+
+        try
         {
-            Nombre = createKioscoDto.Nombre
-        };
+            var kiosco = new Kiosco
+            {
+                Nombre = createKioscoDto.Nombre
+            };
 
-        context.Kioscos.Add(kiosco);
-        await context.SaveChangesAsync();
+            context.Kioscos.Add(kiosco);
+            await context.SaveChangesAsync();
 
-        user.KioscoId = kiosco.Id;
-        await userManager.RemoveFromRoleAsync(user, "miembro");
-        await userManager.AddToRoleAsync(user, "administrador");
-        await userManager.UpdateAsync(user);
+            user.KioscoId = kiosco.Id;
+            
+            var removeRoleResult = await userManager.RemoveFromRoleAsync(user, "miembro");
+            if (!removeRoleResult.Succeeded)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest("Error al remover el rol 'miembro' del usuario."); 
+            }
 
-        var userDto = mapper.Map<UserDto>(user);
-        userDto.Token = tokenService.CreateToken(user);
+            var addRoleResult = await userManager.AddToRoleAsync(user, "administrador");
+            if (!addRoleResult.Succeeded)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest("Error al añadir el rol 'administrador' al usuario.");
+            }
+            
+            var updateUserResult = await userManager.UpdateAsync(user);
+            if (!updateUserResult.Succeeded)
+            {
+                await transaction.RollbackAsync();
+                return BadRequest("Error al actualizar el usuario con el nuevo kiosco y roles.");
+            }
 
-        return userDto;
+            await transaction.CommitAsync();
+
+            var userDto = mapper.Map<UserDto>(user);
+            userDto.Token = tokenService.CreateToken(user); 
+
+            return userDto;
+        }
+        catch (Exception ex) 
+        {
+            await transaction.RollbackAsync();
+            logger.LogError(ex, "Error en CreateKiosco");
+            return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error inesperado al procesar la solicitud.");
+        }
     }
 
     private async Task<bool> UserExists(string username)
