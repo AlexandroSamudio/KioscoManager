@@ -7,7 +7,7 @@ namespace API.Extensions
         public static int GetUserId(this ClaimsPrincipal user)
         {
             var userId = int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier) 
-            ?? throw new Exception("El ID del usuario no es un entero válido."));
+            ?? throw new InvalidOperationException("El ID del usuario no es un entero válido o no se encontró en el token."));
         
         return userId;
         }

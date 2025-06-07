@@ -31,7 +31,7 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
           if (!roleResult.Succeeded) return BadRequest(roleResult.Errors);
 
         var userDto = mapper.Map<UserDto>(user);
-        userDto.Token = tokenService.CreateToken(user);
+        userDto.Token = await tokenService.CreateToken(user);
         
         return userDto;
     }
@@ -48,7 +48,7 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
         if (!result) return Unauthorized("Contraseña invalida");
 
         var userDto = mapper.Map<UserDto>(user);
-        userDto.Token = tokenService.CreateToken(user);
+        userDto.Token = await tokenService.CreateToken(user);
         
         return userDto;
     }
@@ -105,7 +105,7 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
             await transaction.CommitAsync();
 
             var userDto = mapper.Map<UserDto>(user);
-            userDto.Token = tokenService.CreateToken(user); 
+            userDto.Token = await tokenService.CreateToken(user); 
 
             return userDto;
         }
