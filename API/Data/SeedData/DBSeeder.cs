@@ -26,7 +26,7 @@ public class DBSeeder
 
         await JsonDataSeeder.SeedAsync<Categoria>(context, "categorias.json", categoriaLogger);
         await JsonDataSeeder.SeedAsync<Producto>(context, "productos.json", productoLogger);
-        await JsonDataSeeder.SeedAsync<Kiosco>(context, "kioscos.json", productoLogger);
+        await JsonDataSeeder.SeedAsync<Kiosco>(context, "kioscos.json", kioscoLogger);
     }
 
 }
