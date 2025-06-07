@@ -1,14 +1,15 @@
+using API.Data;
 using API.DTOs;
 using API.Entities;
+using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-
 namespace API.Controllers;
 
 public class AccountController(UserManager<AppUser> userManager,ITokenService tokenService
-    ,IMapper mapper) : BaseApiController
+    ,IMapper mapper, DataContext context) : BaseApiController
 {
 
     [HttpPost("register")]
@@ -25,7 +26,7 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
 
         if (!result.Succeeded) return BadRequest(result.Errors);
 
-        var roleResult = await userManager.AddToRoleAsync(user, "Empleado");
+        var roleResult = await userManager.AddToRoleAsync(user, "Miembro");
           if (!roleResult.Succeeded) return BadRequest(roleResult.Errors);
 
         var userDto = mapper.Map<UserDto>(user);
@@ -48,6 +49,44 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
         var userDto = mapper.Map<UserDto>(user);
         userDto.Token = tokenService.CreateToken(user);
         
+        return userDto;
+    }
+
+    [HttpPost("create-kiosco")]
+    public async Task<ActionResult<UserDto>> CreateKiosco(CreateKioscoDto createKioscoDto)
+    {
+        var userId = User.GetUserId();
+        
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized("El id del usuario no se pudo obtener del token.");
+        }
+
+        var user = await userManager.FindByIdAsync(userId);
+        
+        if (user == null) return Unauthorized();
+
+        if (await userManager.IsInRoleAsync(user, "administrador"))
+        {
+            return BadRequest("El usuario ya es un administrador de un kiosco.");
+        }
+
+        var kiosco = new Kiosco
+        {
+            Nombre = createKioscoDto.Nombre
+        };
+
+        context.Kioscos.Add(kiosco);
+        await context.SaveChangesAsync();
+
+        user.KioscoId = kiosco.Id;
+        await userManager.RemoveFromRoleAsync(user, "miembro");
+        await userManager.AddToRoleAsync(user, "administrador");
+        await userManager.UpdateAsync(user);
+
+        var userDto = mapper.Map<UserDto>(user);
+        userDto.Token = tokenService.CreateToken(user);
+
         return userDto;
     }
 
