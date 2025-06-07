@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 public class AccountController(UserManager<AppUser> userManager,ITokenService tokenService
-    ,IMapper mapper, DataContext context,ILogger logger) : BaseApiController
+    ,IMapper mapper, DataContext context,ILogger<AccountController> logger) : BaseApiController
 {
 
     [HttpPost("register")]
@@ -57,13 +57,8 @@ public class AccountController(UserManager<AppUser> userManager,ITokenService to
     public async Task<ActionResult<UserDto>> CreateKiosco(CreateKioscoDto createKioscoDto)
     {
         var userId = User.GetUserId();
-        
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized("El id del usuario no se pudo obtener del token.");
-        }
 
-        var user = await userManager.FindByIdAsync(userId);
+        var user = await userManager.FindByIdAsync(userId.ToString());
         
         if (user == null) return Unauthorized("Usuario no encontrado.");
 
