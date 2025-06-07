@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "nombre": "KioscoUno"
+    },
+    {
+        "id": 2,
+        "nombre": "KioscoDos"
+    },
+    {
+        "id": 3,
+        "nombre": "KioscoTres"
+    }
+]

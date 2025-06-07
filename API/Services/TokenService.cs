@@ -3,32 +3,31 @@ using System.Security.Claims;
 using System.Text;
 using API.Entities;
 using API.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
 namespace API.Services;
 
-public class TokenService : ITokenService
+public class TokenService(IConfiguration config,UserManager<AppUser> userManager) : ITokenService
 {
-    private readonly SymmetricSecurityKey _key;
-    public TokenService(IConfiguration config)
-    {
-        var tokenKey = config["TokenKey"];
-        if (string.IsNullOrEmpty(tokenKey))
-        {
-            throw new InvalidOperationException("La TokenKey no ha sido configurada.");
-        }
-        _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
-    }
 
-    public string CreateToken(AppUser user)
+    public async Task<string> CreateToken(AppUser user)
     {
+        var tokenKey = config["TokenKey"] ?? throw new Exception("No se ha configurado la TokenKey");
+        if (tokenKey.Length < 64) throw new Exception("Tu TokenKey debe tener al menos 64 caracteres");
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey));
+
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty)
+            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new Claim("kioscoId", user.KioscoId?.ToString() ?? string.Empty)
         };
 
-        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
+        var roles = await userManager.GetRolesAsync(user);
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -43,4 +42,6 @@ public class TokenService : ITokenService
 
         return tokenHandler.WriteToken(token);
     }
+
+    
 }

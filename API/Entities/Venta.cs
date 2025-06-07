@@ -12,4 +12,6 @@ public class Venta
     public AppUser? Usuario { get; set; }
 
     public ICollection<DetalleVenta> Detalles { get; set; } = new List<DetalleVenta>();
+    public int KioscoId { get; set; }      
+    public Kiosco? Kiosco { get; set; } 
 }

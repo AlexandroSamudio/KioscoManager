@@ -12,5 +12,7 @@ public class Producto
 
     public int CategoriaId { get; set; }
     public Categoria? Categoria { get; set; }
+    public int KioscoId { get; set; }   
+    public Kiosco? Kiosco { get; set; }
 }
 

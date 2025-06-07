@@ -17,6 +17,7 @@ namespace API.Data
         public DbSet<Categoria>? Categorias { get; set; }
         public DbSet<Venta>? Ventas { get; set; }
         public DbSet<DetalleVenta>? DetalleVentas { get; set; }
+        public DbSet<Kiosco> Kioscos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -27,15 +28,34 @@ namespace API.Data
                 userRole.HasKey(ur => new { ur.UserId, ur.RoleId });
 
                 userRole.HasOne(ur => ur.Role)
-                    .WithMany(r => r.UserRoles) 
+                    .WithMany(r => r.UserRoles)
                     .HasForeignKey(ur => ur.RoleId)
                     .IsRequired();
 
                 userRole.HasOne(ur => ur.User)
-                    .WithMany(r => r.UserRoles) 
+                    .WithMany(r => r.UserRoles)
                     .HasForeignKey(ur => ur.UserId)
                     .IsRequired();
             });
+
+            builder.Entity<Kiosco>()
+                .HasMany(k => k.Productos)    
+                .WithOne(p => p.Kiosco)       
+                .HasForeignKey(p => p.KioscoId) 
+                .OnDelete(DeleteBehavior.Restrict); 
+
+        
+            builder.Entity<Kiosco>()
+                .HasMany(k => k.Usuarios)
+                .WithOne(u => u.Kiosco)
+                .HasForeignKey(u => u.KioscoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Kiosco>()
+                .HasMany(k => k.Ventas)
+                .WithOne(v => v.Kiosco)
+                .HasForeignKey(v => v.KioscoId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
