@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { environment } from '../environments/environment.development';
 import { User } from '../_models/user';
 import { catchError, map } from 'rxjs';
@@ -13,13 +14,14 @@ import { Register } from '../_models/register.model';
 export class AccountService {
 
   private http = inject(HttpClient);
+  private router = inject(Router);
   private baseUrl = environment.apiUrl;
   currentUser = signal<User | null>(null);
   roles = computed(() => {
       const user = this.currentUser();
       if (user?.token) {
       try {
-        const payload = jwtDecode<{ role: string | string[] }>(user.token);
+        const payload = jwtDecode<{ role: string | string[]; kioscoId?: string | null; email?:string | null;nameId:string | null }>(user.token);
         const role = payload.role;
         return Array.isArray(role) ? role : [role];
       } catch (error) {
@@ -35,6 +37,19 @@ export class AccountService {
       map(user => {
         if (user) {
           this.setCurrentUser(user);
+          if (user.token) {
+            try {
+              const decodedToken = jwtDecode<{ kioscoId?: string | null }>(user.token);
+              if (decodedToken.kioscoId === null || decodedToken.kioscoId === '') {
+                this.router.navigate(['/bienvenida']);
+              } else {
+                this.router.navigate(['/dashboard']);
+              }
+            } catch (error) {
+              console.error('Error al decodificar el token JWT:', error);
+              this.router.navigate(['/login-error']);
+            }
+          }
         }
         return user;
       }),
