@@ -98,7 +98,7 @@ export class RegisterComponent implements OnDestroy {
       if (user) {
         this.successMessage.set('Cuenta creada exitosamente. Redirigiendo...');
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/login']);
         }, 1500);
       }
     },

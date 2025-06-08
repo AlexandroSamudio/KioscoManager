@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { environment } from '../environments/environment.development';
 import { User } from '../_models/user';
 import { catchError, map } from 'rxjs';
@@ -13,13 +14,14 @@ import { Register } from '../_models/register.model';
 export class AccountService {
 
   private http = inject(HttpClient);
+  private router = inject(Router);
   private baseUrl = environment.apiUrl;
   currentUser = signal<User | null>(null);
   roles = computed(() => {
       const user = this.currentUser();
       if (user?.token) {
       try {
-        const payload = jwtDecode<{ role: string | string[] }>(user.token);
+        const payload = jwtDecode<{ role: string | string[]; kioscoId?: string | null}>(user.token);
         const role = payload.role;
         return Array.isArray(role) ? role : [role];
       } catch (error) {
@@ -28,6 +30,19 @@ export class AccountService {
       }
       }
       return [];
+  });
+  kioscoId = computed(() => {
+    const user = this.currentUser();
+    if (user?.token) {
+      try {
+        const payload = jwtDecode<{ kioscoId?: string | null }>(user.token);
+        return payload.kioscoId;
+      } catch (error) {
+        console.error('Error al decodificar el token JWT para kioscoId:', error);
+        return null;
+      }
+    }
+    return null;
   });
 
   login(model: Login) {
