@@ -21,7 +21,7 @@ export class AccountService {
       const user = this.currentUser();
       if (user?.token) {
       try {
-        const payload = jwtDecode<{ role: string | string[]; kioscoId?: string | null; email?:string | null;nameId:string | null }>(user.token);
+        const payload = jwtDecode<{ role: string | string[]; kioscoId?: string | null}>(user.token);
         const role = payload.role;
         return Array.isArray(role) ? role : [role];
       } catch (error) {
@@ -31,25 +31,25 @@ export class AccountService {
       }
       return [];
   });
+  kioscoId = computed(() => {
+    const user = this.currentUser();
+    if (user?.token) {
+      try {
+        const payload = jwtDecode<{ kioscoId?: string | null }>(user.token);
+        return payload.kioscoId;
+      } catch (error) {
+        console.error('Error al decodificar el token JWT para kioscoId:', error);
+        return null;
+      }
+    }
+    return null;
+  });
 
   login(model: Login) {
     return this.http.post<User>(this.baseUrl + 'account/login', model).pipe(
       map(user => {
         if (user) {
           this.setCurrentUser(user);
-          if (user.token) {
-            try {
-              const decodedToken = jwtDecode<{ kioscoId?: string | null }>(user.token);
-              if (decodedToken.kioscoId === null || decodedToken.kioscoId === '') {
-                this.router.navigate(['/bienvenida']);
-              } else {
-                this.router.navigate(['/dashboard']);
-              }
-            } catch (error) {
-              console.error('Error al decodificar el token JWT:', error);
-              this.router.navigate(['/login-error']);
-            }
-          }
         }
         return user;
       }),
