@@ -88,7 +88,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
 
             do
             {
-                uniqueCode = await GenerateUniqueInvitationCodeAsync();
+                uniqueCode = GenerateUniqueInvitationCodeAsync();
                 codigoInvitacion = new CodigoInvitacion
                 {
                     Code = uniqueCode,
@@ -161,29 +161,12 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error inesperado al procesar la solicitud.");
         }
     }
-    private async Task<string> GenerateUniqueInvitationCodeAsync()
+    private static string GenerateUniqueInvitationCodeAsync()
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         const int codeLength = 8;
-        string code;
-        int attempts = 0;
-        const int maxAttempts = 10;
 
-        do
-        {
-            attempts++;
-            code = GenerateRandomCode(chars, codeLength);
-
-            if (attempts >= maxAttempts)
-            {
-                logger.LogWarning("Se alcanzó el máximo de intentos ({MaxAttempts}) para generar un código único", maxAttempts);
-                code = $"{code}{DateTime.UtcNow.Ticks % 1000:D3}";
-                break;
-            }
-        }
-        while (await context.CodigosInvitacion.AnyAsync(c => c.Code == code));
-
-        return code;
+        return GenerateRandomCode(chars, codeLength);
     }
 
     private static string GenerateRandomCode(string chars, int length)
@@ -322,7 +305,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
 
         do
         {
-            uniqueCode = await GenerateUniqueInvitationCodeAsync();
+            uniqueCode = GenerateUniqueInvitationCodeAsync();
             var expirationDate = DateTime.UtcNow.AddDays(7);
 
             newCodigoInvitacion = new CodigoInvitacion
