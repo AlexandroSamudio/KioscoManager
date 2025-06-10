@@ -11,6 +11,7 @@ public class Kiosco
     public ICollection<AppUser> Usuarios { get; set; } = new List<AppUser>();
     public ICollection<Producto> Productos { get; set; } = new List<Producto>();
     public ICollection<Venta> Ventas { get; set; } = new List<Venta>();
+    public ICollection<CodigoInvitacion> CodigosInvitacion { get; set; } = new List<CodigoInvitacion>();
 
 
 

@@ -26,7 +26,7 @@ public class DBSeeder
 
         await JsonDataSeeder.SeedAsync<Categoria>(context, "categorias.json", categoriaLogger);
         await JsonDataSeeder.SeedAsync<Kiosco>(context, "kioscos.json", kioscoLogger);
+        await context.Database.ExecuteSqlRawAsync("SELECT setval(pg_get_serial_sequence('public.\"Kioscos\"', 'Id'), COALESCE((SELECT MAX(\"Id\") FROM public.\"Kioscos\"), 0) + 1, false);");
         await JsonDataSeeder.SeedAsync<Producto>(context, "productos.json", productoLogger);
     }
-
 }
