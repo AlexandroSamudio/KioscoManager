@@ -7,7 +7,7 @@ namespace API.Helpers
     public class AutoMapperProfiles : Profile
     {
         public AutoMapperProfiles()
-        {            CreateMap<RegisterDto, AppUser>()
+        {   CreateMap<RegisterDto, AppUser>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.ToLower()))
                 .ForSourceMember(src => src.Password, opt => opt.DoNotValidate());

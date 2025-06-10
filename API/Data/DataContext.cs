@@ -18,6 +18,7 @@ namespace API.Data
         public DbSet<Venta>? Ventas { get; set; }
         public DbSet<DetalleVenta>? DetalleVentas { get; set; }
         public DbSet<Kiosco> Kioscos { get; set; }
+        public DbSet<CodigoInvitacion> CodigosInvitacion { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -39,12 +40,12 @@ namespace API.Data
             });
 
             builder.Entity<Kiosco>()
-                .HasMany(k => k.Productos)    
-                .WithOne(p => p.Kiosco)       
-                .HasForeignKey(p => p.KioscoId) 
-                .OnDelete(DeleteBehavior.Restrict); 
+                .HasMany(k => k.Productos)
+                .WithOne(p => p.Kiosco)
+                .HasForeignKey(p => p.KioscoId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        
+
             builder.Entity<Kiosco>()
                 .HasMany(k => k.Usuarios)
                 .WithOne(u => u.Kiosco)
@@ -56,6 +57,16 @@ namespace API.Data
                 .WithOne(v => v.Kiosco)
                 .HasForeignKey(v => v.KioscoId)
                 .OnDelete(DeleteBehavior.Restrict);
-        }
+            
+            builder.Entity<Kiosco>()
+                .HasMany(k => k.CodigoInvitacion)        
+                .WithOne(ic => ic.Kiosco)               
+                .HasForeignKey(ic => ic.KioscoId)       
+                .OnDelete(DeleteBehavior.Cascade);      
+
+            builder.Entity<CodigoInvitacion>()
+                .HasIndex(ic => ic.Code)
+                .IsUnique();
+                }
     }
 }
