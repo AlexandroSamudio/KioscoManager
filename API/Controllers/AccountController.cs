@@ -76,52 +76,13 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
             var kiosco = new Kiosco
             {
                 Nombre = createKioscoDto.Nombre
-            };
-
-            context.Kioscos.Add(kiosco);
+            }; context.Kioscos.Add(kiosco);
             await context.SaveChangesAsync();
 
-            string uniqueCode;
-            CodigoInvitacion codigoInvitacion;
-            int retryAttempts = 0;
-            const int maxRetryAttempts = 3;
-
-            do
-            {
-                uniqueCode = GenerateUniqueInvitationCodeAsync();
-                codigoInvitacion = new CodigoInvitacion
-                {
-                    Code = uniqueCode,
-                    KioscoId = kiosco.Id,
-                    ExpirationDate = DateTime.UtcNow.AddDays(7),
-                    IsUsed = false
-                };
-
-                try
-                {
-                    context.CodigosInvitacion.Add(codigoInvitacion);
-                    await context.SaveChangesAsync();
-                    break;
-                }
-                catch (DbUpdateException ex) when (retryAttempts < maxRetryAttempts)
-                {
-                    context.CodigosInvitacion.Remove(codigoInvitacion);
-                    retryAttempts++;
-
-                    logger.LogWarning("Violación de índice único detectada al insertar código de invitación. Intento {Attempt} de {MaxAttempts}. Error: {Error}",
-                        retryAttempts, maxRetryAttempts, ex.Message);
-
-                    if (retryAttempts >= maxRetryAttempts)
-                    {
-                        logger.LogError("Se alcanzó el máximo de reintentos ({MaxRetryAttempts}) para insertar código de invitación único", maxRetryAttempts);
-                        throw new InvalidOperationException("No se pudo generar un código de invitación único después de múltiples intentos.", ex);
-                    }
-                }
-            }
-            while (retryAttempts < maxRetryAttempts);
+            var codigoInvitacion = await GenerateAndSaveInvitationCodeAsync(kiosco.Id);
 
             logger.LogInformation("Código de invitación '{Code}' generado para el kiosco '{KioscoName}' (ID: {KioscoId})",
-                uniqueCode, kiosco.Nombre, kiosco.Id);
+                codigoInvitacion.Code, kiosco.Nombre, kiosco.Id);
 
             user.KioscoId = kiosco.Id;
 
@@ -146,11 +107,9 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
                 return BadRequest("Error al actualizar el usuario con el nuevo kiosco y roles.");
             }
 
-            await transaction.CommitAsync();
-
-            var userDto = mapper.Map<UserDto>(user);
+            await transaction.CommitAsync(); var userDto = mapper.Map<UserDto>(user);
             userDto.Token = await tokenService.CreateToken(user);
-            userDto.CodigoInvitacion = uniqueCode;
+            userDto.CodigoInvitacion = codigoInvitacion.Code;
 
             return userDto;
         }
@@ -160,31 +119,6 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
             logger.LogError(ex, "Error en CreateKiosco");
             return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error inesperado al procesar la solicitud.");
         }
-    }
-    private static string GenerateUniqueInvitationCodeAsync()
-    {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        const int codeLength = 8;
-
-        return GenerateRandomCode(chars, codeLength);
-    }
-
-    private static string GenerateRandomCode(string chars, int length)
-    {
-        byte[] byteArray = RandomNumberGenerator.GetBytes(length);
-        return new string(byteArray.Select(b => chars[b % chars.Length]).ToArray());
-    }
-
-    private async Task<bool> UserExists(string username)
-    {
-        var existingUser = await userManager.FindByNameAsync(username);
-        return existingUser != null;
-    }
-
-    private async Task<bool> EmailExists(string email)
-    {
-        var existingUser = await userManager.FindByEmailAsync(email);
-        return existingUser != null;
     }
 
     [HttpGet("kiosco-invitation-codes")]
@@ -293,38 +227,53 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         var userId = User.GetUserId();
         var user = await userManager.FindByIdAsync(userId.ToString());
 
-        if (user == null) return Unauthorized("Usuario no encontrado."); if (!await userManager.IsInRoleAsync(user, "administrador") || !user.KioscoId.HasValue)
+        if (user == null) return Unauthorized("Usuario no encontrado.");
+        if (!await userManager.IsInRoleAsync(user, "administrador") || !user.KioscoId.HasValue)
         {
             return BadRequest("Solo los administradores pueden generar códigos de invitación para su kiosco.");
         }
 
+        var newCodigoInvitacion = await GenerateAndSaveInvitationCodeAsync(user.KioscoId.Value);
+
+        logger.LogInformation("Nuevo código de invitación '{Code}' generado por el administrador '{AdminUserName}' (ID: {AdminUserId}) para el kiosco ID: {KioscoId}",
+            newCodigoInvitacion.Code, user.UserName, user.Id, user.KioscoId.Value);
+
+        return Ok(new GeneratedInvitationCodeDto
+        {
+            Code = newCodigoInvitacion.Code,
+            ExpirationDate = newCodigoInvitacion.ExpirationDate
+        });
+    }
+
+    private async Task<CodigoInvitacion> GenerateAndSaveInvitationCodeAsync(int kioscoId)
+    {
         string uniqueCode;
-        CodigoInvitacion newCodigoInvitacion;
+        CodigoInvitacion codigoInvitacion;
         int retryAttempts = 0;
         const int maxRetryAttempts = 3;
 
         do
         {
-            uniqueCode = GenerateUniqueInvitationCodeAsync();
+            uniqueCode = GenerateUniqueInvitationCode();
             var expirationDate = DateTime.UtcNow.AddDays(7);
 
-            newCodigoInvitacion = new CodigoInvitacion
+            codigoInvitacion = new CodigoInvitacion
             {
                 Code = uniqueCode,
-                KioscoId = user.KioscoId.Value,
+                KioscoId = kioscoId,
                 ExpirationDate = expirationDate,
                 IsUsed = false
             };
 
             try
             {
-                context.CodigosInvitacion.Add(newCodigoInvitacion);
+                context.CodigosInvitacion.Add(codigoInvitacion);
                 await context.SaveChangesAsync();
                 break;
             }
             catch (DbUpdateException ex) when (retryAttempts < maxRetryAttempts)
             {
-                context.CodigosInvitacion.Remove(newCodigoInvitacion);
+                context.CodigosInvitacion.Remove(codigoInvitacion);
                 retryAttempts++;
 
                 logger.LogWarning("Violación de índice único detectada al generar código de invitación. Intento {Attempt} de {MaxAttempts}. Error: {Error}",
@@ -339,13 +288,32 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         }
         while (retryAttempts < maxRetryAttempts);
 
-        logger.LogInformation("Nuevo código de invitación '{Code}' generado por el administrador '{AdminUserName}' (ID: {AdminUserId}) para el kiosco ID: {KioscoId}",
-            uniqueCode, user.UserName, user.Id, user.KioscoId.Value);
+        return codigoInvitacion;
+    }
+    
+    private static string GenerateUniqueInvitationCode()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const int codeLength = 8;
 
-        return Ok(new GeneratedInvitationCodeDto
-        {
-            Code = newCodigoInvitacion.Code,
-            ExpirationDate = newCodigoInvitacion.ExpirationDate
-        });
+        return GenerateRandomCode(chars, codeLength);
+    }
+
+    private static string GenerateRandomCode(string chars, int length)
+    {
+        byte[] byteArray = RandomNumberGenerator.GetBytes(length);
+        return new string(byteArray.Select(b => chars[b % chars.Length]).ToArray());
+    }
+
+    private async Task<bool> UserExists(string username)
+    {
+        var existingUser = await userManager.FindByNameAsync(username);
+        return existingUser != null;
+    }
+
+    private async Task<bool> EmailExists(string email)
+    {
+        var existingUser = await userManager.FindByEmailAsync(email);
+        return existingUser != null;
     }
 }
