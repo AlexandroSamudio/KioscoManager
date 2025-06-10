@@ -59,7 +59,7 @@ namespace API.Data
                 .OnDelete(DeleteBehavior.Restrict);
             
             builder.Entity<Kiosco>()
-                .HasMany(k => k.CodigoInvitacion)        
+                .HasMany(k => k.CodigosInvitacion)        
                 .WithOne(ic => ic.Kiosco)               
                 .HasForeignKey(ic => ic.KioscoId)       
                 .OnDelete(DeleteBehavior.Cascade);      
