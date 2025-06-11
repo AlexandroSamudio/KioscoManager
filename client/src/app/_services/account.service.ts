@@ -3,7 +3,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment.development';
 import { User } from '../_models/user';
-import { catchError, map, Observable } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Login } from '../_models/login.model';
 import { Register } from '../_models/register.model';
@@ -38,7 +38,12 @@ export class AccountService {
       return this.decodedTokenCache.payload;
     }
     try {
-      const payload = jwtDecode<JwtPayload>(token);
+      const payload = jwtDecode<JwtPayload & { exp?: number }>(token);
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        console.warn('Token JWT expirado. Cerrando sesión.');
+        this.logout();
+        return null;
+      }
       this.decodedTokenCache = { userToken: token, payload };
       return payload;
     } catch (error) {
@@ -77,7 +82,7 @@ export class AccountService {
   }
 
   createKiosco(model: CreateKiosco) {
-      return this.handleAuth(
+    return this.handleAuth(
       this.http.post<User>(this.baseUrl + 'account/create-kiosco', model)
     );
   }
@@ -102,7 +107,7 @@ export class AccountService {
     this.router.navigate(['/']);
   }
 
-  private handleAuth<T>(obs: Observable<User>) {
+  private handleAuth(obs: Observable<User>): Observable<User> {
     return obs.pipe(
       map((user) => {
         if (user) this.setCurrentUser(user);
@@ -110,7 +115,7 @@ export class AccountService {
       }),
       catchError((err) => {
         console.error(err);
-        throw err;
+        return throwError(() => err);
       })
     );
   }
