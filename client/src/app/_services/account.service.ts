@@ -7,6 +7,7 @@ import { catchError, map } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Login } from '../_models/login.model';
 import { Register } from '../_models/register.model';
+import { JoinKiosco } from '../_models/join-kiosco.model';
 
 @Injectable({
   providedIn: 'root'
@@ -75,6 +76,21 @@ export class AccountService {
     )
   }
 
+  joinKiosco(model: JoinKiosco) {
+    return this.http.post<User>(this.baseUrl + 'account/join-kiosco', model).pipe(
+      map(user => {
+        if (user) {
+          this.setCurrentUser(user);
+        }
+        return user;
+      }),
+      catchError(error => {
+        console.error('Error al unirse al kiosco:', error);
+        throw error;
+      })
+    )
+  }
+
   setCurrentUser(user: User) {
     if (!user?.username || !user?.email || !user?.token) {
       console.error('Usuario inválido, no se puede guardar en localStorage');
@@ -88,5 +104,10 @@ export class AccountService {
     return this.currentUser() !== null;
   }
 
+  logout() {
+    localStorage.removeItem('user');
+    this.currentUser.set(null);
+    this.router.navigate(['/']);
+  }
 
 }

@@ -486,3 +486,5 @@ API/appsettings.json
 client/rules.md
 API/rules.md
 API/appsettings.Development.json
+.vscode/launch.json
+.vscode/settings.json

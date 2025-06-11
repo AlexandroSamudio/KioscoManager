@@ -1,8 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
+import { finalize } from 'rxjs';
 
 interface LoginForm {
   email: string;
@@ -12,14 +13,15 @@ interface LoginForm {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule,RouterLink],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.css',
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly accountService = inject(AccountService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly isLoading = signal(false);
   readonly showPassword = signal(false);
@@ -27,11 +29,11 @@ export class LoginComponent {
 
   readonly loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   togglePasswordVisibility(): void {
-    this.showPassword.update(show => !show);
+    this.showPassword.update((show) => !show);
   }
 
   onSubmit(): void {
@@ -43,25 +45,32 @@ export class LoginComponent {
     const formValue = this.loginForm.getRawValue() as LoginForm;
     this.isLoading.set(true);
     this.errorMessage.set(null);
+    this.accountService
+      .login(formValue)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
 
-    this.accountService.login(formValue).subscribe({
-      next: () => {
-        const kioscoId = this.accountService.kioscoId();
-        if (kioscoId === null || kioscoId === '') {
-          this.router.navigate(['/bienvenida']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
-      },
-      error: (error) => {
-        this.isLoading.set(false);
-        this.errorMessage.set(this.getErrorMessage(error));
-      }
-    });
+          if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            const kioscoId = this.accountService.kioscoId();
+            if (!kioscoId) {
+              this.router.navigate(['/bienvenida']);
+            } else {
+              this.router.navigate(['/dashboard']);
+            }
+          }
+        },
+        error: (error) => {
+          this.errorMessage.set(this.getErrorMessage(error));
+        },
+      });
   }
 
   private markFormGroupTouched(): void {
-    Object.keys(this.loginForm.controls).forEach(key => {
+    Object.keys(this.loginForm.controls).forEach((key) => {
       const control = this.loginForm.get(key);
       control?.markAsTouched();
     });
