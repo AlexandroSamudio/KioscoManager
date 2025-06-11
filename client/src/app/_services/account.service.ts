@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import { Login } from '../_models/login.model';
 import { Register } from '../_models/register.model';
 import { JoinKiosco } from '../_models/join-kiosco.model';
+import { CreateKiosco } from '../_models/create-kiosco.model';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,7 @@ export class AccountService {
       const user = this.currentUser();
       if (user?.token) {
       try {
-        const payload = jwtDecode<{ role: string | string[]; kioscoId?: string | null}>(user.token);
+        const payload = jwtDecode<{ role: string | string[]}>(user.token);
         const role = payload.role;
         return Array.isArray(role) ? role : [role];
       } catch (error) {
@@ -86,6 +87,21 @@ export class AccountService {
       }),
       catchError(error => {
         console.error('Error al unirse al kiosco:', error);
+        throw error;
+      })
+    )
+  }
+
+  createKiosco(model: CreateKiosco) {
+    return this.http.post<User>(this.baseUrl + 'account/create-kiosco', model).pipe(
+      map(user => {
+        if (user) {
+          this.setCurrentUser(user);
+        }
+        return user;
+      }),
+      catchError(error => {
+        console.error('Error al crear el kiosco:', error);
         throw error;
       })
     )
