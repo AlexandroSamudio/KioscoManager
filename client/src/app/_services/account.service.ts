@@ -3,92 +3,88 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment.development';
 import { User } from '../_models/user';
-import { catchError, map } from 'rxjs';
+import { catchError, map, Observable, throwError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Login } from '../_models/login.model';
 import { Register } from '../_models/register.model';
 import { JoinKiosco } from '../_models/join-kiosco.model';
+import { CreateKiosco } from '../_models/create-kiosco.model';
+
+interface JwtPayload {
+  role?: string | string[];
+  kioscoId?: string | null;
+  [key: string]: unknown;
+}
+
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AccountService {
-
   private http = inject(HttpClient);
   private router = inject(Router);
   private baseUrl = environment.apiUrl;
   currentUser = signal<User | null>(null);
-  roles = computed(() => {
-      const user = this.currentUser();
-      if (user?.token) {
-      try {
-        const payload = jwtDecode<{ role: string | string[]; kioscoId?: string | null}>(user.token);
-        const role = payload.role;
-        return Array.isArray(role) ? role : [role];
-      } catch (error) {
-        console.error('Error al parsear el JWT token:', error);
-        return [];
-      }
-      }
-      return [];
-  });
-  kioscoId = computed(() => {
+  private decodedTokenCache: {
+    userToken: string | null;
+    payload: JwtPayload | null;
+  } = { userToken: null, payload: null };
+
+  private getDecodedToken(): JwtPayload | null {
     const user = this.currentUser();
-    if (user?.token) {
-      try {
-        const payload = jwtDecode<{ kioscoId?: string | null }>(user.token);
-        return payload.kioscoId;
-      } catch (error) {
-        console.error('Error al decodificar el token JWT para kioscoId:', error);
+    const token = user?.token ?? null;
+    if (!token) return null;
+    if (this.decodedTokenCache.userToken === token) {
+      return this.decodedTokenCache.payload;
+    }
+    try {
+      const payload = jwtDecode<JwtPayload & { exp?: number }>(token);
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        console.warn('Token JWT expirado. Cerrando sesión.');
+        this.logout();
         return null;
       }
+      this.decodedTokenCache = { userToken: token, payload };
+      return payload;
+    } catch (error) {
+      console.error('Error al decodificar el token JWT:', error);
+      this.decodedTokenCache = { userToken: token, payload: null };
+      return null;
     }
-    return null;
+  }
+
+  roles = computed(() => {
+    const payload = this.getDecodedToken();
+    const role = payload?.role;
+    return Array.isArray(role) ? role : role ? [role] : [];
+  });
+  kioscoId = computed(() => {
+    const payload = this.getDecodedToken();
+    return payload?.kioscoId ?? null;
   });
 
   login(model: Login) {
-    return this.http.post<User>(this.baseUrl + 'account/login', model).pipe(
-      map(user => {
-        if (user) {
-          this.setCurrentUser(user);
-        }
-        return user;
-      }),
-      catchError(error => {
-        console.error('Error en login:', error);
-        throw error;
-      })
-    )
+    return this.handleAuth(
+      this.http.post<User>(this.baseUrl + 'account/login', model)
+    );
   }
 
   register(model: Register) {
-    return this.http.post<User>(this.baseUrl + 'account/register', model).pipe(
-      map(user => {
-        if (user) {
-          this.setCurrentUser(user);
-        }
-        return user;
-      }),
-      catchError(error => {
-        console.error('Error al registrarse:', error);
-        throw error;
-      })
-    )
+    return this.handleAuth(
+      this.http.post<User>(this.baseUrl + 'account/register', model)
+    );
   }
 
   joinKiosco(model: JoinKiosco) {
-    return this.http.post<User>(this.baseUrl + 'account/join-kiosco', model).pipe(
-      map(user => {
-        if (user) {
-          this.setCurrentUser(user);
-        }
-        return user;
-      }),
-      catchError(error => {
-        console.error('Error al unirse al kiosco:', error);
-        throw error;
-      })
-    )
+    return this.handleAuth(
+      this.http.post<User>(this.baseUrl + 'account/join-kiosco', model)
+    );
+  }
+
+  createKiosco(model: CreateKiosco) {
+    return this.handleAuth(
+      this.http.post<User>(this.baseUrl + 'account/create-kiosco', model)
+    );
   }
 
   setCurrentUser(user: User) {
@@ -107,7 +103,21 @@ export class AccountService {
   logout() {
     localStorage.removeItem('user');
     this.currentUser.set(null);
+    this.decodedTokenCache = { userToken: null, payload: null };
     this.router.navigate(['/']);
   }
 
+  private handleAuth(obs: Observable<User>): Observable<User> {
+    return obs.pipe(
+      map((user) => {
+        if (user) this.setCurrentUser(user);
+        return user;
+      }),
+      catchError((err) => {
+        console.error(err);
+        return throwError(() => err);
+      })
+    );
+  }
 }
+

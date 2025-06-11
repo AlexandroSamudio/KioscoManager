@@ -1,0 +1,129 @@
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-2xl w-full">
+    <div class="bg-white shadow-2xl rounded-2xl overflow-hidden">
+      <div class="bg-gradient-to-r from-amber-500 to-amber-600 py-8 px-6 text-center">
+        <div class="flex justify-center mb-4">
+          <svg class="h-16 w-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-white mb-2">Crear Nuevo Kiosco</h1>
+        <p class="text-amber-100 text-lg">Configura tu espacio de trabajo personalizado</p>
+      </div>
+
+      <div class="p-8">
+        <div class="bg-white border-2 border-amber-200 rounded-xl p-8 shadow-lg">
+          <div class="flex flex-col items-center text-center">
+            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-6">
+              <svg class="h-10 w-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+            </div>
+
+            <h2 class="text-2xl font-bold text-amber-900 mb-4">
+              Información del Kiosco
+            </h2>
+
+            <p class="text-amber-700 mb-8 max-w-md">
+              Ingresa un nombre descriptivo para tu kiosco. Este será el nombre que verán todos los miembros de tu equipo.
+            </p>
+
+            <div class="w-full max-w-md mb-6">
+              <label for="kioscoName" class="block text-sm font-semibold text-amber-800 mb-3">
+                Nombre del Kiosco
+              </label>
+              <div class="relative">
+                <input
+                  id="kioscoName"
+                  type="text"
+                  placeholder="Ej: Mi Tienda Principal"
+                  [value]="kioscoName()"
+                  (input)="onKioscoNameChange($event)"
+                  [disabled]="isSubmitting()"
+                  [class]="'w-full border rounded-lg py-3 px-4 text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ' +
+                          (hasError() ? 'bg-red-50 border-red-300 focus:ring-red-500 focus:border-transparent' :
+                           'bg-amber-50 border-amber-300 focus:ring-amber-500 focus:border-transparent')"
+                />
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                  @if (hasError()) {
+                    <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  } @else {
+                    <svg class="h-5 w-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                  }
+                </div>
+              </div>
+
+              @if (hasError()) {
+                <div class="mt-2 flex items-start">
+                  <svg class="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="text-sm text-red-600">{{ errorMessage() }}</span>
+                </div>
+              }
+            </div>
+
+            <button
+              (click)="onCreateKiosco()"
+              [disabled]="!isFormValid() || isSubmitting()"
+              class="w-full max-w-md bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white py-3 px-6 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed">
+              <span class="flex items-center justify-center">
+                @if (isSubmitting()) {
+                  <svg class="h-5 w-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                  </svg>
+                  Creando Kiosco...
+                } @else {
+                  <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                  </svg>
+                  Crear Mi Kiosco
+                }
+              </span>
+            </button>
+          </div>
+
+          <div class="mt-8 pt-8 border-t border-amber-100">
+            <h3 class="text-sm font-semibold text-amber-800 mb-4 text-center">Como administrador del kiosco podrás:</h3>
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div class="flex items-start">
+                <svg class="h-5 w-5 text-amber-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span class="text-sm text-amber-700">Gestionar productos y categorías</span>
+              </div>
+              <div class="flex items-start">
+                <svg class="h-5 w-5 text-amber-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span class="text-sm text-amber-700">Invitar miembros a tu equipo</span>
+              </div>
+              <div class="flex items-start">
+                <svg class="h-5 w-5 text-amber-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span class="text-sm text-amber-700">Controlar permisos y accesos</span>
+              </div>
+              <div class="flex items-start">
+                <svg class="h-5 w-5 text-amber-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span class="text-sm text-amber-700">Personalizar la configuración</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

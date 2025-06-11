@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
-import { finalize } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 interface LoginForm {
   email: string;
@@ -36,7 +36,7 @@ export class LoginComponent {
     this.showPassword.update((show) => !show);
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {
       this.markFormGroupTouched();
       return;
@@ -45,28 +45,14 @@ export class LoginComponent {
     const formValue = this.loginForm.getRawValue() as LoginForm;
     this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.accountService
-      .login(formValue)
-      .pipe(finalize(() => this.isLoading.set(false)))
-      .subscribe({
-        next: () => {
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'];
-
-          if (returnUrl) {
-            this.router.navigateByUrl(returnUrl);
-          } else {
-            const kioscoId = this.accountService.kioscoId();
-            if (!kioscoId) {
-              this.router.navigate(['/bienvenida']);
-            } else {
-              this.router.navigate(['/dashboard']);
-            }
-          }
-        },
-        error: (error) => {
-          this.errorMessage.set(this.getErrorMessage(error));
-        },
-      });
+    try {
+      await firstValueFrom(this.accountService.login(formValue));
+      await this.navigateAfterLogin(this.route.snapshot.queryParams['returnUrl']);
+    } catch (error) {
+      this.errorMessage.set(this.getErrorMessage(error));
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   private markFormGroupTouched(): void {
@@ -108,5 +94,13 @@ export class LoginComponent {
   isFieldInvalid(fieldName: string): boolean {
     const field = this.loginForm.get(fieldName);
     return !!(field?.touched && field?.invalid);
+  }
+
+  private navigateAfterLogin(returnUrl?: string) {
+    if (returnUrl) return this.router.navigateByUrl(returnUrl);
+    const target = this.accountService.kioscoId()
+      ? '/dashboard'
+      : '/bienvenida';
+    return this.router.navigate([target]);
   }
 }
