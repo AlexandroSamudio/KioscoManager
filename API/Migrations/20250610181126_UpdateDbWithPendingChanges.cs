@@ -10,6 +10,8 @@ namespace API.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql(@"DELETE FROM ""CodigosInvitacion"" WHERE LENGTH(""Code"") > 8;");
+
             migrationBuilder.AlterColumn<string>(
                 name: "Code",
                 table: "CodigosInvitacion",

@@ -21,9 +21,10 @@ namespace API.Data.Repositories
         {
             return await _context.Productos!
                 .Where(p => p.Id == id)
-                .Include(p => p.Categoria)
-                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                .SingleOrDefaultAsync();
+                .AsNoTracking()
+                 .Include(p => p.Categoria)
+                            .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
+                            .SingleOrDefaultAsync();
         }
 
         public async Task<IEnumerable<ProductoDto>> GetProductosAsync()
