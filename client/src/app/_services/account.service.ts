@@ -7,10 +7,7 @@ import { catchError, map } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Login } from '../_models/login.model';
 import { Register } from '../_models/register.model';
-
-interface JoinKiosco {
-  codigoInvitacion: string;
-}
+import { JoinKiosco } from '../_models/join-kiosco.model';
 
 @Injectable({
   providedIn: 'root'
@@ -88,6 +85,7 @@ export class AccountService {
         return user;
       }),
       catchError(error => {
+        console.error('Error al unirse al kiosco:', error);
         throw error;
       })
     )

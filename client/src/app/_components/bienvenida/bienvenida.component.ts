@@ -3,9 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AccountService } from '../../_services/account.service';
 import { NotificationService } from '../../_services/notifications.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-bienvenida',
+  standalone: true,
   imports: [FormsModule],
   templateUrl: './bienvenida.component.html',
   styleUrl: './bienvenida.component.css'
@@ -21,7 +23,6 @@ export class BienvenidaComponent implements OnInit {
   ngOnInit() {
     const kioscoId = this.accountService.kioscoId();
     if (kioscoId) {
-      console.log('Usuario ya está asignado a un kiosco, redirigiendo al dashboard...');
       this.router.navigate(['/dashboard']);
     }
   }
@@ -39,21 +40,23 @@ export class BienvenidaComponent implements OnInit {
 
     this.isSubmitting.set(true);
 
-    this.accountService.joinKiosco({ codigoInvitacion: code.trim() }).subscribe({
-      next: (response) => {
-        this.notificationService.success(
-          'Unión exitosa',
-          'Te has unido al kiosco exitosamente.'
-        );
-        this.router.navigate(['/dashboard']);
-      },
-      error: (error) => {
-        this.notificationService.error(
-          'Error al unirse al kiosco',
-          'Por favor, verifica el código de invitación e inténtalo de nuevo.'
-        );
-        this.isSubmitting.set(false);
-      }
-    });
+    this.accountService
+      .joinKiosco({ codigoInvitacion: code.trim() })
+      .pipe(finalize(() => this.isSubmitting.set(false)))
+      .subscribe({
+        next: () => {
+          this.notificationService.success(
+            'Unión exitosa',
+            'Te has unido al kiosco exitosamente.'
+          );
+          this.router.navigate(['/dashboard']);
+        },
+        error: () => {
+          this.notificationService.error(
+            'Error al unirse al kiosco',
+            'Por favor, verifica el código de invitación e inténtalo de nuevo.'
+          );
+        },
+      });
   }
 }
