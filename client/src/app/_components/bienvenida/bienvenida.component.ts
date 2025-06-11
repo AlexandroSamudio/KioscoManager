@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AccountService } from '../../_services/account.service';
-import { NotificationService } from '../../_services/notifications.service';
+import { NotificationService } from '../../_services/notification.service';
 import { finalize } from 'rxjs';
 
 @Component({

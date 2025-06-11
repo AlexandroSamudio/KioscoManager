@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
 
@@ -20,6 +20,7 @@ export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly accountService = inject(AccountService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly isLoading = signal(false);
   readonly showPassword = signal(false);
@@ -43,14 +44,19 @@ export class LoginComponent {
     const formValue = this.loginForm.getRawValue() as LoginForm;
     this.isLoading.set(true);
     this.errorMessage.set(null);
-
     this.accountService.login(formValue).subscribe({
       next: () => {
-        const kioscoId = this.accountService.kioscoId();
-        if (kioscoId === null || kioscoId === '') {
-          this.router.navigate(['/bienvenida']);
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+        if (returnUrl) {
+          this.router.navigateByUrl(returnUrl);
         } else {
-          this.router.navigate(['/dashboard']);
+          const kioscoId = this.accountService.kioscoId();
+          if (kioscoId === null || kioscoId === '') {
+            this.router.navigate(['/bienvenida']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
         }
       },
       error: (error) => {
