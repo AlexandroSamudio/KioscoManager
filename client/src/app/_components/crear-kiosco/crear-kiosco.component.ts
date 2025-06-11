@@ -1,7 +1,7 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import { AccountService } from '../../_services/account.service';
 import { NotificationService } from '../../_services/notification.service';
 import { CreateKiosco } from '../../_models/create-kiosco.model';
@@ -10,7 +10,8 @@ import { CreateKiosco } from '../../_models/create-kiosco.model';
   selector: 'app-crear-kiosco',
   imports: [FormsModule],
   templateUrl: './crear-kiosco.component.html',
-  styleUrl: './crear-kiosco.component.css'
+  styleUrl: './crear-kiosco.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CrearKioscoComponent {
   private accountService = inject(AccountService);
@@ -54,7 +55,7 @@ export class CrearKioscoComponent {
     this.errorMessage.set('');
   }
 
-  onCreateKiosco(): void {
+  async onCreateKiosco(): Promise<void> {
     this.validateKioscoName();
 
     if (this.hasError()) {
@@ -67,24 +68,24 @@ export class CrearKioscoComponent {
       nombre: this.kioscoName().trim()
     };
 
-    this.accountService.createKiosco(createKioscoData)
-      .pipe(finalize(() => this.isSubmitting.set(false)))
-      .subscribe({
-        next: (user) => {
-          if (user) {
-            this.notificationService.success(
-              '¡Kiosco creado exitosamente!',
-              `Tu kiosco "${this.kioscoName()}" ha sido creado. Ahora eres el administrador.`
-            );
-            this.router.navigate(['/dashboard']);
-          }
-        },
-        error: (error) => {
-          console.error('Error al crear el kiosco:', error);
-          const errorMessage = this.getErrorMessage(error);
-          this.notificationService.error('Error al crear el kiosco', errorMessage);
-        }
-      });
+    try {
+      const user = await firstValueFrom(
+        this.accountService.createKiosco(createKioscoData)
+      );
+      if (user) {
+        this.notificationService.success(
+          '¡Kiosco creado exitosamente!',
+          `Tu kiosco "${this.kioscoName()}" ha sido creado. Ahora eres el administrador.`
+        );
+        this.router.navigate(['/dashboard']);
+      }
+    } catch (error) {
+      console.error('Error al crear el kiosco:', error);
+      const errorMessage = this.getErrorMessage(error);
+      this.notificationService.error('Error al crear el kiosco', errorMessage);
+    } finally {
+      this.isSubmitting.set(false);
+    }
   }
 
   private getErrorMessage(error: any): string {

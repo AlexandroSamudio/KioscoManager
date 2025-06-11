@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, Validati
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
-import { Subject } from 'rxjs';
+import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 interface RegisterForm {
@@ -78,7 +78,7 @@ export class RegisterComponent implements OnDestroy {
     this.showConfirmPassword.update(show => !show);
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.registerForm.invalid) {
       this.markFormGroupTouched();
       return;
@@ -91,21 +91,19 @@ export class RegisterComponent implements OnDestroy {
     this.errorMessage.set(null);
     this.successMessage.set(null);
 
-  this.accountService.register(registerData).subscribe({
-    next: (user) => {
-      this.isLoading.set(false);
+    try {
+      const user = await firstValueFrom(this.accountService.register(registerData));
       if (user) {
         this.successMessage.set('Cuenta creada exitosamente. Redirigiendo...');
         setTimeout(() => {
           this.router.navigate(['/bienvenida']);
         }, 1500);
       }
-    },
-    error: (error) => {
-      this.isLoading.set(false);
+    } catch (error) {
       this.errorMessage.set(this.getErrorMessage(error));
+    } finally {
+      this.isLoading.set(false);
     }
-      });
   }
 
   private markFormGroupTouched(): void {

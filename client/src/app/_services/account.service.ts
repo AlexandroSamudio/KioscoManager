@@ -19,32 +19,34 @@ export class AccountService {
   private router = inject(Router);
   private baseUrl = environment.apiUrl;
   currentUser = signal<User | null>(null);
+  private decodedTokenCache: { userToken: string | null, payload: JwtPayload | null } = { userToken: null, payload: null };
+
+  private getDecodedToken(): JwtPayload | null {
+    const user = this.currentUser();
+    const token = user?.token ?? null;
+    if (!token) return null;
+    if (this.decodedTokenCache.userToken === token) {
+      return this.decodedTokenCache.payload;
+    }
+    try {
+      const payload = jwtDecode<JwtPayload>(token);
+      this.decodedTokenCache = { userToken: token, payload };
+      return payload;
+    } catch (error) {
+      console.error('Error al decodificar el token JWT:', error);
+      this.decodedTokenCache = { userToken: token, payload: null };
+      return null;
+    }
+  }
+
   roles = computed(() => {
-      const user = this.currentUser();
-      if (user?.token) {
-      try {
-        const payload = jwtDecode<{ role: string | string[]}>(user.token);
-        const role = payload.role;
-        return Array.isArray(role) ? role : [role];
-      } catch (error) {
-        console.error('Error al parsear el JWT token:', error);
-        return [];
-      }
-      }
-      return [];
+      const payload = this.getDecodedToken();
+      const role = payload?.role;
+      return Array.isArray(role) ? role : role ? [role] : [];
   });
   kioscoId = computed(() => {
-    const user = this.currentUser();
-    if (user?.token) {
-      try {
-        const payload = jwtDecode<{ kioscoId?: string | null }>(user.token);
-        return payload.kioscoId;
-      } catch (error) {
-        console.error('Error al decodificar el token JWT para kioscoId:', error);
-        return null;
-      }
-    }
-    return null;
+    const payload = this.getDecodedToken();
+    return payload?.kioscoId ?? null;
   });
 
   login(model: Login) {
@@ -126,4 +128,11 @@ export class AccountService {
     this.router.navigate(['/']);
   }
 
+}
+
+// Tipado estricto para el payload del JWT
+interface JwtPayload {
+  role?: string | string[];
+  kioscoId?: string | null;
+  [key: string]: unknown;
 }

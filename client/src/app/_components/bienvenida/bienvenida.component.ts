@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AccountService } from '../../_services/account.service';
 import { NotificationService } from '../../_services/notification.service';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-bienvenida',
@@ -27,7 +27,7 @@ export class BienvenidaComponent implements OnInit {
     }
   }
 
-  onJoinKiosco() {
+  async onJoinKiosco() {
     const code = this.invitationCode();
 
     if (!code.trim()) {
@@ -40,23 +40,26 @@ export class BienvenidaComponent implements OnInit {
 
     this.isSubmitting.set(true);
 
-    this.accountService
-      .joinKiosco({ codigoInvitacion: code.trim() })
-      .pipe(finalize(() => this.isSubmitting.set(false)))
-      .subscribe({
-        next: () => {
-          this.notificationService.success(
-            'Unión exitosa',
-            'Te has unido al kiosco exitosamente.'
-          );
-          this.router.navigate(['/dashboard']);
-        },
-        error: () => {
-          this.notificationService.error(
-            'Error al unirse al kiosco',
-            'Por favor, verifica el código de invitación e inténtalo de nuevo.'
-          );
-        },
-      });
+    try {
+      await firstValueFrom(
+        this.accountService.joinKiosco({ codigoInvitacion: code.trim() })
+      );
+      this.notificationService.success(
+        'Unión exitosa',
+        'Te has unido al kiosco exitosamente.'
+      );
+      this.router.navigate(['/dashboard']);
+    } catch {
+      this.notificationService.error(
+        'Error al unirse al kiosco',
+        'Por favor, verifica el código de invitación e inténtalo de nuevo.'
+      );
+    } finally {
+      this.isSubmitting.set(false);
+    }
+  }
+
+  navigateTo(){
+    this.router.navigate(['/crear-kiosco']);
   }
 }
