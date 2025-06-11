@@ -3,7 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AccountService } from '../../_services/account.service';
-import { finalize, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 interface LoginForm {
   email: string;
@@ -47,17 +47,7 @@ export class LoginComponent {
     this.errorMessage.set(null);
     try {
       await firstValueFrom(this.accountService.login(formValue));
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'];
-      if (returnUrl) {
-        this.router.navigateByUrl(returnUrl);
-      } else {
-        const kioscoId = this.accountService.kioscoId();
-        if (!kioscoId) {
-          this.router.navigate(['/bienvenida']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
-      }
+      await this.navigateAfterLogin(this.route.snapshot.queryParams['returnUrl']);
     } catch (error) {
       this.errorMessage.set(this.getErrorMessage(error));
     } finally {
@@ -104,5 +94,13 @@ export class LoginComponent {
   isFieldInvalid(fieldName: string): boolean {
     const field = this.loginForm.get(fieldName);
     return !!(field?.touched && field?.invalid);
+  }
+
+  private navigateAfterLogin(returnUrl?: string) {
+    if (returnUrl) return this.router.navigateByUrl(returnUrl);
+    const target = this.accountService.kioscoId()
+      ? '/dashboard'
+      : '/bienvenida';
+    return this.router.navigate([target]);
   }
 }

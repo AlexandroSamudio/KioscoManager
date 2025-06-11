@@ -99,7 +99,7 @@ export class RegisterComponent implements OnDestroy {
           this.router.navigate(['/bienvenida']);
         }, 1500);
       }
-    } catch (error) {
+    } catch (error:any) {
       this.errorMessage.set(this.getErrorMessage(error));
     } finally {
       this.isLoading.set(false);

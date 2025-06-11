@@ -3,23 +3,32 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment.development';
 import { User } from '../_models/user';
-import { catchError, map } from 'rxjs';
+import { catchError, map, Observable } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Login } from '../_models/login.model';
 import { Register } from '../_models/register.model';
 import { JoinKiosco } from '../_models/join-kiosco.model';
 import { CreateKiosco } from '../_models/create-kiosco.model';
 
+interface JwtPayload {
+  role?: string | string[];
+  kioscoId?: string | null;
+  [key: string]: unknown;
+}
+
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AccountService {
-
   private http = inject(HttpClient);
   private router = inject(Router);
   private baseUrl = environment.apiUrl;
   currentUser = signal<User | null>(null);
-  private decodedTokenCache: { userToken: string | null, payload: JwtPayload | null } = { userToken: null, payload: null };
+  private decodedTokenCache: {
+    userToken: string | null;
+    payload: JwtPayload | null;
+  } = { userToken: null, payload: null };
 
   private getDecodedToken(): JwtPayload | null {
     const user = this.currentUser();
@@ -40,9 +49,9 @@ export class AccountService {
   }
 
   roles = computed(() => {
-      const payload = this.getDecodedToken();
-      const role = payload?.role;
-      return Array.isArray(role) ? role : role ? [role] : [];
+    const payload = this.getDecodedToken();
+    const role = payload?.role;
+    return Array.isArray(role) ? role : role ? [role] : [];
   });
   kioscoId = computed(() => {
     const payload = this.getDecodedToken();
@@ -50,63 +59,27 @@ export class AccountService {
   });
 
   login(model: Login) {
-    return this.http.post<User>(this.baseUrl + 'account/login', model).pipe(
-      map(user => {
-        if (user) {
-          this.setCurrentUser(user);
-        }
-        return user;
-      }),
-      catchError(error => {
-        console.error('Error en login:', error);
-        throw error;
-      })
-    )
+    return this.handleAuth(
+      this.http.post<User>(this.baseUrl + 'account/login', model)
+    );
   }
 
   register(model: Register) {
-    return this.http.post<User>(this.baseUrl + 'account/register', model).pipe(
-      map(user => {
-        if (user) {
-          this.setCurrentUser(user);
-        }
-        return user;
-      }),
-      catchError(error => {
-        console.error('Error al registrarse:', error);
-        throw error;
-      })
-    )
+    return this.handleAuth(
+      this.http.post<User>(this.baseUrl + 'account/register', model)
+    );
   }
 
   joinKiosco(model: JoinKiosco) {
-    return this.http.post<User>(this.baseUrl + 'account/join-kiosco', model).pipe(
-      map(user => {
-        if (user) {
-          this.setCurrentUser(user);
-        }
-        return user;
-      }),
-      catchError(error => {
-        console.error('Error al unirse al kiosco:', error);
-        throw error;
-      })
-    )
+    return this.handleAuth(
+      this.http.post<User>(this.baseUrl + 'account/join-kiosco', model)
+    );
   }
 
   createKiosco(model: CreateKiosco) {
-    return this.http.post<User>(this.baseUrl + 'account/create-kiosco', model).pipe(
-      map(user => {
-        if (user) {
-          this.setCurrentUser(user);
-        }
-        return user;
-      }),
-      catchError(error => {
-        console.error('Error al crear el kiosco:', error);
-        throw error;
-      })
-    )
+      return this.handleAuth(
+      this.http.post<User>(this.baseUrl + 'account/create-kiosco', model)
+    );
   }
 
   setCurrentUser(user: User) {
@@ -125,14 +98,21 @@ export class AccountService {
   logout() {
     localStorage.removeItem('user');
     this.currentUser.set(null);
+    this.decodedTokenCache = { userToken: null, payload: null };
     this.router.navigate(['/']);
   }
 
+  private handleAuth<T>(obs: Observable<User>) {
+    return obs.pipe(
+      map((user) => {
+        if (user) this.setCurrentUser(user);
+        return user;
+      }),
+      catchError((err) => {
+        console.error(err);
+        throw err;
+      })
+    );
+  }
 }
 
-// Tipado estricto para el payload del JWT
-interface JwtPayload {
-  role?: string | string[];
-  kioscoId?: string | null;
-  [key: string]: unknown;
-}
