@@ -6,19 +6,17 @@ namespace API.Controllers
 {
     public class ProductosController(IProductoRepository productoRepository) : BaseApiController
     {
-        private readonly IProductoRepository _productoRepository = productoRepository;
-
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductoDto>>> GetProductos()
+        public ActionResult<IAsyncEnumerable<ProductoDto>> GetProductos()
         {
-            var productos = await _productoRepository.GetProductosAsync();
+            var productos = productoRepository.GetProductosAsync();
             return Ok(productos);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductoDto>> GetProducto(int id)
         {
-            var producto = await _productoRepository.GetProductoByIdAsync(id);
+            var producto = await productoRepository.GetProductoByIdAsync(id);
 
             if (producto == null)
             {
@@ -29,13 +27,9 @@ namespace API.Controllers
         }
 
         [HttpGet("low-stock")]
-        public async Task<ActionResult<IEnumerable<ProductoDto>>> GetProductosByLowestStock()
+        public ActionResult<IAsyncEnumerable<ProductoDto>> GetProductosByLowestStock()
         {
-            var productos = await _productoRepository.GetProductosByLowestStockAsync();
-            if (productos == null || !productos.Any())
-            {
-                return NotFound("No hay productos con bajo stock.");
-            }
+            var productos = productoRepository.GetProductosByLowestStockAsync();
             return Ok(productos);
             
         }

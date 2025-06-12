@@ -22,26 +22,26 @@ namespace API.Data.Repositories
             return await _context.Productos!
                 .Where(p => p.Id == id)
                 .AsNoTracking()
-                 .Include(p => p.Categoria)
                             .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
                             .SingleOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<ProductoDto>> GetProductosAsync()
+        public IAsyncEnumerable<ProductoDto> GetProductosAsync()
         {
-            return await _context.Productos!
-                .Include(p => p.Categoria)
+            return _context.Productos!
+                .AsNoTracking()
                 .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+                .AsAsyncEnumerable();
         }
 
-        public async Task<IEnumerable<ProductoDto>> GetProductosByLowestStockAsync()
+        public IAsyncEnumerable<ProductoDto> GetProductosByLowestStockAsync()
         {
-            return await _context.Productos!
-                .Where(p => p.Stock <= 3)
-                .Include(p => p.Categoria)
+            const int LowStockThreshold = 3;
+            return _context.Productos!
+                .Where(p => p.Stock <= LowStockThreshold)
+                .AsNoTracking()
                 .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                .ToListAsync();
+                .AsAsyncEnumerable();
         }
     }
 }

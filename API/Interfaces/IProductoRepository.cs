@@ -4,8 +4,8 @@ namespace API.Interfaces
 {
     public interface IProductoRepository
     {
-        Task<IEnumerable<ProductoDto>> GetProductosAsync();
+        IAsyncEnumerable<ProductoDto> GetProductosAsync();
         Task<ProductoDto?> GetProductoByIdAsync(int id);
-        Task<IEnumerable<ProductoDto>> GetProductosByLowestStockAsync();
+        IAsyncEnumerable<ProductoDto> GetProductosByLowestStockAsync();
     }
 }
