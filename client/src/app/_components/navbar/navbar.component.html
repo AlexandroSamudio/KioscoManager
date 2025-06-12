@@ -1,0 +1,47 @@
+<header class="bg-white shadow-sm border-b border-amber-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center py-4">
+      <div class="flex items-center space-x-3">
+        <svg class="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        <div>
+          <h1 class="text-xl font-bold text-amber-900">KioscoManager</h1>
+          <p class="text-sm text-amber-700">Panel de Control</p>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex items-center space-x-6" role="navigation" aria-label="Navegación principal">
+        <a
+          *ngFor="let item of effectiveNavigationItems(); trackBy: trackByPath"
+          [routerLink]="item.path"
+          routerLinkActive="text-amber-600 font-semibold"
+          class="text-amber-800 hover:text-amber-600 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 rounded-sm px-2 py-1"
+          (click)="onNavigationItemClick(item)">
+          {{ item.label }}
+        </a>
+      </nav>
+
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 bg-amber-200 rounded-full flex items-center justify-center">
+            <span class="text-amber-800 font-semibold text-sm">{{ userInitials() }}</span>
+          </div>
+          <span class="text-amber-800 font-medium">{{ userProfile().name }}</span>
+          <button
+            type="button"
+            class="text-amber-600 hover:text-amber-700 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 rounded-full p-1"
+            (click)="onUserMenuClick()"
+            [attr.aria-expanded]="isUserMenuOpen()"
+            aria-label="Menú de usuario">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    [attr.d]="isUserMenuOpen() ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
