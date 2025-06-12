@@ -13,15 +13,14 @@
       </div>
 
       <nav class="hidden md:flex items-center space-x-6" role="navigation" aria-label="Navegación principal">
-        @for (item of effectiveNavigationItems(); track item.path) {
-          <a
-            [routerLink]="item.path"
-            routerLinkActive="text-amber-600 font-semibold"
-            class="text-amber-800 hover:text-amber-600 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 rounded-sm px-2 py-1"
-            (click)="onNavigationItemClick(item)">
-            {{ item.label }}
-          </a>
-        }
+        <a
+          *ngFor="let item of effectiveNavigationItems(); trackBy: trackByPath"
+          [routerLink]="item.path"
+          routerLinkActive="text-amber-600 font-semibold"
+          class="text-amber-800 hover:text-amber-600 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-offset-2 rounded-sm px-2 py-1"
+          (click)="onNavigationItemClick(item)">
+          {{ item.label }}
+        </a>
       </nav>
 
       <div class="flex items-center space-x-4">

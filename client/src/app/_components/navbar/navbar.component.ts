@@ -70,4 +70,8 @@ export class NavbarComponent {
   private toTitleCase(str: string): string {
     return str.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
   }
+
+  protected trackByPath(index: number, item: NavigationItem): string {
+    return item.path;
+  }
 }
