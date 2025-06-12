@@ -10,25 +10,36 @@ namespace API.Controllers
         [HttpGet("dia")]
         public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasDelDia(CancellationToken cancellationToken)
         {
-            var ventas = await ventaRepository.GetVentasDelDiaAsync(cancellationToken)
-                .ToListAsync(cancellationToken);
+            var ventas = await ventaRepository.GetVentasDelDiaAsync(cancellationToken);
             return Ok(ventas);
         }
 
         [HttpGet("dia/{fecha:datetime}")]
         public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasDelDia(DateTime fecha, CancellationToken cancellationToken)
         {
-            var ventas = await ventaRepository.GetVentasDelDiaAsync(fecha, cancellationToken)
-                .ToListAsync(cancellationToken);
+            var ventas = await ventaRepository.GetVentasDelDiaAsync(fecha, cancellationToken);
             return Ok(ventas);
         }
 
         [HttpGet("recientes")]
         public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasRecientes([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
         {
-            var ventas = await ventaRepository.GetVentasRecientesAsync(cantidad, cancellationToken)
-                .ToListAsync(cancellationToken);
+            var ventas = await ventaRepository.GetVentasRecientesAsync(cantidad, cancellationToken);
             return Ok(ventas);
+        }
+
+        [HttpGet("total-dia")]
+        public async Task<ActionResult<decimal>> GetTotalVentasDelDia(CancellationToken cancellationToken = default)
+        {
+            var total = await ventaRepository.GetTotalVentasDelDiaAsync(cancellationToken);
+            return Ok(total);
+        }
+
+        [HttpGet("total-dia/{fecha:datetime}")]
+        public async Task<ActionResult<decimal>> GetTotalVentasDelDia(DateTime fecha, CancellationToken cancellationToken = default)
+        {
+            var total = await ventaRepository.GetTotalVentasDelDiaAsync(fecha, cancellationToken);
+            return Ok(total);
         }
     }
 }

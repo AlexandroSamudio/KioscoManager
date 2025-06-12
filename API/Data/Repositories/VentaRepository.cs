@@ -17,36 +17,48 @@ namespace API.Data.Repositories
             _mapper = mapper;
         }
 
-        public IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync(CancellationToken cancellationToken = default)
+        public Task<List<VentaDto>> GetVentasDelDiaAsync(CancellationToken cancellationToken = default)
         {
             return GetVentasDelDiaAsync(DateTime.UtcNow.Date, cancellationToken);
         }
 
-        public IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync(DateTime fecha, CancellationToken cancellationToken = default)
+        public Task<List<VentaDto>> GetVentasDelDiaAsync(DateTime fecha, CancellationToken cancellationToken = default)
         {
             var fechaInicio = DateTime.SpecifyKind(fecha.Date, DateTimeKind.Utc);
             var fechaFin = fechaInicio.AddDays(1);
 
             return _context.Ventas!
                 .Where(v => v.Fecha >= fechaInicio && v.Fecha < fechaFin)
-                .Include(v => v.Usuario)
-                .Include(v => v.Detalles)
                 .OrderByDescending(v => v.Fecha)
                 .AsNoTracking()
                 .ProjectTo<VentaDto>(_mapper.ConfigurationProvider)
-                .AsAsyncEnumerable();
+                .ToListAsync(cancellationToken);
         }
 
-        public IAsyncEnumerable<VentaDto> GetVentasRecientesAsync(int cantidad, CancellationToken cancellationToken = default)
+        public Task<List<VentaDto>> GetVentasRecientesAsync(int cantidad, CancellationToken cancellationToken = default)
         {
             return _context.Ventas!
-                .Include(v => v.Usuario)
-                .Include(v => v.Detalles)
                 .OrderByDescending(v => v.Fecha)
                 .Take(cantidad)
                 .AsNoTracking()
                 .ProjectTo<VentaDto>(_mapper.ConfigurationProvider)
-                .AsAsyncEnumerable();
+                .ToListAsync(cancellationToken);
+        }
+
+        public Task<decimal> GetTotalVentasDelDiaAsync(CancellationToken cancellationToken = default)
+        {
+            return GetTotalVentasDelDiaAsync(DateTime.UtcNow.Date, cancellationToken);
+        }
+
+        public Task<decimal> GetTotalVentasDelDiaAsync(DateTime fecha, CancellationToken cancellationToken = default)
+        {
+            var fechaInicio = DateTime.SpecifyKind(fecha.Date, DateTimeKind.Utc);
+            var fechaFin = fechaInicio.AddDays(1);
+
+            return _context.Ventas!
+                .Where(v => v.Fecha >= fechaInicio && v.Fecha < fechaFin)
+                .AsNoTracking()
+                .SumAsync(v => v.Total, cancellationToken);
         }
     }
 }
