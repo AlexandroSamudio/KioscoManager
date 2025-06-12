@@ -1,15 +1,20 @@
 using API.DTOs;
 using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
     public class ProductosController(IProductoRepository productoRepository) : BaseApiController
     {
         [HttpGet]
-        public ActionResult<IAsyncEnumerable<ProductoDto>> GetProductos()
+        public async Task<ActionResult<IEnumerable<ProductoDto>>> GetProductos(CancellationToken ct)
         {
-            var productos = productoRepository.GetProductosAsync();
+            var productos = new List<ProductoDto>();
+            await foreach (var producto in productoRepository.GetProductosAsync().WithCancellation(ct))
+            {
+                productos.Add(producto);
+            }
             return Ok(productos);
         }
 
@@ -27,11 +32,14 @@ namespace API.Controllers
         }
 
         [HttpGet("low-stock")]
-        public ActionResult<IAsyncEnumerable<ProductoDto>> GetProductosByLowestStock()
+        public async Task<ActionResult<IEnumerable<ProductoDto>>> GetProductosByLowestStock(CancellationToken ct)
         {
-            var productos = productoRepository.GetProductosByLowestStockAsync();
+            var productos = new List<ProductoDto>();
+            await foreach (var producto in productoRepository.GetProductosByLowestStockAsync().WithCancellation(ct))
+            {
+                productos.Add(producto);
+            }
             return Ok(productos);
-            
         }
     }
 }
