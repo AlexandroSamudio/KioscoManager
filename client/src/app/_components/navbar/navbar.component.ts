@@ -59,6 +59,7 @@ export class NavbarComponent {
   }
 
   private generateInitials(name: string): string {
+    if (!name) return 'U';
     return name
       .split(' ')
       .map(word => word.charAt(0).toUpperCase())
