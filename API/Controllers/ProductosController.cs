@@ -8,13 +8,10 @@ namespace API.Controllers
     public class ProductosController(IProductoRepository productoRepository) : BaseApiController
     {
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductoDto>>> GetProductos(CancellationToken ct)
+        public async Task<ActionResult<IEnumerable<ProductoDto>>> GetProductos(CancellationToken cancellationToken)
         {
-            var productos = new List<ProductoDto>();
-            await foreach (var producto in productoRepository.GetProductosAsync().WithCancellation(ct))
-            {
-                productos.Add(producto);
-            }
+            var productos = await productoRepository.GetProductosAsync()
+                .ToListAsync(cancellationToken);
             return Ok(productos);
         }
 
@@ -32,13 +29,10 @@ namespace API.Controllers
         }
 
         [HttpGet("low-stock")]
-        public async Task<ActionResult<IEnumerable<ProductoDto>>> GetProductosByLowestStock(CancellationToken ct)
+        public async Task<ActionResult<IEnumerable<ProductoDto>>> GetProductosByLowestStock(CancellationToken cancellationToken)
         {
-            var productos = new List<ProductoDto>();
-            await foreach (var producto in productoRepository.GetProductosByLowestStockAsync().WithCancellation(ct))
-            {
-                productos.Add(producto);
-            }
+            var productos = await productoRepository.GetProductosByLowestStockAsync()
+                .ToListAsync(cancellationToken);
             return Ok(productos);
         }
     }
