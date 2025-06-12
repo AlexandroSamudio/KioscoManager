@@ -24,11 +24,11 @@ namespace API.Data.Repositories
 
         public Task<List<VentaDto>> GetVentasDelDiaAsync(DateTime fecha, CancellationToken cancellationToken = default)
         {
-            var fechaInicio = DateTime.SpecifyKind(fecha.Date, DateTimeKind.Utc);
-            var fechaFin = fechaInicio.AddDays(1);
+            var fechaUtc = fecha.Kind == DateTimeKind.Utc ? fecha.Date : fecha.ToUniversalTime().Date;
+            var fechaFin = fechaUtc.AddDays(1);
 
             return _context.Ventas!
-                .Where(v => v.Fecha >= fechaInicio && v.Fecha < fechaFin)
+                .Where(v => v.Fecha >= fechaUtc && v.Fecha < fechaFin)
                 .OrderByDescending(v => v.Fecha)
                 .AsNoTracking()
                 .ProjectTo<VentaDto>(_mapper.ConfigurationProvider)
@@ -37,6 +37,11 @@ namespace API.Data.Repositories
 
         public Task<List<VentaDto>> GetVentasRecientesAsync(int cantidad, CancellationToken cancellationToken = default)
         {
+            if (cantidad <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
+            }
+            
             return _context.Ventas!
                 .OrderByDescending(v => v.Fecha)
                 .Take(cantidad)
@@ -52,11 +57,11 @@ namespace API.Data.Repositories
 
         public Task<decimal> GetTotalVentasDelDiaAsync(DateTime fecha, CancellationToken cancellationToken = default)
         {
-            var fechaInicio = DateTime.SpecifyKind(fecha.Date, DateTimeKind.Utc);
-            var fechaFin = fechaInicio.AddDays(1);
+            var fechaUtc = fecha.Kind == DateTimeKind.Utc ? fecha.Date : fecha.ToUniversalTime().Date;
+            var fechaFin = fechaUtc.AddDays(1);
 
             return _context.Ventas!
-                .Where(v => v.Fecha >= fechaInicio && v.Fecha < fechaFin)
+                .Where(v => v.Fecha >= fechaUtc && v.Fecha < fechaFin)
                 .AsNoTracking()
                 .SumAsync(v => v.Total, cancellationToken);
         }
