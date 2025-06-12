@@ -4,8 +4,8 @@ namespace API.Interfaces
 {
     public interface IVentaRepository
     {
-        IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync();
-        IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync(DateTime fecha);
-        IAsyncEnumerable<VentaDto> GetVentasRecientesAsync(int cantidad);
+        IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync(CancellationToken cancellationToken = default);
+        IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync(DateTime fecha, CancellationToken cancellationToken = default);
+        IAsyncEnumerable<VentaDto> GetVentasRecientesAsync(int cantidad, CancellationToken cancellationToken = default);
     }
 }

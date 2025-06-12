@@ -17,12 +17,12 @@ namespace API.Data.Repositories
             _mapper = mapper;
         }
 
-        public IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync()
+        public IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync(CancellationToken cancellationToken = default)
         {
-            return GetVentasDelDiaAsync(DateTime.UtcNow.Date);
+            return GetVentasDelDiaAsync(DateTime.UtcNow.Date, cancellationToken);
         }
 
-        public IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync(DateTime fecha)
+        public IAsyncEnumerable<VentaDto> GetVentasDelDiaAsync(DateTime fecha, CancellationToken cancellationToken = default)
         {
             var fechaInicio = DateTime.SpecifyKind(fecha.Date, DateTimeKind.Utc);
             var fechaFin = fechaInicio.AddDays(1);
@@ -37,7 +37,7 @@ namespace API.Data.Repositories
                 .AsAsyncEnumerable();
         }
 
-        public IAsyncEnumerable<VentaDto> GetVentasRecientesAsync(int cantidad)
+        public IAsyncEnumerable<VentaDto> GetVentasRecientesAsync(int cantidad, CancellationToken cancellationToken = default)
         {
             return _context.Ventas!
                 .Include(v => v.Usuario)
