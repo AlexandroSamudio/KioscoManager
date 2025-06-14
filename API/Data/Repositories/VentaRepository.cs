@@ -17,7 +17,7 @@ namespace API.Data.Repositories
             _mapper = mapper;
         }
 
-        public async Task<IReadOnlyList<VentaDto>> GetVentasDelDiaAsync(int kioscoId, DateTime? fecha = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<VentaDto>> GetVentasDelDiaAsync(int kioscoId,CancellationToken cancellationToken, DateTime? fecha = null)
         {
             var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
@@ -31,7 +31,7 @@ namespace API.Data.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyList<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken)
         {
             if (cantidad <= 0)
             {
@@ -47,7 +47,7 @@ namespace API.Data.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<decimal> GetTotalVentasDelDiaAsync(int kioscoId, DateTime? fecha = null, CancellationToken cancellationToken = default)
+        public async Task<decimal> GetTotalVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
             var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
@@ -59,7 +59,7 @@ namespace API.Data.Repositories
                 .SumAsync(v => v.Total, cancellationToken);
         }
 
-        public async Task<IReadOnlyList<ProductoMasVendidoDto>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, DateTime? fecha = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ProductoMasVendidoDto>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, CancellationToken cancellationToken, DateTime? fecha = null)
         {
             if (cantidad <= 0)
             {
@@ -71,6 +71,7 @@ namespace API.Data.Repositories
             var fechaFin = fechaUtc.AddDays(1);
 
             return await _context.DetalleVentas!
+                .AsNoTracking()
                 .Where(dv => dv.Venta!.KioscoId == kioscoId && dv.Venta!.Fecha >= fechaUtc && dv.Venta.Fecha < fechaFin)
                 .GroupBy(dv => new { dv.ProductoId, dv.Producto!.Nombre})
                 .Select(g => new ProductoMasVendidoDto
@@ -81,7 +82,6 @@ namespace API.Data.Repositories
                 })
                 .OrderByDescending(p => p.CantidadVendida)
                 .Take(cantidad)
-                .AsNoTracking()
                 .ToListAsync(cancellationToken);
         }
     }

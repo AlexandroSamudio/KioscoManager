@@ -7,19 +7,19 @@ namespace API.Controllers
 {
     public class ProductosController(IProductoRepository productoRepository) : BaseApiController
     {
+        protected int KioscoId => User.GetKioscoId();
+
         [HttpGet]
         public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductos(CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-            var productos = await productoRepository.GetProductosAsync(kioscoId, cancellationToken);
+            var productos = await productoRepository.GetProductosAsync(KioscoId, cancellationToken);
             return Ok(productos);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductoDto>> GetProducto(int id, CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-            var producto = await productoRepository.GetProductoByIdAsync(kioscoId, id, cancellationToken);
+            var producto = await productoRepository.GetProductoByIdAsync(KioscoId, id, cancellationToken);
 
             if (producto == null)
             {
@@ -30,10 +30,9 @@ namespace API.Controllers
         }
 
         [HttpGet("low-stock")]
-        public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductosByLowestStock(CancellationToken cancellationToken)
+        public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductosByLowestStock(CancellationToken cancellationToken, [FromQuery] int cantidad = 3)
         {
-            var kioscoId = User.GetKioscoId();
-            var productos = await productoRepository.GetProductosByLowestStockAsync(kioscoId, cancellationToken);
+            var productos = await productoRepository.GetProductosByLowestStockAsync(cantidad, KioscoId, cancellationToken);
             return Ok(productos);
         }
     }

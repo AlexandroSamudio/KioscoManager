@@ -7,71 +7,64 @@ namespace API.Controllers
 {
     public class VentasController(IVentaRepository ventaRepository) : BaseApiController
     {
+        protected int KioscoId => User.GetKioscoId();
+
         [HttpGet("dia")]
         public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasDelDia(CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-            var ventas = await ventaRepository.GetVentasDelDiaAsync(kioscoId, null, cancellationToken);
+            var ventas = await ventaRepository.GetVentasDelDiaAsync(KioscoId, cancellationToken, null);
             return Ok(ventas);
         }
 
         [HttpGet("dia/{fecha:datetime}")]
         public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasDelDia(DateTime fecha, CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-            var ventas = await ventaRepository.GetVentasDelDiaAsync(kioscoId, fecha, cancellationToken);
+            var ventas = await ventaRepository.GetVentasDelDiaAsync(KioscoId, cancellationToken, fecha);
             return Ok(ventas);
         }
 
         [HttpGet("recientes")]
-        public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasRecientes([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasRecientes(CancellationToken cancellationToken, [FromQuery] int cantidad = 4)
         {
-            var kioscoId = User.GetKioscoId();
-            
             if (cantidad <= 0)
             {
                 return BadRequest("La cantidad debe ser mayor que cero.");
             }
 
-            var ventas = await ventaRepository.GetVentasRecientesAsync(kioscoId, cantidad, cancellationToken);
+            var ventas = await ventaRepository.GetVentasRecientesAsync(KioscoId, cantidad, cancellationToken);
             return Ok(ventas);
         }
 
         [HttpGet("total-dia")]
-        public async Task<ActionResult<decimal>> GetTotalVentasDelDia(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<decimal>> GetTotalVentasDelDia(CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-            var total = await ventaRepository.GetTotalVentasDelDiaAsync(kioscoId, null, cancellationToken);
+            var total = await ventaRepository.GetTotalVentasDelDiaAsync(KioscoId, cancellationToken, null);
             return Ok(total);
         }
 
         [HttpGet("total-dia/{fecha:datetime}")]
-        public async Task<ActionResult<decimal>> GetTotalVentasDelDia(DateTime fecha, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<decimal>> GetTotalVentasDelDia(DateTime fecha, CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-            var total = await ventaRepository.GetTotalVentasDelDiaAsync(kioscoId, fecha, cancellationToken);
+            var total = await ventaRepository.GetTotalVentasDelDiaAsync(KioscoId, cancellationToken, fecha);
             return Ok(total);
         }
 
         [HttpGet("productos-mas-vendidos")]
-        public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia(CancellationToken cancellationToken, [FromQuery] int cantidad = 4)
         {
-            var kioscoId = User.GetKioscoId();
-
             if (cantidad <= 0)
             {
                 return BadRequest("La cantidad debe ser mayor que cero.");
             }
 
-            var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(kioscoId, cantidad, null, cancellationToken);
+            var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(KioscoId, cantidad, cancellationToken, null);
             return Ok(productos);
         }
         
         [HttpGet("productos-mas-vendidos/{fecha:datetime}")]
-        public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia(DateTime fecha, [FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia(DateTime fecha, CancellationToken cancellationToken, [FromQuery] int cantidad = 4)
         {
-            var kioscoId = User.GetKioscoId();
-            var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(kioscoId, cantidad, fecha, cancellationToken);
+            var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(KioscoId, cantidad, cancellationToken, fecha);
             return Ok(productos);
         }
     }
