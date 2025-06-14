@@ -2,7 +2,6 @@ using API.DTOs;
 using API.Extensions;
 using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -12,7 +11,7 @@ namespace API.Controllers
         public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasDelDia(CancellationToken cancellationToken)
         {
             var kioscoId = User.GetKioscoId();
-            var ventas = await ventaRepository.GetVentasDelDiaAsync(kioscoId, cancellationToken);
+            var ventas = await ventaRepository.GetVentasDelDiaAsync(kioscoId, null, cancellationToken);
             return Ok(ventas);
         }
 
@@ -28,6 +27,12 @@ namespace API.Controllers
         public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasRecientes([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
         {
             var kioscoId = User.GetKioscoId();
+            
+            if (cantidad <= 0)
+            {
+                return BadRequest("La cantidad debe ser mayor que cero.");
+            }
+
             var ventas = await ventaRepository.GetVentasRecientesAsync(kioscoId, cantidad, cancellationToken);
             return Ok(ventas);
         }
@@ -36,7 +41,7 @@ namespace API.Controllers
         public async Task<ActionResult<decimal>> GetTotalVentasDelDia(CancellationToken cancellationToken = default)
         {
             var kioscoId = User.GetKioscoId();
-            var total = await ventaRepository.GetTotalVentasDelDiaAsync(kioscoId, cancellationToken);
+            var total = await ventaRepository.GetTotalVentasDelDiaAsync(kioscoId, null, cancellationToken);
             return Ok(total);
         }
 
@@ -52,7 +57,13 @@ namespace API.Controllers
         public async Task<ActionResult<IEnumerable<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
         {
             var kioscoId = User.GetKioscoId();
-            var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(kioscoId, cantidad, cancellationToken);
+
+            if (cantidad <= 0)
+            {
+                return BadRequest("La cantidad debe ser mayor que cero.");
+            }
+
+            var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(kioscoId, cantidad, null, cancellationToken);
             return Ok(productos);
         }
         
@@ -60,7 +71,7 @@ namespace API.Controllers
         public async Task<ActionResult<IEnumerable<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia(DateTime fecha, [FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
         {
             var kioscoId = User.GetKioscoId();
-            var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(kioscoId, fecha, cantidad, cancellationToken);
+            var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(kioscoId, cantidad, fecha, cancellationToken);
             return Ok(productos);
         }
     }
