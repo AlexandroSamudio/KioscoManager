@@ -1,0 +1,273 @@
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+  <app-navbar>
+  </app-navbar>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-amber-900 mb-2">¡Bienvenido/a!</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div
+        class="bg-white rounded-xl shadow-lg border border-amber-200 p-6 hover:shadow-xl transition-shadow cursor-pointer">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-amber-700">Productos Bajo Stock</p>
+            <p class="text-3xl font-bold text-red-600">{{ lowestStockProducts().length }}</p>
+            <p class="text-xs text-amber-600 mt-1">Requieren atención</p>
+          </div>
+          <div class="p-3 bg-red-100 rounded-full">
+            <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6 hover:shadow-xl transition-shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-amber-700">Ventas Hoy</p>
+            <p class="text-3xl font-bold text-green-600">{{ totalVentasDia()}}</p>
+            <p class="text-xs text-amber-600 mt-1">23 transacciones</p>
+          </div>
+          <div class="p-3 bg-green-100 rounded-full">
+            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6 hover:shadow-xl transition-shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-amber-700">Valor Inventario</p>
+            <p class="text-3xl font-bold text-amber-600">$125,450</p>
+            <p class="text-xs text-amber-600 mt-1">Capital invertido</p>
+          </div>
+          <div class="p-3 bg-amber-100 rounded-full">
+            <svg class="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6 hover:shadow-xl transition-shadow">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-amber-700">Total Productos</p>
+            <p class="text-3xl font-bold text-blue-600">342</p>
+            <p class="text-xs text-amber-600 mt-1">En catálogo</p>
+          </div>
+          <div class="p-3 bg-blue-100 rounded-full">
+            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2H5a2 2 0 00-2 2v2M7 7h10" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-8">
+      <h3 class="text-lg font-semibold text-amber-900 mb-4">Acciones Rápidas</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <button
+          class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+          <div class="flex flex-col items-center text-center">
+            <svg class="h-12 w-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <span class="text-lg font-semibold">Nueva Venta</span>
+            <span class="text-sm opacity-90">Registrar venta</span>
+          </div>
+        </button>
+
+        <button
+          class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+          <div class="flex flex-col items-center text-center">
+            <svg class="h-12 w-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            <span class="text-lg font-semibold">Añadir Producto</span>
+            <span class="text-sm opacity-90">Nuevo al inventario</span>
+          </div>
+        </button>
+
+        <button
+          class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+          <div class="flex flex-col items-center text-center">
+            <svg class="h-12 w-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span class="text-lg font-semibold">Ver Inventario</span>
+            <span class="text-sm opacity-90">Gestionar productos</span>
+          </div>
+        </button>
+
+        <button
+          class="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white p-6 rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105">
+          <div class="flex flex-col items-center text-center">
+            <svg class="h-12 w-12 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4m1.6 8L6 5H3m4 8a2 2 0 100 4 2 2 0 000-4zm10 0a2 2 0 100 4 2 2 0 000-4z" />
+            </svg>
+            <span class="text-lg font-semibold">Registrar Compra</span>
+            <span class="text-sm opacity-90">A proveedor</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 space-y-8">
+        <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-amber-900 flex items-center">
+              <svg class="h-5 w-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              Productos con Stock Bajo
+            </h3>
+            <button class="text-amber-600 hover:text-amber-700 text-sm font-medium">
+              Ver todos
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            @if (lowestStockProducts().length > 0) {
+            @for (producto of lowestStockProducts(); track producto.id) { <div
+              class="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                  <span class="text-xl font-bold text-red-600">{{ producto.stock }}</span>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">{{ producto.nombre }}</p>
+                  <p class="text-sm text-red-700">Stock actual: {{ producto.stock }}</p>
+                  @if (producto.categoriaNombre) {
+                  <p class="text-xs text-gray-500">{{ producto.categoriaNombre }}</p>
+                  }
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-sm font-medium text-gray-900">${{ producto.precio | number:'1.0-0' }}</p>
+                <a href="#" class="text-sm font-medium text-amber-600 hover:text-amber-700">Ver detalles</a>
+              </div>
+            </div>
+            }
+            } @else {
+            <div class="p-4 text-center text-gray-500">
+              No hay productos con bajo stock actualmente.
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6">
+          <h3 class="text-lg font-semibold text-amber-900 mb-6">Ventas de los Últimos 7 Días</h3>
+          <div class="h-64 flex items-end justify-between space-x-2">
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-amber-500 rounded-t" style="height: 60%"></div>
+              <span class="text-xs text-gray-600 mt-2">Lun</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-amber-500 rounded-t" style="height: 80%"></div>
+              <span class="text-xs text-gray-600 mt-2">Mar</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-amber-500 rounded-t" style="height: 45%"></div>
+              <span class="text-xs text-gray-600 mt-2">Mié</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-amber-500 rounded-t" style="height: 90%"></div>
+              <span class="text-xs text-gray-600 mt-2">Jue</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-amber-500 rounded-t" style="height: 70%"></div>
+              <span class="text-xs text-gray-600 mt-2">Vie</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-amber-500 rounded-t" style="height: 100%"></div>
+              <span class="text-xs text-gray-600 mt-2">Sáb</span>
+            </div>
+            <div class="flex flex-col items-center">
+              <div class="w-8 bg-amber-500 rounded-t" style="height: 85%"></div>
+              <span class="text-xs text-gray-600 mt-2">Dom</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-8">
+        <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-amber-900">Últimas Ventas</h3>
+            <button class="text-amber-600 hover:text-amber-700 text-sm font-medium">
+              Ver todas
+            </button>
+          </div>
+          <div class="space-y-4">
+            @if (ventasRecientes().length > 0) {
+            @for (venta of ventasRecientes(); track venta.id) {
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div>
+                <p class="font-medium text-gray-900">Venta #{{ venta.id }}</p>
+                <p class="text-sm text-gray-600">{{ venta.fecha | date:'short' }} - {{ venta.cantidadProductos }}
+                  productos</p>
+                @if (venta.nombreUsuario) {
+                <p class="text-xs text-gray-500">Por: {{ venta.nombreUsuario }}</p>
+                }
+              </div>
+              <p class="font-semibold text-green-600">${{ venta.total | number:'1.0-0' }}</p>
+            </div>
+            }
+            } @else {
+            <div class="p-4 text-center text-gray-500">
+              No hay ventas recientes para mostrar.
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6">
+          <h3 class="text-lg font-semibold text-amber-900 mb-6">Productos Más Vendidos Hoy</h3>
+          <div class="space-y-4">
+            @if (productosMasVendidosDelDia().length > 0) {
+            @for (producto of productosMasVendidosDelDia(); track producto.productoId; let i = $index) {
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+                  <span class="text-amber-600 font-bold text-sm">{{ i + 1 }}</span>
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900">{{ producto.nombreProducto }}</p>
+                  <p class="text-sm text-gray-600">{{ producto.cantidadVendida }} vendidas</p>
+                </div>
+              </div>
+              <div class="w-16 bg-gray-200 rounded-full h-2">
+                <div class="bg-amber-500 h-2 rounded-full"
+                  [style.width.%]="productosMasVendidosDelDia().length > 0 ? (producto.cantidadVendida / productosMasVendidosDelDia()[0].cantidadVendida) * 100 : 0">
+                </div>
+              </div>
+            </div>
+            }
+            } @else {
+            <div class="p-4 text-center text-gray-500">
+              No hay datos de productos vendidos hoy.
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

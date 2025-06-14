@@ -3,11 +3,12 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { NavigationItem, UserProfile } from '../../_models/navigation.interface';
 import { AccountService } from '../../_services/account.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
