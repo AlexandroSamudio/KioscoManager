@@ -17,31 +17,33 @@ namespace API.Data.Repositories
             _mapper = mapper;
         }
 
-        public async Task<ProductoDto?> GetProductoByIdAsync(int id)
+        public async Task<ProductoDto?> GetProductoByIdAsync(int kioscoId,int id,CancellationToken cancellationToken)
         {
             return await _context.Productos!
-                .Where(p => p.Id == id)
+                .Where(p => p.Id == id && p.KioscoId == kioscoId)
                 .AsNoTracking()
                             .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                            .SingleOrDefaultAsync();
+                            .SingleOrDefaultAsync(cancellationToken);
         }
 
-        public IAsyncEnumerable<ProductoDto> GetProductosAsync()
+        public async Task<IReadOnlyList<ProductoDto>> GetProductosAsync(int kioscoId,CancellationToken cancellationToken)
         {
-            return _context.Productos!
+            return await _context.Productos!
+                .Where(p => p.KioscoId == kioscoId)
                 .AsNoTracking()
                 .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                .AsAsyncEnumerable();
+                .ToListAsync(cancellationToken);
         }
 
-        public IAsyncEnumerable<ProductoDto> GetProductosByLowestStockAsync()
+        public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int kioscoId,int cantidad,CancellationToken cancellationToken)
         {
             const int LowStockThreshold = 3;
-            return _context.Productos!
-                .Where(p => p.Stock <= LowStockThreshold)
+            return await _context.Productos!
+                .Where(p => p.Stock <= LowStockThreshold && p.KioscoId == kioscoId)
                 .AsNoTracking()
+                .Take(cantidad) 
                 .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                .AsAsyncEnumerable();
+                .ToListAsync(cancellationToken);
         }
     }
 }
