@@ -16,5 +16,15 @@ namespace API.Extensions
         {
             return user.FindFirst(ClaimTypes.Email)?.Value ?? throw new InvalidOperationException("El email del usuario no se encontró en el token.");
         }
+
+        public static int GetKioscoId(this ClaimsPrincipal user)
+        {
+            var kioscoIdClaim = user.FindFirst("kioscoId")?.Value;
+            if (string.IsNullOrEmpty(kioscoIdClaim) || !int.TryParse(kioscoIdClaim, out var kioscoId))
+            {
+                throw new InvalidOperationException("El KioscoId del usuario no se encontró en el token o no es válido.");
+            }
+            return kioscoId;
+        }
     }
 }
