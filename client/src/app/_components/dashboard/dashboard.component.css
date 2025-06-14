@@ -1,34 +1,28 @@
 .kpi-card {
   transition: all 0.3s ease;
-
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
+}
+.kpi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 .quick-action-btn {
   transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
 }
-
+.quick-action-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+}
+.quick-action-btn:active {
+  transform: scale(0.98);
+}
 
 .chart-bar {
   transition: height 0.5s ease;
-
-  &:hover {
-    opacity: 0.8;
-  }
 }
-
+.chart-bar:hover {
+  opacity: 0.8;
+}
 
 .stock-alert {
   animation: pulse-red 2s infinite;
@@ -43,14 +37,12 @@
   }
 }
 
-
 .interactive-element {
   transition: all 0.2s ease;
-
-  &:hover {
-    background-color: rgba(217, 119, 6, 0.05);
-    cursor: pointer;
-  }
+}
+.interactive-element:hover {
+  background-color: rgba(217, 119, 6, 0.05);
+  cursor: pointer;
 }
 
 .progress-bar {
@@ -70,11 +62,9 @@
   .grid-responsive {
     grid-template-columns: 1fr;
   }
-
   .quick-action-btn {
     padding: 1rem;
   }
-
   .kpi-card {
     padding: 1rem;
   }
@@ -97,19 +87,18 @@
 
 .tooltip {
   position: relative;
-
-  &:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    z-index: 10;
-  }
+}
+.tooltip:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  z-index: 10;
 }

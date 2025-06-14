@@ -6,6 +6,7 @@ import { ProductoMasVendido } from '../../_models/producto-mas-vendido.model';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { CommonModule } from '@angular/common';
 import { VentaService } from '../../_services/venta.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -27,10 +28,20 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboardData(): void {
-    this.getProductosByLowestStock();
-    this.getTotalVentasDia();
-    this.getVentasRecientes();
-    this.getProductosMasVendidosDelDia();
+    forkJoin({
+      lowStock: this.productoService.getProductosByLowestStock(),
+      totalVentas: this.ventaService.getTotalVentasDia(),
+      recientes: this.ventaService.getVentasRecientes(),
+      masVendidos: this.productoService.getProductosMasVendidosDelDia()
+    }).subscribe({
+      next: ({ lowStock, totalVentas, recientes, masVendidos }) => {
+        this.lowestStockProducts.set(lowStock as Producto[]);
+        this.totalVentasDia.set(totalVentas as number);
+        this.ventasRecientes.set(recientes as Venta[]);
+        this.productosMasVendidosDelDia.set(masVendidos as ProductoMasVendido[]);
+      },
+      error: err => console.error('Error cargando dashboard', err)
+    });
   }
 
   getTotalVentasDia():void{
