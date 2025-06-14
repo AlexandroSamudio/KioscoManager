@@ -37,6 +37,11 @@ namespace API.Data.Repositories
 
         public Task<List<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken = default)
         {
+            if (cantidad <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
+            }
+            
             return _context.Ventas!
                 .Where(v => v.KioscoId == kioscoId)
                 .OrderByDescending(v => v.Fecha)

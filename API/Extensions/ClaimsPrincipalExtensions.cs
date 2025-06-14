@@ -6,10 +6,13 @@ namespace API.Extensions
     {
         public static int GetUserId(this ClaimsPrincipal user)
         {
-            var userId = int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier) 
-            ?? throw new InvalidOperationException("El ID del usuario no es un entero válido o no se encontró en el token."));
-        
-        return userId;
+            var userIdClaim = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+            {
+                throw new InvalidOperationException("El ID del usuario no se encontró en el token o no es válido.");
+            }
+            
+            return userId;
         }
 
         public static string GetEmail(this ClaimsPrincipal user)
