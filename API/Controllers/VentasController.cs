@@ -8,7 +8,7 @@ namespace API.Controllers
     public class VentasController(IVentaRepository ventaRepository) : BaseApiController
     {
         [HttpGet("dia")]
-        public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasDelDia(CancellationToken cancellationToken)
+        public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasDelDia(CancellationToken cancellationToken)
         {
             var kioscoId = User.GetKioscoId();
             var ventas = await ventaRepository.GetVentasDelDiaAsync(kioscoId, null, cancellationToken);
@@ -16,7 +16,7 @@ namespace API.Controllers
         }
 
         [HttpGet("dia/{fecha:datetime}")]
-        public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasDelDia(DateTime fecha, CancellationToken cancellationToken)
+        public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasDelDia(DateTime fecha, CancellationToken cancellationToken)
         {
             var kioscoId = User.GetKioscoId();
             var ventas = await ventaRepository.GetVentasDelDiaAsync(kioscoId, fecha, cancellationToken);
@@ -24,7 +24,7 @@ namespace API.Controllers
         }
 
         [HttpGet("recientes")]
-        public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasRecientes([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasRecientes([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
         {
             var kioscoId = User.GetKioscoId();
             
@@ -54,7 +54,7 @@ namespace API.Controllers
         }
 
         [HttpGet("productos-mas-vendidos")]
-        public async Task<ActionResult<IEnumerable<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia([FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
         {
             var kioscoId = User.GetKioscoId();
 
@@ -68,7 +68,7 @@ namespace API.Controllers
         }
         
         [HttpGet("productos-mas-vendidos/{fecha:datetime}")]
-        public async Task<ActionResult<IEnumerable<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia(DateTime fecha, [FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia(DateTime fecha, [FromQuery] int cantidad = 4, CancellationToken cancellationToken = default)
         {
             var kioscoId = User.GetKioscoId();
             var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(kioscoId, cantidad, fecha, cancellationToken);

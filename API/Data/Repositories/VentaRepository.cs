@@ -17,13 +17,13 @@ namespace API.Data.Repositories
             _mapper = mapper;
         }
 
-        public Task<List<VentaDto>> GetVentasDelDiaAsync(int kioscoId, DateTime? fecha = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<VentaDto>> GetVentasDelDiaAsync(int kioscoId, DateTime? fecha = null, CancellationToken cancellationToken = default)
         {
             var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
             var fechaFin = fechaUtc.AddDays(1);
 
-            return _context.Ventas!
+            return await _context.Ventas!
                 .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaUtc && v.Fecha < fechaFin)
                 .OrderByDescending(v => v.Fecha)
                 .AsNoTracking()
@@ -31,14 +31,14 @@ namespace API.Data.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public Task<List<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken = default)
         {
             if (cantidad <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
             }
 
-            return _context.Ventas!
+            return await _context.Ventas!
                 .Where(v => v.KioscoId == kioscoId)
                 .OrderByDescending(v => v.Fecha)
                 .Take(cantidad)
@@ -47,19 +47,19 @@ namespace API.Data.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public Task<decimal> GetTotalVentasDelDiaAsync(int kioscoId, DateTime? fecha = null, CancellationToken cancellationToken = default)
+        public async Task<decimal> GetTotalVentasDelDiaAsync(int kioscoId, DateTime? fecha = null, CancellationToken cancellationToken = default)
         {
             var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
             var fechaFin = fechaUtc.AddDays(1);
 
-            return _context.Ventas!
+            return await _context.Ventas!
                 .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaUtc && v.Fecha < fechaFin)
                 .AsNoTracking()
                 .SumAsync(v => v.Total, cancellationToken);
         }
 
-        public Task<List<ProductoMasVendidoDto>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, DateTime? fecha = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ProductoMasVendidoDto>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, DateTime? fecha = null, CancellationToken cancellationToken = default)
         {
             if (cantidad <= 0)
             {
@@ -70,7 +70,7 @@ namespace API.Data.Repositories
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
             var fechaFin = fechaUtc.AddDays(1);
 
-            return _context.DetalleVentas!
+            return await _context.DetalleVentas!
                 .Where(dv => dv.Venta!.KioscoId == kioscoId && dv.Venta!.Fecha >= fechaUtc && dv.Venta.Fecha < fechaFin)
                 .GroupBy(dv => new { dv.ProductoId, dv.Producto!.Nombre})
                 .Select(g => new ProductoMasVendidoDto
