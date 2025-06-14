@@ -19,6 +19,10 @@ namespace API.Helpers
 
             CreateMap<Producto, ProductoDto>()
                 .ForMember(dest => dest.CategoriaNombre, opt => opt.MapFrom(src => src.Categoria!.Nombre));
+
+            CreateMap<Venta, VentaDto>()
+                .ForMember(dest => dest.NombreUsuario, opt => opt.MapFrom(src => src.Usuario!.UserName))
+                .ForMember(dest => dest.CantidadProductos, opt => opt.MapFrom(src => src.Detalles.Sum(d => d.Cantidad)));
         }
     }
 }
