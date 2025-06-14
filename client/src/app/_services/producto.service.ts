@@ -14,36 +14,28 @@ export class ProductoService {
   private baseUrl = environment.apiUrl;
   private notificationService = inject(NotificationService);
 
+  private handleError<T>(message: string) {
+    return (error: any) => {
+      this.notificationService.error(message, error?.message ?? 'Inténtelo de nuevo');
+      return throwError(() => error);
+    };
+  }
+
   getProductos(): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.baseUrl}productos`).pipe(
-      catchError((error) => {
-        this.notificationService.error('Error al obtener los productos', error);
-        return throwError(() => error);
-      })
+      catchError(this.handleError<Producto[]>('Error al obtener los productos'))
     );
   }
 
   getProducto(id: number): Observable<Producto> {
     return this.http.get<Producto>(`${this.baseUrl}productos/${id}`).pipe(
-      catchError((error) => {
-        this.notificationService.error(
-          `Error al obtener el producto con ID ${id}`,
-          error
-        );
-        return throwError(() => error);
-      })
+      catchError(this.handleError<Producto>(`Error al obtener el producto con ID ${id}`))
     );
   }
 
   getProductosByLowestStock(): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.baseUrl}productos/low-stock`).pipe(
-      catchError((error) => {
-        this.notificationService.error(
-          'Error al obtener los productos con bajo stock',
-          error
-        );
-        return throwError(() => error);
-      })
+      catchError(this.handleError<Producto[]>('Error al obtener los productos con bajo stock'))
     );
   }
 
@@ -51,13 +43,7 @@ export class ProductoService {
     return this.http
       .get<ProductoMasVendido[]>(`${this.baseUrl}ventas/productos-mas-vendidos`)
       .pipe(
-        catchError((error) => {
-          this.notificationService.error(
-            'Error al obtener los productos más vendidos del día',
-            error
-          );
-          return throwError(() => error);
-        })
+        catchError(this.handleError<ProductoMasVendido[]>('Error al obtener los productos más vendidos del día'))
       );
   }
 }
