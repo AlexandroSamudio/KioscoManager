@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -26,13 +27,14 @@ namespace API.Data.Repositories
                             .SingleOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyList<ProductoDto>> GetProductosAsync(int kioscoId,CancellationToken cancellationToken)
+        public async Task<PagedList<ProductoDto>> GetProductosAsync(int kioscoId, int pageNumber, int pageSize, CancellationToken cancellationToken)
         {
-            return await _context.Productos!
+            var query = _context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
                 .AsNoTracking()
-                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                .ToListAsync(cancellationToken);
+                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider);
+                
+            return await PagedList<ProductoDto>.CreateAsync(query, pageNumber, pageSize);
         }
 
         public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int kioscoId,int cantidad,CancellationToken cancellationToken)
