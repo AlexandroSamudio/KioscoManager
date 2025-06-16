@@ -6,9 +6,9 @@ public class PagedList<T> : List<T>
 {
     public PagedList(IEnumerable<T> items, int count, int pageNumber, int pageSize)
     {
-        if (pageNumber <= 0) throw new ArgumentOutOfRangeException(nameof(pageNumber));
-        if (pageSize   <= 0) throw new ArgumentOutOfRangeException(nameof(pageSize));
-        
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageNumber);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageSize);
+
         CurrentPage = pageNumber;
         TotalPages = (int)Math.Ceiling(count / (double)pageSize);
         PageSize = pageSize;
@@ -21,7 +21,7 @@ public class PagedList<T> : List<T>
     public int PageSize { get; set; }
     public int TotalCount { get; set; }
 
-    public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize, CancellationToken cancellationToken)
+    public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize,CancellationToken cancellationToken)
     {
         var count = await source.CountAsync(cancellationToken);
         var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);

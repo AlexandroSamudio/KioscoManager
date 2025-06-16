@@ -27,15 +27,37 @@ namespace API.Data.Repositories
                             .SingleOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<PagedList<ProductoDto>> GetProductosAsync(int kioscoId, int pageNumber, int pageSize, CancellationToken cancellationToken)
+        public async Task<PagedList<ProductoDto>> GetProductosAsync(int kioscoId, int pageNumber, int pageSize, CancellationToken cancellationToken, int? categoriaId = null, string? stockStatus = null)
         {
             var query = _context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
-                .AsNoTracking()
-                .OrderBy(p => p.Stock);
+                .AsNoTracking();
+
+            if (categoriaId.HasValue)
+            {
+                query = query.Where(p => p.CategoriaId == categoriaId.Value);
+            }
+
+            if (!string.IsNullOrEmpty(stockStatus))
+            {
+                switch (stockStatus.ToLower())
+                {
+                    case "low":
+                        query = query.Where(p => p.Stock > 0 && p.Stock <= 3);
+                        break;
+                    case "out":
+                        query = query.Where(p => p.Stock == 0);
+                        break;
+                    case "in":
+                        query = query.Where(p => p.Stock > 3);
+                        break;
+                }
+            }
+
+            query = query.OrderBy(p => p.Stock);
 
             return await PagedList<ProductoDto>.CreateAsync(query.ProjectTo<ProductoDto>(_mapper.ConfigurationProvider),
-            pageNumber, pageSize, cancellationToken);                                                    
+                pageNumber, pageSize, cancellationToken);
         }
 
         public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int cantidad,int kioscoId,CancellationToken cancellationToken)

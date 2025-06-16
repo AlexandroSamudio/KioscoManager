@@ -12,12 +12,26 @@ namespace API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<PagedList<ProductoDto>>> GetProductos(
-            [FromQuery] int pageNumber = 1, 
-            [FromQuery] int pageSize = 10, 
-            CancellationToken cancellationToken = default)
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            CancellationToken cancellationToken = default,
+            int categoriaId = 0,
+            string? stockStatus = null)
         {
             pageSize = Math.Clamp(pageSize, 1, 10);
-            var productos = await productoRepository.GetProductosAsync(KioscoId, pageNumber, pageSize, cancellationToken);
+
+            if (!string.IsNullOrEmpty(stockStatus) && stockStatus is not ("low" or "out" or "in"))
+            {
+                return BadRequest("Valor de stockStatus no válido. Debe ser 'low', 'out' o 'in'.");
+            }
+
+            var productos = await productoRepository.GetProductosAsync(
+                KioscoId,
+                pageNumber,
+                pageSize,
+                cancellationToken,
+                categoriaId == 0 ? null : categoriaId,
+                stockStatus);
             Response.AddPaginationHeader(productos);
             return Ok(productos);
         }
@@ -38,7 +52,7 @@ namespace API.Controllers
         [HttpGet("low-stock")]
         public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductosByLowestStock(CancellationToken cancellationToken, [FromQuery] int cantidad = 3)
         {
-            var productos = await productoRepository.GetProductosByLowestStockAsync(KioscoId,cantidad, cancellationToken);
+            var productos = await productoRepository.GetProductosByLowestStockAsync(KioscoId, cantidad, cancellationToken);
             return Ok(productos);
         }
     }
