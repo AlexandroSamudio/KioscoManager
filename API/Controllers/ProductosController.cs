@@ -16,7 +16,9 @@ namespace API.Controllers
             [FromQuery] int pageSize = 10, 
             CancellationToken cancellationToken = default)
         {
+            pageSize = Math.Clamp(pageSize, 1, 10);
             var productos = await productoRepository.GetProductosAsync(KioscoId, pageNumber, pageSize, cancellationToken);
+            Response.AddPaginationHeader(productos);
             return Ok(productos);
         }
 

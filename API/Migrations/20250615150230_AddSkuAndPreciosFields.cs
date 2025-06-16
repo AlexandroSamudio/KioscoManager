@@ -37,14 +37,7 @@ namespace API.Migrations
                 table: "Productos",
                 type: "character varying(50)",
                 maxLength: 50,
-                nullable: false,
-                defaultValue: "");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Productos_KioscoId_Sku",
-                table: "Productos",
-                columns: new[] { "KioscoId", "Sku" },
-                unique: true);
+                nullable: true);
         }
 
         /// <inheritdoc />

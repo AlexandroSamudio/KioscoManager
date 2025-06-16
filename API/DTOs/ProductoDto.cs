@@ -5,6 +5,7 @@ namespace API.DTOs
     public class ProductoDto
     {
         public required int Id { get; set; }
+        public required string Sku { get; set; } = default!;
         [Required, StringLength(100)]
         public required string Nombre { get; set; } = default!;
         public string? Descripcion { get; set; }

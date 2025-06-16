@@ -32,12 +32,13 @@ namespace API.Data.Repositories
             var query = _context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
                 .AsNoTracking()
-                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider);
-                
-            return await PagedList<ProductoDto>.CreateAsync(query, pageNumber, pageSize);
+                .OrderBy(p => p.Stock);
+
+            return await PagedList<ProductoDto>.CreateAsync(query.ProjectTo<ProductoDto>(_mapper.ConfigurationProvider),
+            pageNumber, pageSize, cancellationToken);                                                    
         }
 
-        public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int kioscoId,int cantidad,CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int cantidad,int kioscoId,CancellationToken cancellationToken)
         {
             const int LowStockThreshold = 3;
             return await _context.Productos!
