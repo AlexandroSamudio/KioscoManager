@@ -60,7 +60,7 @@ namespace API.Data.Repositories
                 pageNumber, pageSize, cancellationToken);
         }
 
-        public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int kioscoId,int cantidad,CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int cantidad,int kioscoId,CancellationToken cancellationToken)
         {
             const int LowStockThreshold = 3;
             return await _context.Productos!

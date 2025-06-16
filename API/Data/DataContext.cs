@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data
 {
-    public class DataContext : IdentityDbContext<AppUser, AppRole, int, 
+    public class DataContext : IdentityDbContext<AppUser, AppRole, int,
                                                 IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>,
                                                 IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
@@ -57,16 +57,21 @@ namespace API.Data
                 .WithOne(v => v.Kiosco)
                 .HasForeignKey(v => v.KioscoId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             builder.Entity<Kiosco>()
-                .HasMany(k => k.CodigosInvitacion)        
-                .WithOne(ic => ic.Kiosco)               
-                .HasForeignKey(ic => ic.KioscoId)       
-                .OnDelete(DeleteBehavior.Cascade);      
+                .HasMany(k => k.CodigosInvitacion)
+                .WithOne(ic => ic.Kiosco)
+                .HasForeignKey(ic => ic.KioscoId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<CodigoInvitacion>()
                 .HasIndex(ic => ic.Code)
                 .IsUnique();
-                }
+
+            builder.Entity<Producto>()
+                .HasIndex(p => new { p.KioscoId, p.Sku })
+                .IsUnique();
+        }
+
     }
 }
