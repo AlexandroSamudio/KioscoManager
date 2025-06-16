@@ -14,6 +14,11 @@ namespace API.Migrations
                 name: "IX_Productos_KioscoId",
                 table: "Productos");
 
+            migrationBuilder.CreateIndex(
+                name: "IX_Productos_KioscoId_Sku",
+                table: "Productos",
+                columns: new[] { "KioscoId", "Sku" });
+
             migrationBuilder.DropColumn(
                 name: "Precio",
                 table: "Productos");
@@ -22,15 +27,13 @@ namespace API.Migrations
                 name: "PrecioCompra",
                 table: "Productos",
                 type: "numeric(18,2)",
-                nullable: false,
-                defaultValue: 0m);
+                nullable: false);
 
             migrationBuilder.AddColumn<decimal>(
                 name: "PrecioVenta",
                 table: "Productos",
                 type: "numeric(18,2)",
-                nullable: false,
-                defaultValue: 0m);
+                nullable: false);
 
             migrationBuilder.AddColumn<string>(
                 name: "Sku",
@@ -38,6 +41,10 @@ namespace API.Migrations
                 type: "character varying(50)",
                 maxLength: 50,
                 nullable: true);
+
+            // Añadir restricciones CHECK para asegurar valores positivos
+            migrationBuilder.Sql("ALTER TABLE \"Productos\" ADD CONSTRAINT CK_Productos_PrecioCompra_Positive CHECK (\"PrecioCompra\" > 0);");
+            migrationBuilder.Sql("ALTER TABLE \"Productos\" ADD CONSTRAINT CK_Productos_PrecioVenta_Positive CHECK (\"PrecioVenta\" > 0);");
         }
 
         /// <inheritdoc />
@@ -70,6 +77,9 @@ namespace API.Migrations
                 name: "IX_Productos_KioscoId",
                 table: "Productos",
                 column: "KioscoId");
+
+            migrationBuilder.Sql("ALTER TABLE \"Productos\" DROP CONSTRAINT IF EXISTS CK_Productos_PrecioCompra_Positive;");
+            migrationBuilder.Sql("ALTER TABLE \"Productos\" DROP CONSTRAINT IF EXISTS CK_Productos_PrecioVenta_Positive;");
         }
     }
 }
