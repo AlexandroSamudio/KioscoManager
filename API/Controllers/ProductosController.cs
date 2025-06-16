@@ -19,6 +19,12 @@ namespace API.Controllers
             string? stockStatus = null)
         {
             pageSize = Math.Clamp(pageSize, 1, 10);
+
+            if (!string.IsNullOrEmpty(stockStatus) && stockStatus is not ("low" or "out" or "in"))
+            {
+                return BadRequest("Valor de stockStatus no válido. Debe ser 'low', 'out' o 'in'.");
+            }
+
             var productos = await productoRepository.GetProductosAsync(
                 KioscoId, 
                 pageNumber, 
@@ -46,7 +52,7 @@ namespace API.Controllers
         [HttpGet("low-stock")]
         public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductosByLowestStock(CancellationToken cancellationToken, [FromQuery] int cantidad = 3)
         {
-            var productos = await productoRepository.GetProductosByLowestStockAsync(cantidad, KioscoId, cancellationToken);
+var productos = await productoRepository.GetProductosByLowestStockAsync(KioscoId, cantidad, cancellationToken);
             return Ok(productos);
         }
     }
