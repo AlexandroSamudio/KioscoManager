@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Helpers;
 using API.Interfaces;
 using API.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -10,9 +11,14 @@ namespace API.Controllers
         protected int KioscoId => User.GetKioscoId();
 
         [HttpGet]
-        public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductos(CancellationToken cancellationToken)
+        public async Task<ActionResult<PagedList<ProductoDto>>> GetProductos(
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 10, 
+            CancellationToken cancellationToken = default)
         {
-            var productos = await productoRepository.GetProductosAsync(KioscoId, cancellationToken);
+            pageSize = Math.Clamp(pageSize, 1, 10);
+            var productos = await productoRepository.GetProductosAsync(KioscoId, pageNumber, pageSize, cancellationToken);
+            Response.AddPaginationHeader(productos);
             return Ok(productos);
         }
 
@@ -32,7 +38,7 @@ namespace API.Controllers
         [HttpGet("low-stock")]
         public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductosByLowestStock(CancellationToken cancellationToken, [FromQuery] int cantidad = 3)
         {
-            var productos = await productoRepository.GetProductosByLowestStockAsync(cantidad, KioscoId, cancellationToken);
+            var productos = await productoRepository.GetProductosByLowestStockAsync(KioscoId,cantidad, cancellationToken);
             return Ok(productos);
         }
     }
