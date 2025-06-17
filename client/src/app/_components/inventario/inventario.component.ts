@@ -30,7 +30,8 @@ export class InventarioComponent implements OnInit {
   constructor() {
     this.searchTermSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
       this.onSearch();
     });
@@ -65,7 +66,6 @@ export class InventarioComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProductos();
-    console.log(this.productosPaginados?.pagination?.currentPage);
   }
 
   onPageChange(page: number): void {
@@ -146,7 +146,7 @@ export class InventarioComponent implements OnInit {
   }
 
   trackByPage(index: number, page: number | string): number | string {
-    return page;
+    return page === '...' ? `ellipsis-${index}` : page;
   }
 
   trackById(index: number, item: Producto): number {
