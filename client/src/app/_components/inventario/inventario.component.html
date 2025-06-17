@@ -12,7 +12,9 @@
         </div>
 
         <button
-          class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          type="button"
+          class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          (click)="openProductoForm()">
           <span class="flex items-center">
             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -72,9 +74,9 @@
             class="w-full bg-amber-50 border border-amber-300 rounded-lg py-3 px-4 text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             (change)="onStockStatusChange(stockSelect.value)">
             <option value="">Todos los productos</option>
-            <option value="low">Stock bajo</option>
-            <option value="out">Sin stock</option>
-            <option value="in">Con stock</option>
+            <option [value]="stockStatusEnum.LOW">Stock bajo</option>
+            <option [value]="stockStatusEnum.OUT">Sin stock</option>
+            <option [value]="stockStatusEnum.IN">Con stock</option>
           </select>
         </div>
       </div>
@@ -174,10 +176,6 @@
           </thead>
 
           <tbody class="bg-white divide-y divide-amber-100">
-            <tr *ngIf="isLoading()">
-              <td colspan="10" class="px-6 py-12 text-center">
-              </td>
-            </tr>
             <ng-container
               *ngIf="productosPaginados && productosPaginados.items && productosPaginados.items.length > 0; else estadoVacio">
               <tr *ngFor="let producto of productosPaginados.items; trackBy: trackById">
@@ -222,7 +220,8 @@
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex justify-end space-x-2">
                     <button
-                      class="text-amber-600 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1 rounded-md text-xs font-medium transition-colors">
+                      class="text-amber-600 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1 rounded-md text-xs font-medium transition-colors"
+                      (click)="openProductoForm(producto)">
                       Editar
                     </button>
                     <button
@@ -318,5 +317,14 @@
         </ng-container>
       </div>
     </div>
+
+    <app-producto-form
+      *ngIf="isProductoFormVisible"
+      [isVisible]="isProductoFormVisible"
+      [isEditMode]="isEditMode"
+      [initialProduct]="productoAEditar"
+      (close)="closeProductoForm()"
+      (save)="onProductoGuardado($event)">
+    </app-producto-form>
   </div>
 </div>

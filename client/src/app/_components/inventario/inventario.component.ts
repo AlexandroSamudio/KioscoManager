@@ -4,14 +4,21 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { ProductoService } from '../../_services/producto.service';
 import { Producto } from '../../_models/producto.model';
 import { FormsModule } from '@angular/forms';
-import { Subject, Subscription } from 'rxjs';
+import { Subject} from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import { setPaginatedResponse } from '../../_services/pagination.helper';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ProductoFormComponent } from '../producto-form/producto-form.component';
+
+export enum StockStatusEnum {
+  LOW = 'low',
+  OUT = 'out',
+  IN = 'in'
+}
 
 @Component({
   selector: 'app-inventario',
-  imports: [NavbarComponent, CommonModule, FormsModule],
+  imports: [NavbarComponent, CommonModule, FormsModule, ProductoFormComponent],
   templateUrl: './inventario.component.html',
   styleUrl: './inventario.component.css'
 })
@@ -26,6 +33,11 @@ export class InventarioComponent implements OnInit {
   stockStatus = signal<string>('');
   searchTerm: string = '';
   private searchTermSubject = new Subject<string>();
+  stockStatusEnum = StockStatusEnum;
+
+  isProductoFormVisible = false;
+  isEditMode = false;
+  productoAEditar: Producto | null = null;
 
   constructor() {
     this.searchTermSubject.pipe(
@@ -151,5 +163,27 @@ export class InventarioComponent implements OnInit {
 
   trackById(index: number, item: Producto): number {
     return item.id;
+  }
+
+  openProductoForm(producto?: Producto): void {
+    this.isProductoFormVisible = true;
+    if (producto) {
+      this.isEditMode = true;
+      this.productoAEditar = { ...producto };
+    } else {
+      this.isEditMode = false;
+      this.productoAEditar = null;
+    }
+  }
+
+  closeProductoForm(): void {
+    this.isProductoFormVisible = false;
+    this.isEditMode = false;
+    this.productoAEditar = null;
+  }
+
+  onProductoGuardado(producto: Producto): void {
+    this.closeProductoForm();
+    this.loadProductos();
   }
 }
