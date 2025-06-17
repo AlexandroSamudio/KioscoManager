@@ -4,6 +4,10 @@ import { NavbarComponent } from '../navbar/navbar.component';
 import { ProductoService } from '../../_services/producto.service';
 import { Producto } from '../../_models/producto.model';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
+import { setPaginatedResponse } from '../../_services/pagination.helper';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-inventario',
@@ -13,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class InventarioComponent implements OnInit {
   private productoService = inject(ProductoService);
+  private destroyRef = inject(DestroyRef);
 
   currentPage = signal<number>(1);
   pageSize = signal<number>(4);
@@ -20,6 +25,16 @@ export class InventarioComponent implements OnInit {
   selectedCategoriaId = signal<number | undefined>(undefined);
   stockStatus = signal<string>('');
   searchTerm: string = '';
+  private searchTermSubject = new Subject<string>();
+
+  constructor() {
+    this.searchTermSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.onSearch();
+    });
+  }
 
   onSearch(): void {
     this.currentPage.set(1);
@@ -38,8 +53,14 @@ export class InventarioComponent implements OnInit {
       this.selectedCategoriaId(),
       this.stockStatus(),
       this.searchTerm
-    );
-    this.isLoading.set(false);
+    ).pipe(
+      finalize(() => this.isLoading.set(false)),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: (response) => {
+        setPaginatedResponse(response, this.productoService.productosPaginados);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -59,7 +80,12 @@ export class InventarioComponent implements OnInit {
   }
 
   onCategoriaChange(categoriaId: string): void {
-    this.selectedCategoriaId.set(parseInt(categoriaId));
+    if (!categoriaId) {
+      this.selectedCategoriaId.set(undefined);
+    } else {
+      const parsedId = parseInt(categoriaId, 10);
+      this.selectedCategoriaId.set(isNaN(parsedId) ? undefined : parsedId);
+    }
     this.currentPage.set(1);
     this.loadProductos();
   }
@@ -68,6 +94,10 @@ export class InventarioComponent implements OnInit {
     this.stockStatus.set(status);
     this.currentPage.set(1);
     this.loadProductos();
+  }
+
+  onSearchTermChanged(term: string): void {
+    this.searchTermSubject.next(term);
   }
 
   getStockStatusClass(stock: number): string {

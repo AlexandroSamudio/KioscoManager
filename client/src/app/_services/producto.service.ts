@@ -24,7 +24,7 @@ export class ProductoService {
     };
   }
 
-  getProductos(pageNumber: number = 1, pageSize: number = 10, categoriaId?: number, stockStatus?: string, searchTerm?: string): void {
+  getProductos(pageNumber: number = 1, pageSize: number = 10, categoriaId?: number, stockStatus?: string, searchTerm?: string) {
     let params = setPaginationHeaders(pageNumber, pageSize);
     if (categoriaId) {
       params = params.append('categoriaId', categoriaId.toString());
@@ -35,14 +35,11 @@ export class ProductoService {
     if (searchTerm && searchTerm.trim() !== '') {
       params = params.append('searchTerm', searchTerm.trim());
     }
-    this.http
+    return this.http
       .get<Producto[]>(`${this.baseUrl}productos`, { params, observe: 'response' })
-      .subscribe({
-        next: (response: HttpResponse<Producto[]>) => {
-          setPaginatedResponse(response, this.productosPaginados);
-        },
-        error: this.handleError<Producto[]>('Error al obtener los productos')
-      });
+      .pipe(
+        catchError(this.handleError<Producto[]>('Error al obtener los productos'))
+      );
   }
 
   getProducto(id: number): Observable<Producto> {
