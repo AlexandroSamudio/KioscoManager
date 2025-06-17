@@ -1,0 +1,326 @@
+<div class="fixed top-0 left-0 w-full z-50">
+  <app-navbar></app-navbar>
+</div>
+
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 pt-20">
+  <div class="bg-white shadow-sm  border-amber-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold text-amber-900">Gestión de Inventario</h1>
+          <p class="text-amber-700 mt-1">Administra todos tus productos y stock</p>
+        </div>
+
+        <button
+          class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+          <span class="flex items-center">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Añadir Nuevo Producto
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+    <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+        <div class="md:col-span-2">
+          <label for="search" class="block text-sm font-medium text-amber-700 mb-2">
+            Buscar Producto
+          </label>
+          <div class="relative">
+            <input type="text" id="search" placeholder="Buscar por nombre o SKU..."
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+              class="w-full bg-amber-50 border border-amber-300 rounded-lg py-3 px-4 pl-10 text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent" />
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+              <svg class="h-5 w-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="category-filter" class="block text-sm font-medium text-amber-700 mb-2">
+            Categoría
+          </label>
+          <select #categorySelect id="category-filter"
+            class="w-full bg-amber-50 border border-amber-300 rounded-lg py-3 px-4 text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            (change)="onCategoriaChange(categorySelect.value)">
+            <option value="">Todas las categorías</option>
+            <option value="1">Golosinas</option>
+            <option value="2">Snacks</option>
+            <option value="3">Bebidas sin alcohol</option>
+            <option value="4">Bebidas alcohólicas</option>
+            <option value="5">Cigarrillos</option>
+            <option value="6">Lácteos</option>
+            <option value="7">Higiene personal</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="stock-filter" class="block text-sm font-medium text-amber-700 mb-2">
+            Estado de Stock
+          </label>
+          <select #stockSelect id="stock-filter"
+            class="w-full bg-amber-50 border border-amber-300 rounded-lg py-3 px-4 text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+            (change)="onStockStatusChange(stockSelect.value)">
+            <option value="">Todos los productos</option>
+            <option value="low">Stock bajo</option>
+            <option value="out">Sin stock</option>
+            <option value="in">Con stock</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center mt-6 pt-6 border-t border-amber-200">
+        <div class="flex space-x-3">
+          <button
+            class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-4 py-2 rounded-lg font-medium transition-colors">
+            <span class="flex items-center">
+              <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Exportar
+            </span>
+          </button>
+          <button
+            class="bg-amber-100 hover:bg-amber-200 text-amber-700 px-4 py-2 rounded-lg font-medium transition-colors">
+            <span class="flex items-center">
+              <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              Importar
+            </span>
+          </button>
+        </div>
+
+        <div class="text-sm text-amber-700">
+          <ng-container *ngIf="productosPaginados">
+            <ng-container
+              *ngIf="productosPaginados.pagination?.currentPage && productosPaginados.pagination?.itemsPerPage && productosPaginados.pagination?.totalItems !== undefined; else mostrandoProductos">
+              <span>
+                Mostrando
+                <span class="font-semibold">
+                  {{ ((productosPaginados.pagination.currentPage - 1) * productosPaginados.pagination.itemsPerPage) + 1
+                  }}
+                  -
+                  {{ productosPaginados.pagination.currentPage * productosPaginados.pagination.itemsPerPage >
+                  productosPaginados.pagination.totalItems ? productosPaginados.pagination.totalItems :
+                  productosPaginados.pagination.currentPage * productosPaginados.pagination.itemsPerPage }}
+                </span>
+                de <span class="font-semibold">{{ productosPaginados.pagination.totalItems }}</span> productos
+              </span>
+            </ng-container>
+            <ng-template #mostrandoProductos>Mostrando productos...</ng-template>
+          </ng-container>
+          <ng-container *ngIf="!productosPaginados">Cargando productos...</ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg border border-amber-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-amber-200">
+          <thead class="bg-amber-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                <input type="checkbox" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider cursor-pointer hover:bg-amber-100">
+                <span class="flex items-center">
+                  SKU
+                  <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                  </svg>
+                </span>
+              </th>
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider cursor-pointer hover:bg-amber-100">
+                <span class="flex items-center">
+                  Producto
+                  <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                  </svg>
+                </span>
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                Categoría
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                Precio Compra
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                Precio Venta
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                Stock Actual
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+
+          <tbody class="bg-white divide-y divide-amber-100">
+            <tr *ngIf="isLoading()">
+              <td colspan="10" class="px-6 py-12 text-center">
+                <div class="flex justify-center items-center space-x-2">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600"></div>
+                  <span class="text-amber-600 font-medium">Cargando productos...</span>
+                </div>
+              </td>
+            </tr>
+            <ng-container
+              *ngIf="productosPaginados && productosPaginados.items && productosPaginados.items.length > 0; else estadoVacio">
+              <tr *ngFor="let producto of productosPaginados.items; trackBy: trackById">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <input type="checkbox" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {{ producto.sku }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="h-10 w-10 flex-shrink-0">
+                      <div class="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                        <svg class="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">{{ producto.nombre }}</div>
+                      <div class="text-sm text-gray-500">{{ producto.descripcion || 'Sin descripción' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                    {{ producto.categoriaNombre || 'Sin categoría' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ producto.precioCompra}}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ producto.precioVenta}}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span [class]="getStockStatusClass(producto.stock)">
+                    {{ producto.stock }} unidades
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div class="flex justify-end space-x-2">
+                    <button
+                      class="text-amber-600 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1 rounded-md text-xs font-medium transition-colors">
+                      Editar
+                    </button>
+                    <button
+                      class="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-3 py-1 rounded-md text-xs font-medium transition-colors">
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+            <ng-template #estadoVacio>
+              <tr>
+                <td colspan="10" class="px-6 py-12 text-center">
+                  <div class="text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m13-8V4a1 1 0 00-1-1H7a1 1 0 00-1 1v1m8 0V4.5">
+                      </path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">No hay productos</h3>
+                    <p class="mt-1 text-sm text-gray-500">Comienza agregando tu primer producto al inventario.</p>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg border border-amber-200 px-6 py-4 mt-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <p class="text-sm text-amber-700">
+            <ng-container *ngIf="productosPaginados">
+              <ng-container
+                *ngIf="productosPaginados.pagination?.currentPage && productosPaginados.pagination?.itemsPerPage && productosPaginados.pagination?.totalItems !== undefined; else mostrandoProductos">
+                <span>
+                  Mostrando
+                  <span class="font-medium">
+                    {{ ((productosPaginados.pagination.currentPage - 1) * productosPaginados.pagination.itemsPerPage) +
+                    1 }}
+                    -
+                    {{ productosPaginados.pagination.currentPage * productosPaginados.pagination.itemsPerPage >
+                    productosPaginados.pagination.totalItems ? productosPaginados.pagination.totalItems :
+                    productosPaginados.pagination.currentPage * productosPaginados.pagination.itemsPerPage }}
+                  </span>
+                  de
+                  <span class="font-medium">{{ productosPaginados.pagination.totalItems }}</span>
+                  resultados
+                </span>
+              </ng-container>
+              <ng-template #mostrandoProductos>Mostrando productos...</ng-template>
+            </ng-container>
+            <ng-container *ngIf="!productosPaginados">Cargando productos...</ng-container>
+          </p>
+        </div>
+
+        <ng-container *ngIf="productosPaginados">
+          <div class="flex items-center space-x-2">
+            <button [disabled]="productosPaginados.pagination.currentPage <= 1"
+              (click)="onPageChange(productosPaginados.pagination.currentPage - 1)"
+              class="relative inline-flex items-center px-4 py-2 border border-amber-300 text-sm font-medium rounded-md text-amber-700 bg-white hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              Anterior
+            </button>
+
+            <div class="hidden md:flex space-x-1">
+              <ng-container
+                *ngFor="let page of getVisiblePages(productosPaginados.pagination.currentPage, productosPaginados.pagination.totalPages); trackBy: trackByPage">
+                <span *ngIf="page === '...'"
+                  class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-amber-700">...</span>
+                <button *ngIf="page !== '...'" (click)="onPageChange(+page)"
+                  [class]="page === productosPaginados.pagination.currentPage ?
+                    'relative inline-flex items-center px-4 py-2 border border-amber-500 text-sm font-medium rounded-md text-white bg-amber-600' :
+                    'relative inline-flex items-center px-4 py-2 border border-amber-300 text-sm font-medium rounded-md text-amber-700 bg-white hover:bg-amber-50'">
+                  {{ page }}
+                </button>
+              </ng-container>
+            </div>
+
+            <button [disabled]="productosPaginados.pagination.currentPage >= productosPaginados.pagination.totalPages"
+              (click)="onPageChange(productosPaginados.pagination.currentPage + 1)"
+              class="relative inline-flex items-center px-4 py-2 border border-amber-300 text-sm font-medium rounded-md text-amber-700 bg-white hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              Siguiente
+              <svg class="h-4 w-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

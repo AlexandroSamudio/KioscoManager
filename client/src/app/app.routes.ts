@@ -6,6 +6,7 @@ import { BienvenidaComponent } from './_components/bienvenida/bienvenida.compone
 import { authGuard } from './_guards/auth.guard';
 import { CrearKioscoComponent } from './_components/crear-kiosco/crear-kiosco.component';
 import { DashboardComponent } from './_components/dashboard/dashboard.component';
+import { InventarioComponent } from './_components/inventario/inventario.component';
 
 export const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -13,6 +14,7 @@ export const routes: Routes = [
   {path: 'register', component: RegisterComponent},
   {path: 'dashboard', component: DashboardComponent, canActivate: [authGuard]},
   {path: 'crear-kiosco', component: CrearKioscoComponent, canActivate: [authGuard]},
+  {path: 'inventario', component: InventarioComponent, canActivate: [authGuard]},
   {path: 'login', component: LoginComponent},
   {path: '**', component: HomeComponent},
 ];
