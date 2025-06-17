@@ -8,7 +8,7 @@ import { Subject} from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import { setPaginatedResponse } from '../../_services/pagination.helper';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ProductoFormComponent } from '../producto-form/producto-form.component';
+// import { ProductoFormComponent } from '../producto-form/producto-form.component';
 
 export enum StockStatusEnum {
   LOW = 'low',
@@ -18,7 +18,8 @@ export enum StockStatusEnum {
 
 @Component({
   selector: 'app-inventario',
-  imports: [NavbarComponent, CommonModule, FormsModule, ProductoFormComponent],
+  standalone:true,
+  imports: [NavbarComponent, CommonModule, FormsModule, /* ProductoFormComponent */],
   templateUrl: './inventario.component.html',
   styleUrl: './inventario.component.css'
 })
