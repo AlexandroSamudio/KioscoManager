@@ -16,11 +16,12 @@ namespace API.Controllers
             [FromQuery] int pageSize = 10,
             CancellationToken cancellationToken = default,
             int categoriaId = 0,
-            string? stockStatus = null)
+            string? stockStatus = null,
+            string? searchTerm = null)
         {
             pageSize = Math.Clamp(pageSize, 1, 10);
 
-            if (!string.IsNullOrEmpty(stockStatus) && stockStatus is not ("low" or "out" or "in"))
+            if (!string.IsNullOrWhiteSpace(stockStatus) && stockStatus is not ("low" or "out" or "in"))
             {
                 return BadRequest("Valor de stockStatus no válido. Debe ser 'low', 'out' o 'in'.");
             }
@@ -31,7 +32,8 @@ namespace API.Controllers
                 pageSize,
                 cancellationToken,
                 categoriaId == 0 ? null : categoriaId,
-                stockStatus);
+                stockStatus,
+                searchTerm);
             Response.AddPaginationHeader(productos);
             return Ok(productos);
         }
@@ -52,8 +54,45 @@ namespace API.Controllers
         [HttpGet("low-stock")]
         public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductosByLowestStock(CancellationToken cancellationToken, [FromQuery] int cantidad = 3)
         {
-            var productos = await productoRepository.GetProductosByLowestStockAsync(KioscoId, cantidad, cancellationToken);
+            var productos = await productoRepository.GetProductosByLowestStockAsync(cantidad, KioscoId, cancellationToken);
             return Ok(productos);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProducto(int id, CancellationToken cancellationToken)
+        {
+            var deleted = await productoRepository.DeleteProductoAsync(KioscoId, id, cancellationToken);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<ProductoDto>> CreateProducto([FromBody] ProductoCreateDto dto, CancellationToken cancellationToken)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await productoRepository.CreateProductoAsync(KioscoId, dto, cancellationToken);
+            if (result == null)
+            {
+                return Conflict("El SKU ya existe para este kiosco.");
+            }
+            return CreatedAtAction(nameof(GetProducto), new { id = result.Id }, result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ProductoDto>> UpdateProducto(int id, [FromBody] ProductoCreateDto dto, CancellationToken cancellationToken)
+        {
+            var exists = await productoRepository.GetProductoByIdAsync(KioscoId, id, cancellationToken);
+            if (exists == null)
+            {
+                return NotFound();
+            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var updated = await productoRepository.UpdateProductoAsync(KioscoId, id, dto, cancellationToken);
+            return Ok(updated);
         }
     }
 }

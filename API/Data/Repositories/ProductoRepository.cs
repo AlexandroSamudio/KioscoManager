@@ -27,7 +27,7 @@ namespace API.Data.Repositories
                             .SingleOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<PagedList<ProductoDto>> GetProductosAsync(int kioscoId, int pageNumber, int pageSize, CancellationToken cancellationToken, int? categoriaId = null, string? stockStatus = null)
+        public async Task<PagedList<ProductoDto>> GetProductosAsync(int kioscoId, int pageNumber, int pageSize, CancellationToken cancellationToken, int? categoriaId = null, string? stockStatus = null, string? searchTerm = null)
         {
             var query = _context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
@@ -54,6 +54,15 @@ namespace API.Data.Repositories
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var search = searchTerm.Trim().ToLower();
+                query = query.Where(p =>
+                    p.Nombre.ToLower().Contains(search) ||
+                    p.Sku.ToLower().Contains(search)
+                );
+            }
+
             query = query.OrderBy(p => p.Stock);
 
             return await PagedList<ProductoDto>.CreateAsync(query.ProjectTo<ProductoDto>(_mapper.ConfigurationProvider),
@@ -69,6 +78,76 @@ namespace API.Data.Repositories
                 .Take(cantidad) 
                 .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<bool> DeleteProductoAsync(int kioscoId, int id, CancellationToken cancellationToken)
+        {
+            var producto = await _context.Productos!
+                .FirstOrDefaultAsync(p => p.Id == id && p.KioscoId == kioscoId, cancellationToken);
+            if (producto == null) return false;
+
+            _context.Productos!.Remove(producto);
+            await _context.SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+        public async Task<ProductoDto?> CreateProductoAsync(int kioscoId, ProductoCreateDto dto, CancellationToken cancellationToken)
+        {
+            var exists = await _context.Productos!
+                .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == dto.Sku, cancellationToken);
+            if (exists)
+            {
+                return null;
+            }
+
+            var producto = new Entities.Producto
+            {
+                Nombre = dto.Nombre,
+                CategoriaId = dto.CategoriaId,
+                PrecioCompra = dto.PrecioCompra,
+                PrecioVenta = dto.PrecioVenta,
+                Stock = dto.Stock,
+                Descripcion = dto.Descripcion,
+                Sku = dto.Sku,
+                KioscoId = kioscoId
+            };
+
+            _context.Productos!.Add(producto);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return await _context.Productos!
+                .Where(p => p.Id == producto.Id)
+                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task<ProductoDto?> UpdateProductoAsync(int kioscoId, int id, ProductoCreateDto dto, CancellationToken cancellationToken)
+        {
+            var producto = await _context.Productos!
+                .FirstOrDefaultAsync(p => p.Id == id && p.KioscoId == kioscoId, cancellationToken);
+            if (producto == null) return null;
+
+            var exists = await _context.Productos!
+                .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == dto.Sku && p.Id != id, cancellationToken);
+            if (exists)
+            {
+                throw new InvalidOperationException("El SKU ya existe para otro producto en este kiosco.");
+            }
+
+            producto.Nombre = dto.Nombre;
+            producto.Sku = dto.Sku;
+            producto.CategoriaId = dto.CategoriaId;
+            producto.PrecioCompra = dto.PrecioCompra;
+            producto.PrecioVenta = dto.PrecioVenta;
+            producto.Stock = dto.Stock;
+            producto.Descripcion = dto.Descripcion;
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return await _context.Productos!
+                .Where(p => p.Id == producto.Id)
+                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync(cancellationToken);
         }
     }
 }
