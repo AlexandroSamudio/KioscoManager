@@ -131,7 +131,7 @@ namespace API.Data.Repositories
                 .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == dto.Sku && p.Id != id, cancellationToken);
             if (exists)
             {
-                throw new InvalidOperationException("El SKU ya existe para otro producto en este kiosco.");
+                return null;
             }
 
             producto.Nombre = dto.Nombre;

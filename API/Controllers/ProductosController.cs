@@ -92,6 +92,10 @@ namespace API.Controllers
                 return BadRequest(ModelState);
 
             var updated = await productoRepository.UpdateProductoAsync(KioscoId, id, dto, cancellationToken);
+            if (updated == null)
+            {
+                return Conflict("El SKU ya existe para otro producto en este kiosco.");
+            }
             return Ok(updated);
         }
     }
