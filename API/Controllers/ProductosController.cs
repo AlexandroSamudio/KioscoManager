@@ -21,11 +21,6 @@ namespace API.Controllers
         {
             pageSize = Math.Clamp(pageSize, 1, 10);
 
-            if (!string.IsNullOrWhiteSpace(stockStatus) && stockStatus is not ("low" or "out" or "in"))
-            {
-                return BadRequest("Valor de stockStatus no válido. Debe ser 'low', 'out' o 'in'.");
-            }
-
             var productos = await productoRepository.GetProductosAsync(
                 KioscoId,
                 pageNumber,

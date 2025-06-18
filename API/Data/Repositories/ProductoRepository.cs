@@ -56,10 +56,10 @@ namespace API.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var search = searchTerm.Trim().ToLower();
+                var search = searchTerm.Trim();
                 query = query.Where(p =>
-                    p.Nombre.ToLower().Contains(search) ||
-                    p.Sku.ToLower().Contains(search)
+                    EF.Functions.Like(p.Nombre, $"%{search}%") ||
+                    EF.Functions.Like(p.Sku, $"%{search}%")
                 );
             }
 
@@ -100,17 +100,8 @@ namespace API.Data.Repositories
                 return null;
             }
 
-            var producto = new Entities.Producto
-            {
-                Nombre = dto.Nombre,
-                CategoriaId = dto.CategoriaId,
-                PrecioCompra = dto.PrecioCompra,
-                PrecioVenta = dto.PrecioVenta,
-                Stock = dto.Stock,
-                Descripcion = dto.Descripcion,
-                Sku = dto.Sku,
-                KioscoId = kioscoId
-            };
+            var producto = _mapper.Map<Entities.Producto>(dto);
+            producto.KioscoId = kioscoId;
 
             _context.Productos!.Add(producto);
             await _context.SaveChangesAsync(cancellationToken);
@@ -134,13 +125,7 @@ namespace API.Data.Repositories
                 return null;
             }
 
-            producto.Nombre = dto.Nombre;
-            producto.Sku = dto.Sku;
-            producto.CategoriaId = dto.CategoriaId;
-            producto.PrecioCompra = dto.PrecioCompra;
-            producto.PrecioVenta = dto.PrecioVenta;
-            producto.Stock = dto.Stock;
-            producto.Descripcion = dto.Descripcion;
+            _mapper.Map(dto, producto);
 
             await _context.SaveChangesAsync(cancellationToken);
 
