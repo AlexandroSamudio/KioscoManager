@@ -488,3 +488,5 @@ API/rules.md
 API/appsettings.Development.json
 .vscode/launch.json
 .vscode/settings.json
+.github/instructions/angular-rules.instructions.md
+.github/instructions/dotnet-rules.instructions.md
