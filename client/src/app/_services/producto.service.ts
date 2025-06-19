@@ -6,6 +6,7 @@ import { catchError, Observable, throwError } from 'rxjs';
 import { ProductoMasVendido } from '../_models/producto-mas-vendido.model';
 import { NotificationService } from './notification.service';
 import { setPaginatedResponse, setPaginationHeaders, PaginatedResult } from './pagination.helper';
+import { ProductoCreate } from '../_models/producto.model';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,15 @@ export class ProductoService {
     };
   }
 
-  getProductos(pageNumber: number = 1, pageSize: number = 10, categoriaId?: number, stockStatus?: string, searchTerm?: string) {
+  getProductos(
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    categoriaId?: number,
+    stockStatus?: string,
+    searchTerm?: string,
+    sortColumn?: string,
+    sortDirection?: 'asc' | 'desc'
+  ) {
     let params = setPaginationHeaders(pageNumber, pageSize);
     if (categoriaId) {
       params = params.append('categoriaId', categoriaId.toString());
@@ -34,6 +43,12 @@ export class ProductoService {
     }
     if (searchTerm && searchTerm.trim() !== '') {
       params = params.append('searchTerm', searchTerm.trim());
+    }
+    if (sortColumn) {
+      params = params.append('sortColumn', sortColumn);
+    }
+    if (sortDirection) {
+      params = params.append('sortDirection', sortDirection);
     }
     return this.http
       .get<Producto[]>(`${this.baseUrl}productos`, { params, observe: 'response' })
@@ -60,5 +75,23 @@ export class ProductoService {
       .pipe(
         catchError(this.handleError<ProductoMasVendido[]>('Error al obtener los productos más vendidos del día'))
       );
+  }
+
+  createProducto(producto: ProductoCreate): Observable<Producto> {
+    return this.http.post<Producto>(`${this.baseUrl}productos`, producto).pipe(
+      catchError(this.handleError<Producto>('Error al crear el producto'))
+    );
+  }
+
+  updateProducto(id: number, producto: ProductoCreate): Observable<Producto> {
+    return this.http.put<Producto>(`${this.baseUrl}productos/${id}`, producto).pipe(
+      catchError(this.handleError<Producto>(`Error al actualizar el producto con ID ${id}`))
+    );
+  }
+
+  deleteProducto(id: number): Observable<object> {
+    return this.http.delete(`${this.baseUrl}productos/${id}`).pipe(
+      catchError(this.handleError<object>(`Error al eliminar el producto con ID ${id}`))
+    );
   }
 }

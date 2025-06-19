@@ -8,7 +8,8 @@ import { Subject} from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import { setPaginatedResponse } from '../../_services/pagination.helper';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-// import { ProductoFormComponent } from '../producto-form/producto-form.component';
+import { ProductoFormComponent } from '../producto-form/producto-form.component';
+import { NotificationService } from '../../_services/notification.service';
 
 export enum StockStatusEnum {
   LOW = 'low',
@@ -19,16 +20,17 @@ export enum StockStatusEnum {
 @Component({
   selector: 'app-inventario',
   standalone:true,
-  imports: [NavbarComponent, CommonModule, FormsModule, /* ProductoFormComponent */],
+  imports: [NavbarComponent, CommonModule, FormsModule, ProductoFormComponent],
   templateUrl: './inventario.component.html',
   styleUrl: './inventario.component.css'
 })
 export class InventarioComponent implements OnInit {
   private productoService = inject(ProductoService);
   private destroyRef = inject(DestroyRef);
+  private notificationService = inject(NotificationService);
 
   currentPage = signal<number>(1);
-  pageSize = signal<number>(4);
+  pageSize = signal<number>(6);
   isLoading = signal<boolean>(false);
   selectedCategoriaId = signal<number | undefined>(undefined);
   stockStatus = signal<string>('');
@@ -39,6 +41,9 @@ export class InventarioComponent implements OnInit {
   isProductoFormVisible = false;
   isEditMode = false;
   productoAEditar: Producto | null = null;
+
+  sortColumn: string = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor() {
     this.searchTermSubject.pipe(
@@ -66,7 +71,9 @@ export class InventarioComponent implements OnInit {
       this.pageSize(),
       this.selectedCategoriaId(),
       this.stockStatus(),
-      this.searchTerm
+      this.searchTerm,
+      this.sortColumn,
+      this.sortDirection
     ).pipe(
       finalize(() => this.isLoading.set(false)),
       takeUntilDestroyed(this.destroyRef)
@@ -184,7 +191,36 @@ export class InventarioComponent implements OnInit {
   }
 
   onProductoGuardado(producto: Producto): void {
+    const mensaje = this.isEditMode
+      ? 'El producto fue actualizado correctamente.'
+      : 'El producto fue agregado correctamente.';
     this.closeProductoForm();
+    this.loadProductos();
+    this.notificationService.success('¡Éxito!', mensaje);
+  }
+
+  async onDeleteProducto(id: number): Promise<void> {
+    const confirmed = await this.notificationService.confirm(
+      '¿Estás seguro de que quieres eliminar este producto?',
+      'Esta acción no se puede deshacer.'
+    );
+    if (confirmed) {
+      this.productoService.deleteProducto(id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => {
+          this.loadProductos();
+          this.notificationService.warning('Producto eliminado', 'El producto fue eliminado correctamente.');
+        });
+    }
+  }
+
+  onSort(column: string): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
     this.loadProductos();
   }
 }
