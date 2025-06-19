@@ -27,7 +27,16 @@ namespace API.Data.Repositories
                             .SingleOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<PagedList<ProductoDto>> GetProductosAsync(int kioscoId, int pageNumber, int pageSize, CancellationToken cancellationToken, int? categoriaId = null, string? stockStatus = null, string? searchTerm = null)
+        public async Task<PagedList<ProductoDto>> GetProductosAsync(
+            int kioscoId,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken,
+            int? categoriaId = null,
+            string? stockStatus = null,
+            string? searchTerm = null,
+            string? sortColumn = null,
+            string? sortDirection = null)
         {
             var query = _context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
@@ -56,14 +65,28 @@ namespace API.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var search = searchTerm.Trim();
+                var search = searchTerm.Trim().ToLower();
                 query = query.Where(p =>
-                    EF.Functions.Like(p.Nombre, $"%{search}%") ||
-                    EF.Functions.Like(p.Sku, $"%{search}%")
+                    p.Nombre.ToLower().Contains(search) ||
+                    p.Sku.ToLower().Contains(search)
                 );
             }
 
-            query = query.OrderBy(p => p.Stock);
+            // Ordenamiento dinámico
+            query = (sortColumn, sortDirection?.ToLower()) switch
+            {
+                ("sku", "desc") => query.OrderByDescending(p => p.Sku),
+                ("sku", _) => query.OrderBy(p => p.Sku),
+                ("nombre", "desc") => query.OrderByDescending(p => p.Nombre),
+                ("nombre", _) => query.OrderBy(p => p.Nombre),
+                ("precioCompra", "desc") => query.OrderByDescending(p => p.PrecioCompra),
+                ("precioCompra", _) => query.OrderBy(p => p.PrecioCompra),
+                ("precioVenta", "desc") => query.OrderByDescending(p => p.PrecioVenta),
+                ("precioVenta", _) => query.OrderBy(p => p.PrecioVenta),
+                ("stock", "desc") => query.OrderByDescending(p => p.Stock),
+                ("stock", _) => query.OrderBy(p => p.Stock),
+                _ => query.OrderBy(p => p.Id)
+            };
 
             return await PagedList<ProductoDto>.CreateAsync(query.ProjectTo<ProductoDto>(_mapper.ConfigurationProvider),
                 pageNumber, pageSize, cancellationToken);
