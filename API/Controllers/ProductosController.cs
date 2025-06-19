@@ -17,7 +17,9 @@ namespace API.Controllers
             CancellationToken cancellationToken = default,
             int categoriaId = 0,
             string? stockStatus = null,
-            string? searchTerm = null)
+            string? searchTerm = null,
+            string? sortColumn = null,
+            string? sortDirection = null)
         {
             pageSize = Math.Clamp(pageSize, 1, 10);
 
@@ -28,7 +30,9 @@ namespace API.Controllers
                 cancellationToken,
                 categoriaId == 0 ? null : categoriaId,
                 stockStatus,
-                searchTerm);
+                searchTerm,
+                sortColumn,
+                sortDirection);
             Response.AddPaginationHeader(productos);
             return Ok(productos);
         }
