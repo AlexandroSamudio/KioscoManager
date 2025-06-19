@@ -292,7 +292,6 @@
 /* Efectos para tooltips de ayuda */
 .help-tooltip {
   position: relative;
-  /* Considere añadir role="tooltip" y aria-describedby en el HTML */
 
   &:hover::after {
     content: attr(data-tooltip);

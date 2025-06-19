@@ -8,18 +8,20 @@ import { Producto } from '../../_models/producto.model';
 import { CategoriaService } from '../../_services/categoria.service';
 import { Categoria } from '../../_models/categoria.model';
 import { finalize } from 'rxjs';
+import { NotificationService } from '../../_services/notification.service';
 
 @Component({
   selector: 'app-producto-form',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './producto-form.component.html',
-  styleUrl: './producto-form.component.css'
+  styleUrl: './producto-form.component.css',
 })
 export class ProductoFormComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private productoService = inject(ProductoService);
   private categoriaService = inject(CategoriaService);
+  private notifiactionService = inject(NotificationService);
   @Input() isVisible = false;
   @Input() isEditMode = false;
   private _initialProduct: Producto | null = null;
@@ -28,7 +30,7 @@ export class ProductoFormComponent implements OnInit {
     if (this.isEditMode && value) {
       this.producto = {
         ...value,
-        categoriaId: this.parseCategoriaId(value.categoriaId)
+        categoriaId: this.parseCategoriaId(value.categoriaId),
       };
     } else {
       this.producto = this.getEmptyProduct();
@@ -49,7 +51,8 @@ export class ProductoFormComponent implements OnInit {
   }
 
   private loadCategorias(): void {
-    this.categoriaService.getCategorias()
+    this.categoriaService
+      .getCategorias()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (categorias) => {
@@ -57,7 +60,10 @@ export class ProductoFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error al cargar las categorías', error);
-        }
+          this.notifiactionService.error(
+            'Error', 'No se pudieron cargar las categorías'
+          );
+        },
       });
   }
 
@@ -76,13 +82,15 @@ export class ProductoFormComponent implements OnInit {
       precioVenta: 0,
       stock: 0,
       categoriaNombre: '',
-      categoriaId: 0
+      categoriaId: 0,
     };
   }
 
   onSubmit(): void {
     if (!this.producto.categoriaId || this.producto.categoriaId === 0) {
-      const categoria = this.categorias.find(c => c.nombre === this.producto.categoriaNombre);
+      const categoria = this.categorias.find(
+        (c) => c.nombre === this.producto.categoriaNombre
+      );
       if (categoria) {
         this.producto.categoriaId = categoria.id;
       }
@@ -90,13 +98,16 @@ export class ProductoFormComponent implements OnInit {
     if (this.isLoading) return;
     this.isLoading = true;
     const { id, categoriaNombre, ...productoSinId } = this.producto;
-    const obs = this.isEditMode && this.producto.id
-      ? this.productoService.updateProducto(this.producto.id, productoSinId)
-      : this.productoService.createProducto(productoSinId);
+    const obs =
+      this.isEditMode && this.producto.id
+        ? this.productoService.updateProducto(this.producto.id, productoSinId)
+        : this.productoService.createProducto(productoSinId);
     obs
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        finalize(() => { this.isLoading = false; })
+        finalize(() => {
+          this.isLoading = false;
+        })
       )
       .subscribe({
         next: (result) => {
@@ -105,12 +116,12 @@ export class ProductoFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error al guardar el producto', error);
-        }
+        },
       });
   }
 
   onCategoryChange(nombre: string): void {
-    const cat = this.categorias.find(c => c.nombre === nombre);
+    const cat = this.categorias.find((c) => c.nombre === nombre);
     this.producto.categoriaId = cat ? cat.id : 0;
     this.producto.categoriaNombre = nombre;
   }
