@@ -1,6 +1,5 @@
 [
     {
-        "id": 1,
         "sku": "FID-001",
         "nombre": "Fideos",
         "descripcion": "Fideos de trigo, ideales para sopas y guisos.",
@@ -11,7 +10,6 @@
         "kioscoId": 1
     },
     {
-        "id": 2,
         "sku": "LEC-001",
         "nombre": "Leche Entera",
         "descripcion": "Leche fresca entera, rica en calcio y vitaminas.",
@@ -22,7 +20,6 @@
         "kioscoId": 1
     },
     {
-        "id": 3,
         "sku": "YOG-001",
         "nombre": "Yogur Natural",
         "descripcion": "Yogur cremoso natural, sin azúcares añadidos.",
@@ -33,7 +30,6 @@
         "kioscoId": 1
     },
     {
-        "id": 4,
         "sku": "GAL-001",
         "nombre": "Galletas de Avena",
         "descripcion": "Galletas saludables de avena",
@@ -44,7 +40,6 @@
         "kioscoId": 1
     },
     {
-        "id": 5,
         "sku": "AGU-001",
         "nombre": "Agua mineral con gas",
         "descripcion": "Agua mineral con gas de 500ml",
@@ -55,7 +50,6 @@
         "kioscoId": 1
     },
     {
-        "id": 6,
         "sku": "CHO-001",
         "nombre": "Barra chocolate",
         "descripcion": "Barra de chocolate con leche",
@@ -66,7 +60,6 @@
         "kioscoId": 1
     },
     {
-        "id": 7,
         "sku": "CIG-001",
         "nombre": "Cigarillo de Menta",
         "descripcion": "Cigarillo de menta suave y refrescante",
@@ -77,7 +70,6 @@
         "kioscoId": 1
     },
     {
-        "id": 8,
         "sku": "DES-001",
         "nombre": "Desodorante",
         "descripcion": "Desodorante en barra, 50ml",
@@ -88,7 +80,6 @@
         "kioscoId": 1
     },
     {
-        "id": 9,
         "sku": "ALF-001",
         "nombre": "Alfajor de Dulce de Leche",
         "descripcion": "Alfajor relleno de dulce de leche con cobertura de chocolate",
@@ -99,7 +90,6 @@
         "kioscoId": 1
     },
     {
-        "id": 10,
         "sku": "GAL-002",
         "nombre": "Galletas saladas",
         "descripcion": "Galletas saladas con sabor a queso",
