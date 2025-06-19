@@ -21,7 +21,7 @@ export class ProductoFormComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private productoService = inject(ProductoService);
   private categoriaService = inject(CategoriaService);
-  private notifiactionService = inject(NotificationService);
+  private notificationService = inject(NotificationService);
   @Input() isVisible = false;
   @Input() isEditMode = false;
   private _initialProduct: Producto | null = null;
@@ -60,7 +60,7 @@ export class ProductoFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error al cargar las categorías', error);
-          this.notifiactionService.error(
+          this.notificationService.error(
             'Error', 'No se pudieron cargar las categorías'
           );
         },
@@ -116,6 +116,9 @@ export class ProductoFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error al guardar el producto', error);
+          this.notificationService.error(
+            'Error', 'No se pudo guardar el producto'
+          );
         },
       });
   }
