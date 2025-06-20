@@ -1,0 +1,300 @@
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50" *ngIf="isVisible">
+  <div
+    class="relative w-11/12 md:w-3/4 lg:w-1/2 xl:w-2/5 my-8 max-h-[calc(100vh-4rem)] overflow-y-auto p-5 border shadow-lg rounded-2xl bg-white scrollbar-none"
+    style="scrollbar-width: none; -ms-overflow-style: none;">
+    <div class="bg-gradient-to-r from-amber-500 to-amber-600 -m-5 mb-6 rounded-t-2xl px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <div class="p-2 bg-white bg-opacity-20 rounded-lg mr-3">
+            <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-white">
+              {{ isEditMode ? 'Editar Producto: ' + producto.nombre : 'Añadir Nuevo Producto' }}
+            </h2>
+            <p class="text-amber-100 text-sm">
+              {{ isEditMode ? 'Modifica los datos del producto' : 'Completa la información del nuevo producto' }}
+            </p>
+          </div>
+        </div>
+
+        <button type="button"
+          class="text-white hover:text-amber-200 transition-colors p-2 hover:bg-white hover:bg-opacity-20 rounded-lg"
+          (click)="closeModal()">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <form class="space-y-6" #productForm="ngForm" (ngSubmit)="onSubmit()">
+
+      <div class="bg-amber-50 rounded-xl p-6 border border-amber-200">
+        <h3 class="text-lg font-semibold text-amber-900 mb-4 flex items-center">
+          <svg class="h-5 w-5 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Información Básica
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <label for="productName" class="block text-sm font-medium text-amber-700 mb-2">
+              Nombre del Producto *
+            </label>
+            <input type="text" id="productName" name="productName" [(ngModel)]="producto.nombre"
+              #productNameInput="ngModel" required minlength="2" maxlength="100" placeholder="Ej: Coca Cola 500ml"
+              class="w-full bg-white border border-amber-300 rounded-lg py-3 px-4 text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              [class.border-red-500]="productNameInput.invalid && productNameInput.touched" />
+            <div *ngIf="productNameInput.invalid && productNameInput.touched" class="mt-2">
+              <p *ngIf="productNameInput.errors?.['required']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El nombre del producto es obligatorio
+              </p>
+              <p *ngIf="productNameInput.errors?.['minlength']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El nombre debe tener al menos 2 caracteres
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label for="productSku" class="block text-sm font-medium text-amber-700 mb-2">
+              SKU/Código *
+            </label>
+            <input type="text" id="productSku" name="productSku" [(ngModel)]="producto.sku" #productSkuInput="ngModel"
+              required maxlength="20" placeholder="Ej: CC001"
+              class="w-full bg-white border border-amber-300 rounded-lg py-3 px-4 text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              [class.border-red-500]="productSkuInput.invalid && productSkuInput.touched" />
+            <div *ngIf="productSkuInput.invalid && productSkuInput.touched" class="mt-2">
+              <p *ngIf="productSkuInput.errors?.['required']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El SKU es obligatorio
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label for="productCategory" class="block text-sm font-medium text-amber-700 mb-2">
+              Categoría *
+            </label>
+            <select id="productCategory" name="productCategory" [(ngModel)]="producto.categoriaNombre"
+              (ngModelChange)="onCategoryChange($event)" #productCategoryInput="ngModel" required
+              class="w-full bg-white border border-amber-300 rounded-lg py-3 px-4 text-amber-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+              [class.border-red-500]="productCategoryInput.invalid && productCategoryInput.touched">
+              <option [ngValue]="''" disabled>Selecciona una categoría</option>
+              <option *ngFor="let categoria of categorias" [ngValue]="categoria.nombre">{{ categoria.nombre }}</option>
+            </select>
+            <div *ngIf="productCategoryInput.invalid && productCategoryInput.touched" class="mt-2">
+              <p class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Selecciona una categoría
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-green-50 rounded-xl p-6 border border-green-200">
+        <h3 class="text-lg font-semibold text-green-900 mb-4 flex items-center">
+          <svg class="h-5 w-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+          </svg>
+          Información de Precios
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="precioCompra" class="block text-sm font-medium text-green-700 mb-2">
+              Precio de Compra *
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-3 text-green-600 font-medium">$</span>
+              <input type="number" id="precioCompra" name="precioCompra" [(ngModel)]="producto.precioCompra"
+                #precioCompraInput="ngModel" required min="0.01" step="0.01" placeholder="0.00"
+                class="w-full bg-white border border-green-300 rounded-lg py-3 px-4 pl-8 text-green-800 placeholder-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                [class.border-red-500]="precioCompraInput.invalid && precioCompraInput.touched" />
+            </div>
+            <div *ngIf="precioCompraInput.invalid && precioCompraInput.touched" class="mt-2">
+              <p *ngIf="precioCompraInput.errors?.['required']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El precio de compra es obligatorio
+              </p>
+              <p *ngIf="precioCompraInput.errors?.['min']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El precio debe ser mayor a 0
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <label for="precioVenta" class="block text-sm font-medium text-green-700 mb-2">
+              Precio de Venta *
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-3 text-green-600 font-medium">$</span>
+              <input type="number" id="precioVenta" name="precioVenta" [(ngModel)]="producto.precioVenta"
+                #precioVentaInput="ngModel" required min="0.01" step="0.01" placeholder="0.00"
+                class="w-full bg-white border border-green-300 rounded-lg py-3 px-4 pl-8 text-green-800 placeholder-green-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                [class.border-red-500]="precioVentaInput.invalid && precioVentaInput.touched" />
+            </div>
+            <div *ngIf="precioVentaInput.invalid && precioVentaInput.touched" class="mt-2">
+              <p *ngIf="precioVentaInput.errors?.['required']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El precio de venta es obligatorio
+              </p>
+              <p *ngIf="precioVentaInput.errors?.['min']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El precio debe ser mayor a 0
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 p-4 bg-white rounded-lg border border-green-200"
+          *ngIf="producto.precioCompra && producto.precioVenta">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-green-700">Margen de Ganancia:</span>
+            <div class="text-right">
+              <span class="text-lg font-bold text-green-600">
+                ${{ (producto.precioVenta - producto.precioCompra) | number:'1.2-2' }}
+              </span>
+              <span class="text-sm text-green-600 ml-2">
+                ({{ ((producto.precioVenta - producto.precioCompra) / producto.precioCompra * 100) | number:'1.1-1' }}%)
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-blue-50 rounded-xl p-6 border border-blue-200">
+        <h3 class="text-lg font-semibold text-blue-900 mb-4 flex items-center">
+          <svg class="h-5 w-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          Control de Inventario
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="stock" class="block text-sm font-medium text-blue-700 mb-2">
+              Stock Actual *
+            </label>
+            <input type="number" id="stock" name="stock" [(ngModel)]="producto.stock" #stockInput="ngModel" required
+              min="0" step="1" placeholder="0"
+              class="w-full bg-white border border-blue-300 rounded-lg py-3 px-4 text-blue-800 placeholder-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              [class.border-red-500]="stockInput.invalid && stockInput.touched" />
+            <div *ngIf="stockInput.invalid && stockInput.touched" class="mt-2">
+              <p *ngIf="stockInput.errors?.['required']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El stock actual es obligatorio
+              </p>
+              <p *ngIf="stockInput.errors?.['min']" class="text-red-600 text-sm flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                El stock no puede ser negativo
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 p-4 rounded-lg border bg-blue-100 border-blue-200" *ngIf="producto.stock >= 0">
+          <div class="flex items-center">
+            <svg class="h-5 w-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span class="text-blue-700 font-medium">Stock actual: {{ producto.stock }} unidades</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <svg class="h-5 w-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Información Adicional
+        </h3>
+
+        <div>
+          <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-2">
+            Descripción (Opcional)
+          </label>
+          <textarea id="descripcion" name="descripcion" [(ngModel)]="producto.descripcion" rows="3" maxlength="500"
+            placeholder="Descripción detallada del producto, características especiales, etc."
+            class="w-full bg-white border border-gray-300 rounded-lg py-3 px-4 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all resize-none"></textarea>
+          <p class="text-gray-500 text-xs mt-1">Máximo 500 caracteres</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+        <button type="button"
+          class="px-6 py-3 border border-amber-300 text-amber-700 rounded-lg font-semibold hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all"
+          (click)="closeModal()">
+          <span class="flex items-center">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Cancelar
+          </span>
+        </button>
+
+        <button type="submit" [disabled]="!productForm.form.valid || isLoading"
+          class="px-6 py-3 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-300 disabled:cursor-not-allowed text-white rounded-lg font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all transform hover:scale-105 disabled:transform-none">
+          <span class="flex items-center" *ngIf="!isLoading">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            {{ isEditMode ? 'Actualizar Producto' : 'Crear Producto' }}
+          </span>
+
+          <span class="flex items-center" *ngIf="isLoading">
+            <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+            {{ isEditMode ? 'Actualizando...' : 'Creando...' }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

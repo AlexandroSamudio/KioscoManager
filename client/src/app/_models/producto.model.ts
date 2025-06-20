@@ -6,5 +6,10 @@ export interface Producto {
   precioCompra: number;
   precioVenta: number;
   stock: number;
-  categoriaNombre?: string;
+  categoriaNombre: string;
+  categoriaId: number;
+}
+
+export interface ProductoCreate extends Omit<Producto, 'id' | 'categoriaNombre'> {
+  categoriaId: number;
 }

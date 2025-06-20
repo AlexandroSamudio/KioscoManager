@@ -34,6 +34,16 @@ export class NotificationService {
     });
   }
 
+  warning(title: string, text: string): void {
+    Swal.fire({
+      icon: 'warning',
+      title,
+      text,
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#f59e42'
+    });
+  }
+
   async confirm(title: string, text: string): Promise<boolean> {
     const result = await Swal.fire({
       title,
