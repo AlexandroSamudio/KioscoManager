@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Interfaces;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using API.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data.Repositories
@@ -15,6 +16,70 @@ namespace API.Data.Repositories
         {
             _context = context;
             _mapper = mapper;
+        }
+
+        public async Task<Venta> CreateVentaAsync(VentaCreateDto ventaData, int kioscoId, int usuarioId, CancellationToken cancellationToken = default)
+        {
+            var productosIds = ventaData.Productos.Select(p => p.ProductoId).Distinct().ToList();
+            var productos = await _context.Productos!
+                .Where(p => p.KioscoId == kioscoId && productosIds.Contains(p.Id))
+                .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
+
+            if (productos.Count != productosIds.Count)
+            {
+                var noEncontrados = productosIds.Except(productos.Keys).ToList();
+                throw new ArgumentException($"Los siguientes productos no se encontraron en el kiosco: {string.Join(", ", noEncontrados)}");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var venta = new Venta
+                {
+                    KioscoId = kioscoId,
+                    UsuarioId = usuarioId,
+                    Fecha = DateTime.UtcNow
+                };
+
+                foreach (var productoVenta in ventaData.Productos)
+                {
+                    var producto = productos[productoVenta.ProductoId];
+                    var detalle = new DetalleVenta
+                    {
+                        ProductoId = producto.Id,
+                        Cantidad = productoVenta.Cantidad,
+                        PrecioUnitario = producto.PrecioVenta
+                    };
+                    
+                    venta.Detalles.Add(detalle);
+                }
+
+                venta.Total = venta.Detalles.Sum(d => d.PrecioUnitario * d.Cantidad);
+
+                _context.Ventas!.Add(venta);
+
+                foreach (var detalle in venta.Detalles)
+                {
+                    var producto = productos[detalle.ProductoId];
+                    if (producto.Stock < detalle.Cantidad)
+                    {
+                        throw new InvalidOperationException($"Stock insuficiente para el producto {producto.Nombre}. Stock actual: {producto.Stock}, Cantidad solicitada: {detalle.Cantidad}");
+                    }
+
+                    producto.Stock -= detalle.Cantidad;
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+                
+                await transaction.CommitAsync(cancellationToken);
+                
+                return venta;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
         }
 
         public async Task<IReadOnlyList<VentaDto>> GetVentasDelDiaAsync(int kioscoId,CancellationToken cancellationToken, DateTime? fecha = null)

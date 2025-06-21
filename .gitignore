@@ -490,3 +490,25 @@ API/appsettings.Development.json
 .vscode/settings.json
 .github/instructions/angular-rules.instructions.md
 .github/instructions/dotnet-rules.instructions.md
+
+# Added by Task Master AI
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+# Dependency directories
+# Environment variables
+# Editor directories and files
+*.ntvs*
+*.njsproj
+*.sw?
+*.cursor
+*.root
+*.taskmaster
+*.roo
+# OS specific
+.windsurfrules
+.roomodes
+client/.vscode/tasks.json

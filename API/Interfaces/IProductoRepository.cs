@@ -11,6 +11,7 @@ namespace API.Interfaces
         Task<bool> DeleteProductoAsync(int kioscoId, int id, CancellationToken cancellationToken);
         Task<ProductoDto?> CreateProductoAsync(int kioscoId, ProductoCreateDto dto, CancellationToken cancellationToken);
         Task<ProductoDto?> UpdateProductoAsync(int kioscoId, int id, ProductoCreateDto dto, CancellationToken cancellationToken);
+        Task<ProductoDto?> GetProductoBySkuAsync(int kioscoId, string sku, CancellationToken cancellationToken);
 
     }
 }

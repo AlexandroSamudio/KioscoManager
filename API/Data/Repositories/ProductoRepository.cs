@@ -157,5 +157,14 @@ namespace API.Data.Repositories
                 .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(cancellationToken);
         }
+
+        public async Task<ProductoDto?> GetProductoBySkuAsync(int kioscoId, string sku, CancellationToken cancellationToken)
+        {
+            return await _context.Productos!
+                .Where(p => p.KioscoId == kioscoId && p.Sku == sku)
+                .AsNoTracking()
+                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
+                .SingleOrDefaultAsync(cancellationToken);
+        }
     }
 }

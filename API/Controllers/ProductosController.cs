@@ -97,5 +97,17 @@ namespace API.Controllers
             }
             return Ok(updated);
         }
+
+        [HttpGet("by-sku/{sku}")]
+        public async Task<ActionResult<ProductoDto>> GetProductoBySku(string sku, CancellationToken cancellationToken)
+        {
+            var producto = await productoRepository.GetProductoBySkuAsync(KioscoId, sku, cancellationToken);
+            if (producto == null)
+            {
+                return NotFound($"No se encontró un producto con SKU '{sku}' en este kiosco");
+            }
+
+            return Ok(producto);
+        }
     }
 }
