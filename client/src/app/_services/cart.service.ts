@@ -141,6 +141,10 @@ export class CartService {
   }
 
   prepareVentaData(): VentaCreate {
+    if (this.cartItems().length === 0) {
+      throw new Error('El carrito está vacío, no se puede preparar la venta');
+    }
+
     return {
       productos: this.cartItems().map((item) => ({
         productoId: item.id,

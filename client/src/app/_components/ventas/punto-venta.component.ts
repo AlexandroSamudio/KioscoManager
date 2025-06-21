@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../navbar/navbar.component';
@@ -15,11 +15,13 @@ import { CartItem } from '../../_models/venta-create.model';
   templateUrl: './punto-venta.component.html',
   styleUrl: './punto-venta.component.css',
 })
-export class PuntoVentaComponent {
+export class PuntoVentaComponent{
   private destroyRef = inject(DestroyRef);
   private ventaService = inject(VentaService);
   private notificationService = inject(NotificationService);
   private cartService = inject(CartService);
+
+  @ViewChild('skuInputRef') skuInputRef!: ElementRef<HTMLInputElement>;
 
   skuInput = '';
   isLoading = false;
@@ -30,6 +32,10 @@ export class PuntoVentaComponent {
   readonly cartEmpty = this.cartService.isEmpty;
   readonly totalProductos = this.cartService.totalItems;
   readonly totalVenta = this.cartService.totalAmount;
+
+  focusSkuInput(): void {
+    this.skuInputRef?.nativeElement?.focus();
+  }
 
   onSkuSubmit(): void {
     if (!this.skuInput.trim()) {
@@ -116,13 +122,14 @@ export class PuntoVentaComponent {
           this.finalizingSale = false;
           this.skuInput = '';
 
-          setTimeout(() => {
-            const skuInput = document.getElementById('sku');
-            if (skuInput) skuInput.focus();
-          }, 500);
+          this.focusSkuInput();
         },
         error: () => {
           this.finalizingSale = false;
+          this.notificationService.error(
+            'Error al procesar la venta',
+            'Ocurrió un error al procesar la venta. Por favor, intente nuevamente.'
+          );
         },
       });
   }
