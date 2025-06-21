@@ -1,8 +1,9 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable} from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
 })
+
 export class UiService {
 
   scrollToElement(elementId: string, offset: number = 0): void {

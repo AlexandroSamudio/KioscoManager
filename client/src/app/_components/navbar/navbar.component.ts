@@ -14,10 +14,11 @@ import { CommonModule } from '@angular/common';
 })
 export class NavbarComponent {
   private readonly defaultNavigationItems: NavigationItem[] = [
+    { label: 'Dashboard', path: '/dashboard' },
     { label: 'Inventario', path: '/inventario' },
+    { label: 'Realizar Venta', path: '/punto-de-venta' },
     { label: 'Ventas', path: '/ventas' },
     { label: 'Reportes', path: '/reportes' },
-    { label: 'Compras', path: '/compras' },
     { label: 'Configuración', path: '/configuracion' }
   ];
 
