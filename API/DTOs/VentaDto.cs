@@ -1,11 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API.DTOs
 {
     public class VentaDto
     {
-        public int Id { get; set; }
-        public DateTime Fecha { get; set; }
-        public decimal Total { get; set; }
-        public string? NombreUsuario { get; set; }
-        public int CantidadProductos { get; set; }
+        [Required]
+        public required int Id { get; set; }
+        [Required]
+        public required DateTime Fecha { get; set; }
+        [Required]
+        public required decimal Total { get; set; }
+        [Required]
+        public required int CantidadProductos { get; set; }
     }
 }
