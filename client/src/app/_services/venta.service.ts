@@ -4,6 +4,8 @@ import { environment } from '../environments/environment.development';
 import { catchError, Observable, throwError } from 'rxjs';
 import { Venta } from '../_models/venta.model';
 import { NotificationService } from './notification.service';
+import { Producto } from '../_models/producto.model';
+import { VentaCreate } from '../_models/venta-create.model';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +20,20 @@ export class VentaService {
       this.notificationService.error(message, error?.message ?? 'Inténtelo de nuevo');
       return throwError(() => error);
     };
+  }
+
+  getProductoBySku(sku: string): Observable<Producto> {
+    return this.http.get<Producto>(`${this.baseUrl}productos/by-sku/${sku}`).pipe(
+      catchError((error) => {
+        return throwError(() => error);
+      })
+    );
+  }
+
+  finalizarVenta(venta: VentaCreate): Observable<Venta> {
+    return this.http.post<Venta>(`${this.baseUrl}ventas/finalizar`, venta).pipe(
+      catchError(this.handleError<Venta>('Error al finalizar la venta'))
+    );
   }
 
   getTotalVentasDia(): Observable<number> {
