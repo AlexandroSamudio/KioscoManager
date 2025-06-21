@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Extensions;
 using API.Interfaces;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -9,11 +10,13 @@ namespace API.Controllers
     {
         private readonly IVentaRepository _ventaRepository;
         private readonly IProductoRepository _productoRepository;
+        private readonly IMapper _mapper;
 
-        public VentasController(IVentaRepository ventaRepository, IProductoRepository productoRepository)
+        public VentasController(IVentaRepository ventaRepository, IProductoRepository productoRepository, IMapper mapper)
         {
             _ventaRepository = ventaRepository;
             _productoRepository = productoRepository;
+            _mapper = mapper;
         }
 
         protected int KioscoId => User.GetKioscoId();
@@ -78,23 +81,6 @@ namespace API.Controllers
             return Ok(productos);
         }
 
-        [HttpGet("producto-by-sku/{sku}")]
-        public async Task<ActionResult<ProductoDto>> GetProductoBySku(string sku, CancellationToken cancellationToken)
-        {
-            if (string.IsNullOrWhiteSpace(sku))
-            {
-                return BadRequest("El SKU no puede estar vacío");
-            }
-
-            var producto = await _productoRepository.GetProductoBySkuAsync(KioscoId, sku, cancellationToken);
-            if (producto == null)
-            {
-                return NotFound($"No se encontró un producto con SKU '{sku}' en este kiosco");
-            }
-
-            return Ok(producto);
-        }
-
         [HttpPost("finalizar")]
         public async Task<ActionResult<VentaDto>> FinalizarVenta(VentaCreateDto ventaDto, CancellationToken cancellationToken)
         {
@@ -107,13 +93,7 @@ namespace API.Controllers
             {
                 var venta = await _ventaRepository.CreateVentaAsync(ventaDto, KioscoId, UserId, cancellationToken);
                 
-                var ventaResponse = new VentaDto
-                {
-                    Id = venta.Id,
-                    Fecha = venta.Fecha,
-                    Total = venta.Total,
-                    CantidadProductos = venta.Detalles.Count
-                };
+                var ventaResponse = _mapper.Map<VentaDto>(venta);
                 
                 return Ok(ventaResponse);
             }

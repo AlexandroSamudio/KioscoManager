@@ -57,19 +57,16 @@ namespace API.Data.Repositories
                 venta.Total = venta.Detalles.Sum(d => d.PrecioUnitario * d.Cantidad);
 
                 _context.Ventas!.Add(venta);
-                
+
                 foreach (var detalle in venta.Detalles)
                 {
                     var producto = productos[detalle.ProductoId];
-                    if (producto != null)
+                    if (producto.Stock < detalle.Cantidad)
                     {
-                        if (producto.Stock < detalle.Cantidad)
-                        {
-                            throw new InvalidOperationException($"Stock insuficiente para el producto {producto.Nombre}. Stock actual: {producto.Stock}, Cantidad solicitada: {detalle.Cantidad}");
-                        }
-                        
-                        producto.Stock -= detalle.Cantidad;
+                        throw new InvalidOperationException($"Stock insuficiente para el producto {producto.Nombre}. Stock actual: {producto.Stock}, Cantidad solicitada: {detalle.Cantidad}");
                     }
+
+                    producto.Stock -= detalle.Cantidad;
                 }
 
                 await _context.SaveChangesAsync(cancellationToken);

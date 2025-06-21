@@ -104,8 +104,9 @@ namespace API.Controllers
             var producto = await productoRepository.GetProductoBySkuAsync(KioscoId, sku, cancellationToken);
             if (producto == null)
             {
-                return NotFound();
+                return NotFound($"No se encontró un producto con SKU '{sku}' en este kiosco");
             }
+
             return Ok(producto);
         }
     }
