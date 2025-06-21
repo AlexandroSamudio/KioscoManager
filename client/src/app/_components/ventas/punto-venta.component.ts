@@ -15,7 +15,7 @@ import { CartItem } from '../../_models/venta-create.model';
   templateUrl: './punto-venta.component.html',
   styleUrl: './punto-venta.component.css',
 })
-export class PuntoVentaComponent{
+export class PuntoVentaComponent implements AfterViewInit {
   private destroyRef = inject(DestroyRef);
   private ventaService = inject(VentaService);
   private notificationService = inject(NotificationService);
@@ -32,6 +32,10 @@ export class PuntoVentaComponent{
   readonly cartEmpty = this.cartService.isEmpty;
   readonly totalProductos = this.cartService.totalItems;
   readonly totalVenta = this.cartService.totalAmount;
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.focusSkuInput(), 100);
+  }
 
   focusSkuInput(): void {
     this.skuInputRef?.nativeElement?.focus();
