@@ -22,6 +22,7 @@ namespace API.Controllers
             string? sortDirection = null)
         {
             pageSize = Math.Clamp(pageSize, 1, 10);
+            pageNumber = Math.Max(pageNumber, 1);
 
             var productos = await productoRepository.GetProductosAsync(
                 KioscoId,
