@@ -21,12 +21,12 @@ namespace API.Data.Repositories
 
         public async Task<CompraDto> CreateCompraAsync(CompraCreateDto compraData, int kioscoId, int usuarioId, CancellationToken cancellationToken = default)
         {
-            if (compraData.Productos == null || !compraData.Productos.Any())
+            if (compraData.Detalles == null || !compraData.Detalles.Any())
             {
                 throw new ArgumentException("La compra debe contener al menos un producto");
             }
 
-            var productosIds = compraData.Productos.Select(p => p.ProductoId).Distinct().ToList();
+            var productosIds = compraData.Detalles.Select(p => p.ProductoId).Distinct().ToList();
 
             var productos = await _context.Productos!
                 .Where(p => p.KioscoId == kioscoId && productosIds.Contains(p.Id))
@@ -52,7 +52,7 @@ namespace API.Data.Repositories
                     Detalles = new List<CompraDetalle>()
                 };
 
-                foreach (var productoCompra in compraData.Productos)
+                foreach (var productoCompra in compraData.Detalles)
                 {
                     if (productoCompra.Cantidad <= 0)
                     {
