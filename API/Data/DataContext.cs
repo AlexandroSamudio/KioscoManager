@@ -19,6 +19,8 @@ namespace API.Data
         public DbSet<DetalleVenta>? DetalleVentas { get; set; }
         public DbSet<Kiosco> Kioscos { get; set; }
         public DbSet<CodigoInvitacion> CodigosInvitacion { get; set; }
+        public DbSet<Compra>? Compras { get; set; }
+        public DbSet<CompraDetalle>? CompraDetalles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -71,6 +73,24 @@ namespace API.Data
             builder.Entity<Producto>()
                 .HasIndex(p => new { p.KioscoId, p.Sku })
                 .IsUnique();
+
+            builder.Entity<Kiosco>()
+                .HasMany(k => k.Compras)
+                .WithOne(c => c.Kiosco)
+                .HasForeignKey(c => c.KioscoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<AppUser>()
+                .HasMany<Compra>()
+                .WithOne(c => c.Usuario)
+                .HasForeignKey(c => c.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Compra>()
+                .HasMany(c => c.Detalles)
+                .WithOne(cd => cd.Compra)
+                .HasForeignKey(cd => cd.CompraId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
     }
