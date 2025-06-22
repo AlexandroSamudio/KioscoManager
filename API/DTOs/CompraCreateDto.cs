@@ -5,7 +5,7 @@ namespace API.DTOs
     public class CompraCreateDto
     {
         [Required]
-        public required ICollection<CompraDetalleDto> Productos { get; set; } = new List<CompraDetalleDto>();
+        public required ICollection<CompraDetalleDto> Detalles { get; set; } = new List<CompraDetalleDto>();
         public string? Proveedor { get; set; }
         public string? Nota { get; set; }
     }

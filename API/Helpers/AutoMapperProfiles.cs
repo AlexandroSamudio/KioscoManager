@@ -38,10 +38,7 @@ namespace API.Helpers
                 .ForMember(dest => dest.ProductoSku, opt => opt.MapFrom(src => src.Producto!.Sku))
                 .ForMember(dest => dest.Subtotal, opt => opt.MapFrom(src => src.Cantidad * src.CostoUnitario));
 
-            CreateMap<CompraDetalleDto, CompraDetalle>()
-                .ForMember(dest => dest.ProductoId, opt => opt.MapFrom(src => src.ProductoId))
-                .ForMember(dest => dest.Cantidad, opt => opt.MapFrom(src => src.Cantidad))
-                .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario));
+            CreateMap<CompraDetalleDto, CompraDetalle>();
         }
     }
 }

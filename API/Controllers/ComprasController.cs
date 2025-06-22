@@ -25,6 +25,8 @@ namespace API.Controllers
             [FromQuery] string? sortColumn = null,
             [FromQuery] string? sortDirection = null)
         {
+            pageSize = Math.Clamp(pageSize, 1, 10);
+            pageNumber = Math.Max(pageNumber, 1);
 
             var compras = await _compraRepository.GetComprasAsync(
                 KioscoId, pageNumber, pageSize, HttpContext.RequestAborted,
@@ -48,6 +50,7 @@ namespace API.Controllers
         [HttpGet("recientes")]
         public async Task<ActionResult<IReadOnlyList<CompraDto>>> GetComprasRecientes([FromQuery] int cantidad = 5)
         {
+            if (cantidad < 1 || cantidad > 50) return BadRequest("La cantidad debe estar entre 1 y 50");
             var compras = await _compraRepository.GetComprasRecientesAsync(KioscoId, cantidad, HttpContext.RequestAborted);
 
             return Ok(compras);
@@ -58,6 +61,11 @@ namespace API.Controllers
             [FromQuery] DateTime? fechaDesde = null,
             [FromQuery] DateTime? fechaHasta = null)
         {
+            if (fechaDesde.HasValue && fechaHasta.HasValue && fechaDesde > fechaHasta)
+            {
+                return BadRequest("La fecha desde no puede ser mayor que la fecha hasta");
+            }
+
             var total = await _compraRepository.GetTotalComprasDelPeriodoAsync(
                 KioscoId, HttpContext.RequestAborted, fechaDesde, fechaHasta);
 
@@ -71,7 +79,7 @@ namespace API.Controllers
 
             try
             {
-                if (compraData.Productos.Count == 0)
+                if (compraData.Detalles.Count == 0)
                 {
                     return BadRequest("La compra debe contener al menos un producto");
                 }

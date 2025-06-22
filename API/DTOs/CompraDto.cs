@@ -40,6 +40,7 @@ namespace API.DTOs
         public required decimal CostoUnitario { get; set; }
 
         [Required]
+        [Range(0.01, double.MaxValue, ErrorMessage = "El subtotal debe ser mayor que cero")]
         public required decimal Subtotal { get; set; }
     }
 }
