@@ -8,6 +8,7 @@ import { CrearKioscoComponent } from './_components/crear-kiosco/crear-kiosco.co
 import { DashboardComponent } from './_components/dashboard/dashboard.component';
 import { InventarioComponent } from './_components/inventario/inventario.component';
 import { PuntoVentaComponent } from './_components/ventas/punto-venta.component';
+import { RegistrarCompraComponent } from './_components/compras/registrar-compra.component';
 
 export const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -17,6 +18,7 @@ export const routes: Routes = [
   {path: 'crear-kiosco', component: CrearKioscoComponent, canActivate: [authGuard]},
   {path: 'inventario', component: InventarioComponent, canActivate: [authGuard]},
   {path: 'punto-de-venta', component: PuntoVentaComponent, canActivate: [authGuard]},
+  {path: 'registrar-compra', component: RegistrarCompraComponent, canActivate: [authGuard]},
   {path: 'login', component: LoginComponent},
   {path: '**', component: HomeComponent},
 ];

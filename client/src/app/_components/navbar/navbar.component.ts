@@ -17,6 +17,7 @@ export class NavbarComponent {
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Inventario', path: '/inventario' },
     { label: 'Realizar Venta', path: '/punto-de-venta' },
+    { label: 'Registrar Compra', path: '/registrar-compra' },
     { label: 'Ventas', path: '/ventas' },
     { label: 'Reportes', path: '/reportes' },
     { label: 'Configuración', path: '/configuracion' }
