@@ -1,0 +1,63 @@
+.form-group {
+  margin-bottom: 1rem;
+}
+
+input:focus, textarea:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+/* Estilos para la búsqueda de productos */
+.search-results-container {
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.search-result-item {
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+  background-color: #fef3c7;
+}
+
+input.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched {
+  border-color: #ef4444;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Estilos para el sticky footer */
+.sticky-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-top: 1px solid #fcd34d;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 1rem;
+  z-index: 50;
+}
+
+.page-container {
+  padding-bottom: 80px;
+}
+
+/* Responsive para el footer */
+@media (max-width: 640px) {
+  .sticky-footer-content {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .sticky-footer-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

@@ -77,4 +77,38 @@ export class NotificationService {
       ? result.value.trim()
       : null;
   }
+  
+  // Métodos simplificados para mayor comodidad
+  showSuccess(message: string): void {
+    this.success('Éxito', message);
+  }
+
+  showError(message: string): void {
+    this.error('Error', message);
+  }
+
+  showInfo(message: string): void {
+    this.info('Información', message);
+  }
+
+  showWarning(message: string): void {
+    this.warning('Advertencia', message);
+  }
+
+  showConfirmation(message: string, onConfirm: () => void, onCancel?: () => void): void {
+    Swal.fire({
+      title: '¿Está seguro?',
+      text: message,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Confirmar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onConfirm();
+      } else if (onCancel) {
+        onCancel();
+      }
+    });
+  }
 }
