@@ -19,13 +19,13 @@ namespace API.Interfaces
             DateTime fechaFin,
             int limit = 5,
             CancellationToken cancellationToken = default);
-            
+
         Task<IReadOnlyList<VentasPorDiaDto>> GetVentasPorDiaAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
             CancellationToken cancellationToken = default);
-            
+
         Task<IReadOnlyList<CategoriasRentabilidadDto>> GetCategoriasRentabilidadAsync(
             int kioscoId,
             DateTime fechaInicio,

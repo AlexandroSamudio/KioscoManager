@@ -9,6 +9,6 @@ namespace API.DTOs
         [Required]
         public required string Nombre { get; set; }
         [Required]
-        public decimal PorcentajeVentas { get; set; }
+        public required decimal PorcentajeVentas { get; set; }
     }
 }

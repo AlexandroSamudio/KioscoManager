@@ -27,24 +27,10 @@ namespace API.Controllers
                 return BadRequest(errorMessage);
             }
 
-            try
-            {
-                var summary = await _reportRepository.CalculateKpiReporteAsync(KioscoId, start, end);
-                return Ok(summary);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al calcular el resumen KPI: {ex}");
-
-                if (ex is ArgumentException || ex is InvalidOperationException)
-                {
-                    return BadRequest($"Solicitud incorrecta: {ex.Message}");
-                }
-
-                return StatusCode(500, "Ha ocurrido un error al procesar la solicitud");
-            }
+            var summary = await _reportRepository.CalculateKpiReporteAsync(KioscoId, start, end);
+            return Ok(summary);
         }
-        
+
         [HttpGet("top-productos")]
         public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetTopProductos(
             [FromQuery] DateTime? fechaInicio = null,
@@ -58,41 +44,26 @@ namespace API.Controllers
             {
                 return BadRequest(errorMessage);
             }
-            
+
             limit = Math.Clamp(limit, 1, 50);
             pageSize = Math.Clamp(pageSize, 1, 10);
             pageNumber = Math.Max(pageNumber, 1);
-            
-            try
+
+            var topProducts = await _reportRepository.GetTopProductsByVentasAsync(
+                KioscoId,
+                pageNumber,
+                pageSize,
+                start,
+                end,
+                limit);
+
+            if (topProducts.Count == 0)
             {
-                var topProducts = await _reportRepository.GetTopProductsByVentasAsync(
-                    KioscoId,
-                    pageNumber,
-                    pageSize,
-                    start,
-                    end,
-                    limit);
-
-                if (topProducts.Count == 0)
-                {
-                    return Ok(new List<ProductoMasVendidoDto>());
-                }
-
-                Response.AddPaginationHeader(topProducts);
-
-                return Ok(topProducts);
+                return Ok(new List<ProductoMasVendidoDto>());
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al obtener los productos más vendidos: {ex}");
 
-                if (ex is ArgumentException || ex is InvalidOperationException)
-                {
-                    return BadRequest($"Solicitud incorrecta: {ex.Message}");
-                }
-
-                return StatusCode(500, "Ha ocurrido un error al procesar la solicitud");
-            }
+            Response.AddPaginationHeader(topProducts);
+            return Ok(topProducts);
         }
 
         [HttpGet("ventas-por-dia")]
@@ -105,32 +76,18 @@ namespace API.Controllers
             {
                 return BadRequest(errorMessage);
             }
-            
-            try
+
+            var salesOverTime = await _reportRepository.GetVentasPorDiaAsync(
+                KioscoId,
+                start,
+                end);
+
+            if (salesOverTime.Count == 0)
             {
-                var salesOverTime = await _reportRepository.GetVentasPorDiaAsync(
-                    KioscoId, 
-                    start, 
-                    end);
-                    
-                if (salesOverTime.Count == 0)
-                {
-                    return Ok(new List<VentasPorDiaDto>());
-                }
-                
-                return Ok(salesOverTime);
+                return Ok(new List<VentasPorDiaDto>());
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al obtener las ventas por día: {ex}");
-                
-                if (ex is ArgumentException || ex is InvalidOperationException)
-                {
-                    return BadRequest($"Solicitud incorrecta: {ex.Message}");
-                }
-                
-                return StatusCode(500, "Ha ocurrido un error al procesar la solicitud");
-            }
+
+            return Ok(salesOverTime);
         }
 
         [HttpGet("rentabilidad-categorias")]
@@ -143,56 +100,42 @@ namespace API.Controllers
             {
                 return BadRequest(errorMessage);
             }
-            
-            try
+
+            var categorias = await _reportRepository.GetCategoriasRentabilidadAsync(KioscoId, start, end);
+
+            if (categorias.Count == 0)
             {
-                var categorias = await _reportRepository.GetCategoriasRentabilidadAsync(KioscoId, start, end);
-                
-                if (categorias.Count == 0)
-                {
-                    return Ok(new List<CategoriasRentabilidadDto>());
-                }
-                
-                return Ok(categorias);
+                return Ok(new List<CategoriasRentabilidadDto>());
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al obtener las categorías por rentabilidad: {ex}");
-                
-                if (ex is ArgumentException || ex is InvalidOperationException)
-                {
-                    return BadRequest($"Solicitud incorrecta: {ex.Message}");
-                }
-                
-                return StatusCode(500, "Ha ocurrido un error al procesar la solicitud");
-            }
+
+            return Ok(categorias);
         }
 
         private static (bool isValid, string? errorMessage) ConfigurarFechasReporte(
-            DateTime? fechaInicio, 
-            DateTime? fechaFin, 
-            out DateTime start, 
+            DateTime? fechaInicio,
+            DateTime? fechaFin,
+            out DateTime start,
             out DateTime end)
         {
-            start = fechaInicio.HasValue 
+            start = fechaInicio.HasValue
                 ? DateTime.SpecifyKind(fechaInicio.Value, DateTimeKind.Utc)
                 : new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
             end = fechaFin.HasValue
                 ? DateTime.SpecifyKind(fechaFin.Value, DateTimeKind.Utc)
                 : DateTime.UtcNow;
-            
+
             if (start > end)
             {
                 return (false, "La fecha de inicio debe ser anterior o igual a la fecha final");
             }
-            
+
             var maxRange = TimeSpan.FromDays(366);
             if (end - start > maxRange)
             {
                 return (false, $"El rango de fechas no puede superar {maxRange.Days} días");
             }
-            
+
             return (true, null);
         }
     }

@@ -10,12 +10,22 @@ namespace API.Data.Repositories
     {
         private readonly DataContext _context;
         private readonly IMemoryCache _cache;
-        private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(30);
+        private readonly TimeSpan _cacheDuration;
+        private readonly TimeSpan _absoluteExpiration;
 
-        public ReporteRepository(DataContext context, IMemoryCache cache)
+        public ReporteRepository(
+            DataContext context, 
+            IMemoryCache cache, 
+            IConfiguration configuration)
         {
             _context = context;
             _cache = cache;
+            
+            _cacheDuration = TimeSpan.FromMinutes(
+                configuration.GetValue<int>("Reporting:CacheDurationMinutes", 30));
+            
+            _absoluteExpiration = TimeSpan.FromHours(
+                configuration.GetValue<int>("Reporting:AbsoluteExpirationHours", 4));
         }
 
         private static DateTime NormalizeToUtcDate(DateTime date)
@@ -46,7 +56,7 @@ namespace API.Data.Repositories
                 .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha <= endOfDay);
 
             var numeroTransacciones = await ventasQuery.CountAsync(cancellationToken);
-            
+
             var totalVentas = await ventasQuery
                 .SumAsync(v => v.Total, cancellationToken);
 
@@ -56,12 +66,18 @@ namespace API.Data.Repositories
                 .Where(d => d.Venta!.KioscoId == kioscoId && d.Venta.Fecha >= fechaInicio && d.Venta.Fecha <= endOfDay)
                 .ToListAsync(cancellationToken);
 
+            var productosYFechas = detallesVenta
+                .Select(d => (d.ProductoId, d.Venta!.Fecha))
+                .Distinct()
+                .ToList();
+
+            var costosHistoricos = await ObtenerCostosHistoricosBulkAsync(productosYFechas, cancellationToken);
+
             decimal costoMercaderia = 0;
 
             foreach (var detalle in detallesVenta)
             {
-                var costoHistorico = await ObtenerCostoHistoricoAsync(detalle.ProductoId, detalle.Venta!.Fecha, cancellationToken);
-
+                var costoHistorico = costosHistoricos.TryGetValue(detalle.ProductoId, out var costo) ? costo : null;
                 decimal costoPorUnidad = costoHistorico ?? detalle.Producto!.PrecioCompra;
                 costoMercaderia += detalle.Cantidad * costoPorUnidad;
             }
@@ -80,25 +96,13 @@ namespace API.Data.Repositories
 
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetSlidingExpiration(_cacheDuration)
-                .SetAbsoluteExpiration(TimeSpan.FromHours(12));
+                .SetAbsoluteExpiration(_absoluteExpiration);
 
             _cache.Set(cacheKey, result, cacheOptions);
 
             return result;
         }
 
-        private async Task<decimal?> ObtenerCostoHistoricoAsync(int productoId, DateTime fecha, CancellationToken cancellationToken = default)
-        {
-            fecha = NormalizeToUtcDate(fecha);
-
-            var compraDetalle = await _context.CompraDetalles!
-                .Where(cd => cd.ProductoId == productoId && cd.Compra!.Fecha <= fecha)
-                .OrderByDescending(cd => cd.Compra!.Fecha)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            return compraDetalle?.CostoUnitario;
-        }
-        
         public async Task<PagedList<ProductoMasVendidoDto>> GetTopProductsByVentasAsync(
             int kioscoId,
             int pageNumber,
@@ -115,7 +119,7 @@ namespace API.Data.Repositories
 
             var endOfDay = NormalizeToUtcDate(
                 fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59));
-            
+
             var cacheKey = $"TopProducts_K{kioscoId}_S{fechaInicio:yyyyMMdd}_E{endOfDay:yyyyMMdd}_L{limit}_P{pageNumber}_S{pageSize}";
 
             if (_cache.TryGetValue(cacheKey, out PagedList<ProductoMasVendidoDto>? cachedResult) && cachedResult != null)
@@ -127,12 +131,12 @@ namespace API.Data.Repositories
                 .Include(d => d.Producto)
                 .Include(d => d.Producto!.Categoria)
                 .Include(d => d.Venta)
-                .Where(d => d.Venta!.KioscoId == kioscoId && 
-                           d.Venta.Fecha >= fechaInicio && 
+                .Where(d => d.Venta!.KioscoId == kioscoId &&
+                           d.Venta.Fecha >= fechaInicio &&
                            d.Venta.Fecha <= endOfDay)
-                .GroupBy(d => new 
-                { 
-                    d.ProductoId, 
+                .GroupBy(d => new
+                {
+                    d.ProductoId,
                     Nombre = d.Producto!.Nombre,
                     Sku = d.Producto.Sku,
                     Categoria = d.Producto.Categoria!.Nombre
@@ -151,10 +155,10 @@ namespace API.Data.Repositories
 
             var pagedList = await PagedList<ProductoMasVendidoDto>.CreateAsync(
                 query.AsNoTracking(), pageNumber, pageSize, cancellationToken);
-            
+
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetSlidingExpiration(_cacheDuration)
-                .SetAbsoluteExpiration(TimeSpan.FromHours(6));
+                .SetAbsoluteExpiration(_absoluteExpiration);
 
             _cache.Set(cacheKey, pagedList, cacheOptions);
 
@@ -172,7 +176,7 @@ namespace API.Data.Repositories
 
             var endOfDay = NormalizeToUtcDate(
                 fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59));
-            
+
             var cacheKey = $"VentasPorDia_K{kioscoId}_S{fechaInicio:yyyyMMdd}_E{endOfDay:yyyyMMdd}";
 
             if (_cache.TryGetValue(cacheKey, out IReadOnlyList<VentasPorDiaDto>? cachedResult) && cachedResult != null)
@@ -181,10 +185,10 @@ namespace API.Data.Repositories
             }
 
             var ventasPorDiaSinGanancia = await _context.DetalleVentas!
-                .Where(d => d.Venta!.KioscoId == kioscoId && 
-                          d.Venta.Fecha >= fechaInicio && 
+                .Where(d => d.Venta!.KioscoId == kioscoId &&
+                          d.Venta.Fecha >= fechaInicio &&
                           d.Venta.Fecha <= endOfDay)
-                .GroupBy(d => d.Venta!.Fecha.Date) 
+                .GroupBy(d => d.Venta!.Fecha.Date)
                 .Select(g => new VentasPorDiaDto
                 {
                     Fecha = g.Key,
@@ -193,29 +197,34 @@ namespace API.Data.Repositories
                 .OrderBy(v => v.Fecha)
                 .ToListAsync(cancellationToken);
 
+            var todosLosDetalles = await _context.DetalleVentas!
+                .Include(d => d.Producto)
+                .Include(d => d.Venta)
+                .Where(d => d.Venta!.KioscoId == kioscoId &&
+                           d.Venta.Fecha >= fechaInicio &&
+                           d.Venta.Fecha <= endOfDay)
+                .ToListAsync(cancellationToken);
+
+            var productosYFechas = todosLosDetalles
+                .Select(d => (d.ProductoId, d.Venta!.Fecha))
+                .Distinct()
+                .ToList();
+
+            var costosHistoricos = await ObtenerCostosHistoricosBulkAsync(productosYFechas, cancellationToken);
+
             foreach (var ventaDia in ventasPorDiaSinGanancia)
             {
-                // Obtener el día específico para filtrar
                 var fechaDia = ventaDia.Fecha;
                 var finDia = NormalizeToUtcDate(fechaDia.AddHours(23).AddMinutes(59).AddSeconds(59));
-                
-                // Obtener todos los detalles de venta de ese día
-                var detallesVenta = await _context.DetalleVentas!
-                    .Include(d => d.Producto)
-                    .Include(d => d.Venta)
-                    .Where(d => d.Venta!.KioscoId == kioscoId && 
-                               d.Venta.Fecha >= fechaDia && 
-                               d.Venta.Fecha <= finDia)
-                    .ToListAsync(cancellationToken);
+
+                var detallesDelDia = todosLosDetalles
+                    .Where(d => d.Venta!.Fecha >= fechaDia && d.Venta.Fecha <= finDia)
+                    .ToList();
 
                 decimal costoMercaderia = 0;
-                foreach (var detalle in detallesVenta)
+                foreach (var detalle in detallesDelDia)
                 {
-                    var costoHistorico = await ObtenerCostoHistoricoAsync(
-                        detalle.ProductoId, 
-                        detalle.Venta!.Fecha, 
-                        cancellationToken);
-
+                    var costoHistorico = costosHistoricos.TryGetValue(detalle.ProductoId, out var costo) ? costo : null;
                     decimal costoPorUnidad = costoHistorico ?? detalle.Producto!.PrecioCompra;
                     costoMercaderia += detalle.Cantidad * costoPorUnidad;
                 }
@@ -223,10 +232,10 @@ namespace API.Data.Repositories
 
             var cacheOptionsWithProfit = new MemoryCacheEntryOptions()
                 .SetSlidingExpiration(_cacheDuration)
-                .SetAbsoluteExpiration(TimeSpan.FromHours(4));
+                .SetAbsoluteExpiration(_absoluteExpiration);
 
             _cache.Set(cacheKey, ventasPorDiaSinGanancia, cacheOptionsWithProfit);
-            
+
             return ventasPorDiaSinGanancia;
         }
 
@@ -236,28 +245,24 @@ namespace API.Data.Repositories
             DateTime fechaFin,
             CancellationToken cancellationToken = default)
         {
-            // Asegurar que la fecha de fin incluya todo el día
             var endOfDay = NormalizeToUtcDate(new DateTime(fechaFin.Year, fechaFin.Month, fechaFin.Day, 23, 59, 59));
             string cacheKey = $"categoriasRentabilidad_{kioscoId}_{fechaInicio:yyyyMMdd}_{fechaFin:yyyyMMdd}";
 
-            // Intentar obtener del caché
             if (_cache.TryGetValue(cacheKey, out IReadOnlyList<CategoriasRentabilidadDto>? cachedResult) && cachedResult != null)
             {
                 return cachedResult;
             }
 
-            // Obtenemos los detalles de venta agrupados por categoría
             var detallesVentaPorCategoria = await _context.DetalleVentas!
                 .Include(d => d.Producto)
                     .ThenInclude(p => p!.Categoria)
                 .Include(d => d.Venta)
-                .Where(d => d.Venta!.KioscoId == kioscoId && 
-                           d.Venta.Fecha >= fechaInicio && 
+                .Where(d => d.Venta!.KioscoId == kioscoId &&
+                           d.Venta.Fecha >= fechaInicio &&
                            d.Venta.Fecha <= endOfDay &&
                            d.Producto!.Categoria != null)
                 .ToListAsync(cancellationToken);
 
-            // Agrupar por categoría
             var categoriasDatos = detallesVentaPorCategoria
                 .GroupBy(d => new { d.Producto!.CategoriaId, d.Producto.Categoria!.Nombre })
                 .Select(g => new
@@ -272,14 +277,13 @@ namespace API.Data.Repositories
             decimal totalVentasGeneral = categoriasDatos.Sum(c => c.TotalVentas);
             var resultados = new List<CategoriasRentabilidadDto>();
 
-            // Calcular costos y ganancias para cada categoría
             foreach (var categoria in categoriasDatos)
             {
                 resultados.Add(new CategoriasRentabilidadDto
                 {
                     CategoriaId = categoria.CategoriaId,
                     Nombre = categoria.Nombre,
-                    PorcentajeVentas = totalVentasGeneral > 0 ? Math.Round((categoria.TotalVentas / totalVentasGeneral) * 100, 2) : 0
+                    PorcentajeVentas = totalVentasGeneral > 0 ? Math.Round(categoria.TotalVentas / totalVentasGeneral * 100, 2) : 0
                 });
             }
 
@@ -289,11 +293,50 @@ namespace API.Data.Repositories
 
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetSlidingExpiration(_cacheDuration)
-                .SetAbsoluteExpiration(TimeSpan.FromHours(4));
+                .SetAbsoluteExpiration(_absoluteExpiration);
 
             _cache.Set(cacheKey, categoriasFinal, cacheOptions);
-            
+
             return categoriasFinal;
+        }
+
+
+        private async Task<Dictionary<int, decimal?>> ObtenerCostosHistoricosBulkAsync(
+            IEnumerable<(int ProductoId, DateTime Fecha)> productosYFechas,
+            CancellationToken cancellationToken = default)
+        {
+            var productosIds = productosYFechas.Select(p => p.ProductoId).Distinct().ToList();
+
+            if (productosIds.Count == 0)
+                return new Dictionary<int, decimal?>();
+
+            var compraDetalles = await _context.CompraDetalles!
+                .Include(cd => cd.Compra)
+                .Where(cd => productosIds.Contains(cd.ProductoId) && cd.Compra != null)
+                .OrderByDescending(cd => cd.Compra!.Fecha)
+                .ToListAsync(cancellationToken);
+
+            var costosHistoricos = new Dictionary<int, decimal?>();
+
+            foreach (var productoId in productosIds)
+            {
+                var fechaMasReciente = productosYFechas
+                    .Where(p => p.ProductoId == productoId)
+                    .Max(p => p.Fecha);
+
+                var fechaNormalizada = NormalizeToUtcDate(fechaMasReciente);
+
+                var costoHistorico = compraDetalles
+                    .Where(cd => cd.ProductoId == productoId &&
+                                cd.Compra != null &&
+                                cd.Compra.Fecha <= fechaNormalizada)
+                    .OrderByDescending(cd => cd.Compra!.Fecha)
+                    .FirstOrDefault()?.CostoUnitario;
+
+                costosHistoricos[productoId] = costoHistorico;
+            }
+
+            return costosHistoricos;
         }
     }
 }

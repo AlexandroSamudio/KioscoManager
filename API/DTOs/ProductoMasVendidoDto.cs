@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace API.DTOs
 {
@@ -12,7 +11,6 @@ namespace API.DTOs
         public string? Sku { get; set; }
         [Required]
         public required int CantidadVendida { get; set; }
-        [Column(TypeName = "decimal(18, 2)")]
         public decimal TotalVentas { get; set; }
         public string? CategoriaNombre { get; set; }
     }
