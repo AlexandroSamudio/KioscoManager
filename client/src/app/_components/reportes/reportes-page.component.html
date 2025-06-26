@@ -108,7 +108,7 @@
       </div>
 
       <div
-        *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones != 0"
+        *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones !== 0"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
       >
         <app-kpi-card
@@ -272,7 +272,7 @@
       </div>
 
       <div
-        *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones == 0"
+        *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones === 0"
         class="bg-white rounded-lg shadow-md p-8 text-center"
       >
         <svg

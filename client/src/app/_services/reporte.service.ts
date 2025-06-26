@@ -2,10 +2,11 @@ import {
   HttpClient,
   HttpParams,
   HttpErrorResponse,
+  HttpResponse,
 } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { environment } from '../../app/environments/environment.development';
-import { Reporte } from '../_models/reporte-summary.model';
+import { Reporte } from '../_models/reporte.model';
 import { ProductoMasVendido } from '../_models/producto-mas-vendido.model';
 import { Observable, catchError, retry, throwError } from 'rxjs';
 import { VentaPorDia } from '../_models/venta-por-dia.model';
@@ -44,7 +45,7 @@ export class ReporteService {
     pageSize: number = 10,
     fechaInicio?: Date,
     fechaFin?: Date
-  ): any {
+  ): Observable<HttpResponse<ProductoMasVendido[]>>  {
     let params = setPaginationHeaders(pageNumber, pageSize);
 
     if (limit) {

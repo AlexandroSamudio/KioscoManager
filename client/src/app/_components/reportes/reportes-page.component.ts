@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReporteService } from '../../_services/reporte.service';
-import { Reporte } from '../../_models/reporte-summary.model';
+import { Reporte } from '../../_models/reporte.model';
 import { VentaPorDia } from '../../_models/venta-por-dia.model';
 import { CategoriaRentabilidad } from '../../_models/categoria-rentabilidad.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -324,14 +324,12 @@ export class ReportesPageComponent implements OnInit {
   private getStartOfDay(date: Date): Date {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
-    console.log('Start of day:', d);
     return d;
   }
 
   private getEndOfDay(date: Date): Date {
     const d = new Date(date);
     d.setHours(23, 59, 59, 999);
-    console.log('End of day:', d);
     return d;
   }
 
