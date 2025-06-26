@@ -9,7 +9,7 @@ import { DashboardComponent } from './_components/dashboard/dashboard.component'
 import { InventarioComponent } from './_components/inventario/inventario.component';
 import { PuntoVentaComponent } from './_components/ventas/punto-venta.component';
 import { RegistrarCompraComponent } from './_components/compras/registrar-compra.component';
-// import { ReportesPageComponent } from './_components/reportes/reportes-page.component';
+import { ReportesPageComponent } from './_components/reportes/reportes-page.component';
 
 export const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -20,7 +20,7 @@ export const routes: Routes = [
   {path: 'inventario', component: InventarioComponent, canActivate: [authGuard]},
   {path: 'punto-de-venta', component: PuntoVentaComponent, canActivate: [authGuard]},
   {path: 'registrar-compra', component: RegistrarCompraComponent, canActivate: [authGuard]},
-  // {path: 'reportes', component: ReportesPageComponent, canActivate: [authGuard]},
+  {path: 'reportes', component: ReportesPageComponent, canActivate: [authGuard]},
   {path: 'login', component: LoginComponent},
   {path: '**', component: HomeComponent},
 ];

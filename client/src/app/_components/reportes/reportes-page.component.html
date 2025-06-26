@@ -1,0 +1,301 @@
+<app-navbar></app-navbar>
+
+<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-amber-900 mb-4">
+        Reportes y Estadísticas
+      </h2>
+
+      <div class="bg-white p-4 rounded-lg shadow mb-4">
+        <h3 class="text-sm font-medium text-gray-700 mb-2">Filtros rápidos</h3>
+        <app-date-range-picker
+          (rangeSelected)="onRangeSelected($event)"
+        ></app-date-range-picker>
+      </div>
+
+      <form
+        [formGroup]="fechasForm"
+        (ngSubmit)="aplicarFiltros()"
+        class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap items-end gap-4"
+      >
+        <div class="flex-1 min-w-[200px]">
+          <label
+            for="fechaInicio"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >Fecha Inicio</label
+          >
+          <input
+            type="date"
+            id="fechaInicio"
+            formControlName="fechaInicio"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+          />
+        </div>
+        <div class="flex-1 min-w-[200px]">
+          <label
+            for="fechaFin"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >Fecha Fin</label
+          >
+          <input
+            type="date"
+            id="fechaFin"
+            formControlName="fechaFin"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+          />
+        </div>
+        <div>
+          <button
+            type="submit"
+            class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded shadow-md transition duration-200"
+          >
+            Aplicar Filtros
+          </button>
+        </div>
+      </form>
+
+      <div *ngIf="isLoading()" class="flex justify-center py-10">
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"
+        ></div>
+      </div>
+
+      <div
+        *ngIf="hasErrors() && !isLoading()"
+        class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6"
+      >
+        <div class="flex items-center">
+          <svg
+            class="w-5 h-5 mr-2 text-red-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h3 class="font-medium">
+            Se han producido errores al cargar los datos
+          </h3>
+        </div>
+
+        <ul class="list-disc list-inside mt-2 space-y-1 text-sm">
+          <li *ngIf="errores().resumen">
+            Error en el resumen: {{ errores().resumen }}
+          </li>
+          <li *ngIf="errores().productos">
+            Error en productos más vendidos: {{ errores().productos }}
+          </li>
+          <li *ngIf="errores().ventas">
+            Error en ventas por día: {{ errores().ventas }}
+          </li>
+          <li *ngIf="errores().categorias">
+            Error en rentabilidad por categorías: {{ errores().categorias }}
+          </li>
+        </ul>
+
+        <button
+          (click)="recargarDatos()"
+          class="mt-3 text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2"
+        >
+          Reintentar
+        </button>
+      </div>
+
+      <div
+        *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones !== 0"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+      >
+        <app-kpi-card
+          title="Total de Ventas"
+          [value]="formatCurrency(reporteSummary()?.totalVentas || 0)"
+          subtitle="Monto total de ventas"
+          variant="default"
+          [isLoading]="isSummaryLoading()"
+        >
+        </app-kpi-card>
+
+        <app-kpi-card
+          title="Costo de Mercadería Vendida"
+          [value]="
+            formatCurrency(reporteSummary()?.costoMercaderiaVendida || 0)
+          "
+          subtitle="Costo de los productos vendidos"
+          variant="warning"
+          [isLoading]="isSummaryLoading()"
+        >
+        </app-kpi-card>
+
+        <app-kpi-card
+          title="Ganancia Bruta"
+          [value]="formatCurrency(reporteSummary()?.gananciaBruta || 0)"
+          subtitle="Total de ingresos menos CMV"
+          variant="success"
+          [isLoading]="isSummaryLoading()"
+        >
+        </app-kpi-card>
+
+        <app-kpi-card
+          title="Cantidad de Transacciones"
+          [value]="reporteSummary()?.numeroTransacciones || 0"
+          subtitle="Total de ventas realizadas"
+          variant="info"
+          [isLoading]="isSummaryLoading()"
+        >
+        </app-kpi-card>
+      </div>
+
+      <div
+        *ngIf="!isLoading() && (productosPaginados?.items)!.length > 0"
+        class="bg-white rounded-lg shadow-md p-6 mb-8"
+      >
+        <h3 class="text-lg font-bold text-amber-800 mb-4">
+          Top Productos Más Vendidos
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-amber-200">
+            <thead>
+              <tr>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
+                >
+                  SKU
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
+                >
+                  Producto
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
+                >
+                  Categoría
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
+                >
+                  Cantidad
+                </th>
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
+                >
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-amber-100">
+              <tr
+                *ngFor="let producto of productosPaginados?.items"
+                class="hover:bg-amber-50"
+              >
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-amber-900"
+                >
+                  {{ producto.sku }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ producto.nombreProducto }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {{ producto.categoriaNombre }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  {{ producto.cantidadVendida }}
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"
+                >
+                  {{ formatCurrency(producto.totalVentas) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex justify-center items-center mt-4 gap-2">
+          <button
+            class="px-3 py-1 rounded bg-amber-200 text-amber-900 font-semibold disabled:opacity-50"
+            [disabled]="productosPaginados?.pagination?.currentPage === 1"
+            (click)="
+              cambiarPagina(productosPaginados?.pagination?.currentPage! - 1)
+            "
+          >
+            Anterior
+          </button>
+          <span class="mx-2 text-sm text-amber-800">
+            Página {{ productosPaginados?.pagination?.currentPage }} de
+            {{ productosPaginados?.pagination?.totalPages }}
+          </span>
+          <button
+            class="px-3 py-1 rounded bg-amber-200 text-amber-900 font-semibold disabled:opacity-50"
+            [disabled]="
+              productosPaginados?.pagination?.currentPage ===
+              productosPaginados?.pagination?.totalPages
+            "
+            (click)="
+              cambiarPagina(productosPaginados?.pagination?.currentPage! + 1)
+            "
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+
+      <div
+        *ngIf="!isLoading() && ventasPorDia().length > 0"
+        class="bg-white rounded-lg shadow-md p-6 mb-8"
+      >
+        <h3 class="text-lg font-bold text-amber-800 mb-4">
+          Gráfico de Ventas por Día
+        </h3>
+        <app-ventas-chart
+          [ventas]="ventasPorDia()"
+          [isLoading]="isVentasLoading()"
+        ></app-ventas-chart>
+      </div>
+
+      <div
+        *ngIf="!isLoading() && categoriasRentabilidad().length > 0"
+        class="bg-white rounded-lg shadow-md p-6 mb-8"
+      >
+        <h3 class="text-lg font-bold text-amber-800 mb-4">
+          Rentabilidad por Categorías
+        </h3>
+        <app-categorias-chart
+          [categorias]="categoriasRentabilidad()"
+          [isLoading]="isCategoriasLoading()"
+        ></app-categorias-chart>
+      </div>
+
+      <div
+        *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones === 0"
+        class="bg-white rounded-lg shadow-md p-8 text-center"
+      >
+        <svg
+          class="mx-auto h-12 w-12 text-amber-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <h3 class="mt-2 text-lg font-medium text-gray-900">
+          No hay datos disponibles
+        </h3>
+        <p class="mt-1 text-sm text-gray-500">
+          No se encontraron datos para el período seleccionado. Intenta con un
+          rango de fechas diferente.
+        </p>
+      </div>
+    </div>
+  </main>
+</div>

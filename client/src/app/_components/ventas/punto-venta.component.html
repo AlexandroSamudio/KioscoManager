@@ -93,7 +93,9 @@
                       </svg>
                     </button>
                   </div>
-                  <div class="text-xs text-gray-500 mt-1">Stock: {{ item.stock }}</div>
+                  <div class="text-base font-bold mt-1 text-amber-700">
+                    Stock: {{ item.stock }}
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm font-medium text-gray-900">${{ (item.precioVenta * item.cantidad).toFixed(2) }}
