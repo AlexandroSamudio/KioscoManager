@@ -15,9 +15,35 @@ Chart.register(...registerables);
   styleUrl: './ventas-chart.component.css'
 })
 export class VentasChartComponent implements OnChanges {
-  @Input() ventas: VentaPorDia[] = [];
-  @Input() isLoading = false;
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
+
+  private _ventas: VentaPorDia[] = [];
+  private _isLoading = false;
+
+  @Input()
+  set ventas(value: unknown) {
+    if (Array.isArray(value) && value.every(v => v && typeof v === 'object' && 'fecha' in v && 'totalVentas' in v)) {
+      this._ventas = value as VentaPorDia[];
+    } else {
+      this._ventas = [];
+      console.warn('El input de ventas es invalido, se esperaba un array de VentaPorDia[].');
+    }
+    this.updateChartData();
+  }
+  get ventas(): VentaPorDia[] {
+    return this._ventas;
+  }
+
+  @Input()
+  set isLoading(value: unknown) {
+    this._isLoading = typeof value === 'boolean' ? value : false;
+    if (typeof value !== 'boolean') {
+      console.warn('El input isLoading es invalido, se esperaba un booleano.');
+    }
+  }
+  get isLoading(): boolean {
+    return this._isLoading;
+  }
 
   public barChartType: ChartType = 'bar';
 
@@ -68,7 +94,7 @@ export class VentasChartComponent implements OnChanges {
           label: function(context) {
             return `Monto: ${new Intl.NumberFormat('es-ES', {
               style: 'currency',
-              currency: 'EUR'
+              currency: 'ARS'
             }).format(context.parsed.y)}`;
           }
         }
@@ -87,11 +113,18 @@ export class VentasChartComponent implements OnChanges {
       return new Date(a.fecha).getTime() - new Date(b.fecha).getTime();
     });
 
-    const labels = ventasOrdenadas.map(venta => {
-      const fecha = new Date(venta.fecha);
-      return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+    const labels: string[] = [];
+    const data: number[] = [];
+
+    ventasOrdenadas.forEach(venta => {
+      const fechaObj = new Date(venta.fecha);
+      if (isNaN(fechaObj.getTime())) {
+        console.warn(`Fecha inválida en venta:`, venta);
+        return;
+      }
+      labels.push(fechaObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' }));
+      data.push(venta.totalVentas);
     });
-    const data = ventasOrdenadas.map(venta => venta.totalVentas);
 
     this.barChartData = {
       labels,

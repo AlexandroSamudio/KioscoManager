@@ -1,4 +1,4 @@
 export interface VentaPorDia {
-  fecha: string;
+  fecha: Date;
   totalVentas: number;
 }

@@ -513,6 +513,4 @@ dev-debug.log
 .roomodes
 client/.vscode/tasks.json
 .github/instructions
-.idea
-.vscode
 *.sln
