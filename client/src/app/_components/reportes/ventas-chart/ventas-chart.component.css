@@ -1,0 +1,8 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+canvas {
+  transition: all 0.3s ease;
+}
