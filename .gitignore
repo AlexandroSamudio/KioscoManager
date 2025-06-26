@@ -512,3 +512,7 @@ dev-debug.log
 .windsurfrules
 .roomodes
 client/.vscode/tasks.json
+.github/instructions
+.idea
+.vscode
+*.sln
