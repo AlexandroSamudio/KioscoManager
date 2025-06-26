@@ -21,7 +21,10 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IVentaRepository, VentaRepository>();
         services.AddScoped<ICompraRepository, CompraRepository>();
+        services.AddScoped<IReporteRepository, ReporteRepository>();
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+    
+        services.AddMemoryCache();
         
         return services;
 

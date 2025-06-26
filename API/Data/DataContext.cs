@@ -73,6 +73,18 @@ namespace API.Data
             builder.Entity<Producto>()
                 .HasIndex(p => new { p.KioscoId, p.Sku })
                 .IsUnique();
+                
+            builder.Entity<Venta>()
+                .HasIndex(v => v.Fecha);
+                
+            builder.Entity<Venta>()
+                .HasIndex(v => new { v.KioscoId, v.Fecha });
+                
+            builder.Entity<DetalleVenta>()
+                .HasIndex(d => new { d.VentaId, d.ProductoId });
+                
+            builder.Entity<CompraDetalle>()
+                .HasIndex(cd => cd.ProductoId);
 
             builder.Entity<Kiosco>()
                 .HasMany(k => k.Compras)

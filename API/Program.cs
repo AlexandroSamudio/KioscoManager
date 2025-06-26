@@ -1,5 +1,6 @@
 using API.Extensions;
 using API.Data.SeedData;
+using API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddIdentityServices(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 app.UseCors("AllowAngularApp");
 app.UseAuthentication();

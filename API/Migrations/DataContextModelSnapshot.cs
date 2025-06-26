@@ -275,7 +275,7 @@ namespace API.Migrations
 
                     b.HasIndex("ProductoId");
 
-                    b.HasIndex("VentaId");
+                    b.HasIndex("VentaId", "ProductoId");
 
                     b.ToTable("DetalleVentas");
                 });
@@ -365,9 +365,11 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("KioscoId");
+                    b.HasIndex("Fecha");
 
                     b.HasIndex("UsuarioId");
+
+                    b.HasIndex("KioscoId", "Fecha");
 
                     b.ToTable("Ventas");
                 });
