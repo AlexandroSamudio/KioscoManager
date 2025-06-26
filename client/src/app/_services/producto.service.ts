@@ -5,7 +5,7 @@ import { Producto } from '../_models/producto.model';
 import { catchError, Observable, throwError } from 'rxjs';
 import { ProductoMasVendido } from '../_models/producto-mas-vendido.model';
 import { NotificationService } from './notification.service';
-import { setPaginatedResponse, setPaginationHeaders, PaginatedResult } from './pagination.helper';
+import { setPaginationHeaders, PaginatedResult } from './pagination.helper';
 import { ProductoCreate } from '../_models/producto.model';
 
 @Injectable({
