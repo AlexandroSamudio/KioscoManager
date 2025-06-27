@@ -11,46 +11,14 @@
     <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6 mb-6 hover:shadow-xl transition-shadow">
       <h2 class="text-xl font-bold text-amber-800 mb-4">Información de Productos</h2>
 
-      <div class="grid grid-cols-1 gap-4 mb-6">
-        <div class="form-group relative">
-          <label for="searchTerm" class="block text-sm font-medium text-amber-700 mb-1">
-            Buscar Producto (por Nombre o SKU)
-          </label>
-          <div class="flex">
-            <input #searchInput type="text" id="searchTerm" [ngModel]="searchTerm()"
-              (ngModelChange)="buscarProductos($event)"
-              class="flex-grow px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-              placeholder="Ingrese nombre o SKU del producto" autocomplete="off" />
-            <div *ngIf="buscando()" class="absolute right-3 top-9">
-              <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-amber-500"></div>
-            </div>
-          </div>
-
-          <div *ngIf="mostrarResultados()"
-            class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-amber-200 max-h-60 overflow-y-auto search-results-container">
-            <ul class="py-1">
-              <li *ngFor="let producto of productosEncontrados(); let i = index" (click)="seleccionarProducto(producto)"
-                (mouseover)="selectedProductIndex.set(i)" [class.bg-amber-100]="selectedProductIndex() === i"
-                class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-amber-800 search-result-item">
-                <div class="flex justify-between">
-                  <span class="font-medium">{{ producto.nombre }}</span>
-                  <span class="text-amber-500">{{ producto.sku }}</span>
-                </div>
-                <p *ngIf="producto.descripcion" class="text-xs text-amber-600 truncate">
-                  {{ producto.descripcion }}
-                </p>
-                <div class="text-xs flex justify-between mt-1">
-                  <span>Stock: <span class="font-medium">{{ producto.stock }}</span></span>
-                  <span>Precio: <span class="font-medium">{{ producto.precioCompra | currency }}</span></span>
-                </div>
-              </li>
-              <li *ngIf="productosEncontrados().length === 0" class="px-3 py-2 text-amber-600 italic">
-                No se encontraron productos
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <app-product-search
+        (productSelected)="onProductSelected($event)"
+        placeholder="Ingrese nombre o SKU del producto"
+        label="Buscar Producto (por Nombre o SKU)"
+        [showPriceInfo]="true"
+        [showStockInfo]="true"
+        [showDescription]="true">
+      </app-product-search>
 
       <div *ngIf="productoActual()">
         <div class="bg-amber-50 p-4 rounded-md mb-4 border border-amber-100">

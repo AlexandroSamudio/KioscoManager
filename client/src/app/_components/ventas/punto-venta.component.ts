@@ -1,29 +1,28 @@
-import { Component, DestroyRef, inject, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, DestroyRef, inject} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { ProductSearchComponent } from '../shared/product-search/product-search.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { VentaService } from '../../_services/venta.service';
 import { NotificationService } from '../../_services/notification.service';
 import { CartService } from '../../_services/cart.service';
 import { CartItem } from '../../_models/venta-create.model';
+import { Producto } from '../../_models/producto.model';
 
 @Component({
   selector: 'app-pos',
   standalone: true,
-  imports: [CommonModule, FormsModule, NavbarComponent],
+  imports: [CommonModule, FormsModule, NavbarComponent, ProductSearchComponent],
   templateUrl: './punto-venta.component.html',
   styleUrl: './punto-venta.component.css',
 })
-export class PuntoVentaComponent implements AfterViewInit {
+export class PuntoVentaComponent {
   private destroyRef = inject(DestroyRef);
   private ventaService = inject(VentaService);
   private notificationService = inject(NotificationService);
   private cartService = inject(CartService);
 
-  @ViewChild('skuInputRef') skuInputRef!: ElementRef<HTMLInputElement>;
-
-  skuInput = '';
   isLoading = false;
   finalizingSale = false;
   lastCompletedSale: { id: number; total: number } | null = null;
@@ -33,43 +32,8 @@ export class PuntoVentaComponent implements AfterViewInit {
   readonly totalProductos = this.cartService.totalItems;
   readonly totalVenta = this.cartService.totalAmount;
 
-  ngAfterViewInit(): void {
-    setTimeout(() => this.focusSkuInput(), 100);
-  }
-
-  focusSkuInput(): void {
-    this.skuInputRef?.nativeElement?.focus();
-  }
-
-  onSkuSubmit(): void {
-    if (!this.skuInput.trim()) {
-      this.notificationService.warning(
-        'Ingrese un SKU',
-        'El campo SKU está vacío'
-      );
-      return;
-    }
-
-    this.isLoading = true;
-    const skuBuscado = this.skuInput.trim();
-
-    this.ventaService
-      .getProductoBySku(skuBuscado)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (producto) => {
-          this.cartService.addProduct(producto);
-          this.skuInput = '';
-          this.isLoading = false;
-        },
-        error: () => {
-          this.notificationService.error(
-            'Producto no encontrado',
-            `No existe un producto con SKU "${skuBuscado}" o no está disponible`
-          );
-          this.isLoading = false;
-        },
-      });
+  onProductSelected(producto: Producto): void {
+    this.cartService.addProduct(producto);
   }
 
   trackById(index: number, item: CartItem): number {
@@ -124,9 +88,6 @@ export class PuntoVentaComponent implements AfterViewInit {
 
           this.cartService.clear();
           this.finalizingSale = false;
-          this.skuInput = '';
-
-          this.focusSkuInput();
         },
         error: () => {
           this.finalizingSale = false;

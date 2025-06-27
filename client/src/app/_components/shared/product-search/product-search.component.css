@@ -1,0 +1,29 @@
+.search-container {
+  position: relative;
+}
+
+.search-results-container {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.search-result-item {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.search-result-item:hover {
+  background-color: #fef3c7;
+}
+
+.search-result-item.bg-amber-100 {
+  background-color: #fef3c7;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
