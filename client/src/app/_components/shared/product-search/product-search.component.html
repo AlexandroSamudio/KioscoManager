@@ -1,0 +1,55 @@
+<div class="form-group relative search-container">
+  <label for="productSearchInput" class="block text-sm font-medium text-amber-700 mb-1">
+    {{ label }}
+  </label>
+  <div class="flex">
+    <input
+      #searchInput
+      type="text"
+      id="productSearchInput"
+      [ngModel]="searchTerm()"
+      (ngModelChange)="buscarProductos($event)"
+      class="flex-grow px-3 py-2 border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+      [placeholder]="placeholder"
+      autocomplete="off" />
+
+    <div *ngIf="buscando()" class="absolute right-3 top-9">
+      <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-amber-500"></div>
+    </div>
+  </div>
+
+  <div *ngIf="mostrarResultados()"
+    class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-amber-200 max-h-60 overflow-y-auto search-results-container">
+    <ul class="py-1">
+      <li *ngFor="let producto of productosEncontrados(); let i = index"
+          (click)="seleccionarProducto(producto)"
+          (mouseover)="selectedProductIndex.set(i)"
+          [class.bg-amber-100]="selectedProductIndex() === i"
+          class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-amber-800 search-result-item">
+
+        <div class="flex justify-between">
+          <span class="font-medium">{{ producto.nombre }}</span>
+          <span class="text-amber-500">{{ producto.sku }}</span>
+        </div>
+
+        <p *ngIf="showDescription && producto.descripcion" class="text-xs text-amber-600 truncate">
+          {{ producto.descripcion }}
+        </p>
+
+        <div class="text-xs flex justify-between mt-1">
+          <span *ngIf="showStockInfo">
+            Stock: <span class="font-medium">{{ producto.stock }}</span>
+          </span>
+          <span *ngIf="showPriceInfo">
+            Precio: <span class="font-medium">${{ producto.precioCompra.toFixed(2) }}</span>
+          </span>
+        </div>
+      </li>
+
+      <li *ngIf="productosEncontrados().length === 0 && !buscando()"
+          class="px-3 py-2 text-amber-600 italic">
+        No se encontraron productos
+      </li>
+    </ul>
+  </div>
+</div>
