@@ -117,17 +117,19 @@ export class ProductSearchComponent {
     const currentIndex = this.selectedProductIndex();
 
     switch (event.key) {
-      case 'ArrowDown':
+      case 'ArrowDown': {
         event.preventDefault();
         const nextIndex = currentIndex < productos.length - 1 ? currentIndex + 1 : 0;
         this.selectedProductIndex.set(nextIndex);
         break;
+      }
 
-      case 'ArrowUp':
+      case 'ArrowUp': {
         event.preventDefault();
         const prevIndex = currentIndex > 0 ? currentIndex - 1 : productos.length - 1;
         this.selectedProductIndex.set(prevIndex);
         break;
+      }
 
       case 'Enter':
         event.preventDefault();
