@@ -39,6 +39,29 @@ namespace API.Helpers
                 .ForMember(dest => dest.Subtotal, opt => opt.MapFrom(src => src.Cantidad * src.CostoUnitario));
 
             CreateMap<CompraDetalleDto, CompraDetalle>();
+        
+            CreateMap<KioscoConfig, KioscoConfigDto>();
+            CreateMap<KioscoConfigUpdateDto, KioscoConfig>()
+                .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow));
+            
+            CreateMap<UserPreferences, UserPreferencesDto>();
+            CreateMap<UserPreferencesUpdateDto, UserPreferences>()
+                .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow));
+
+            CreateMap<AppUser, UserManagementDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.KioscoId, opt => opt.MapFrom(src => src.KioscoId))
+                .ForMember(dest => dest.Role, opt => opt.Ignore()) 
+                .ForMember(dest => dest.NombreKiosco, opt => opt.Ignore()); 
+
+            CreateMap<Kiosco, KioscoBasicInfoDto>();
+            CreateMap<KioscoBasicInfoUpdateDto, Kiosco>();
+
+            CreateMap<Categoria, CategoriaDto>();
+            CreateMap<CategoriaCreateDto, Categoria>();
+            CreateMap<CategoriaUpdateDto, Categoria>();
         }
     }
 }

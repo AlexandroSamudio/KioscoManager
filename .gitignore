@@ -514,3 +514,4 @@ dev-debug.log
 client/.vscode/tasks.json
 .github/instructions
 *.sln
+API/Tests/ModelVerificationTest.cs

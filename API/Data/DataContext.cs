@@ -21,6 +21,8 @@ namespace API.Data
         public DbSet<CodigoInvitacion> CodigosInvitacion { get; set; }
         public DbSet<Compra>? Compras { get; set; }
         public DbSet<CompraDetalle>? CompraDetalles { get; set; }
+        public DbSet<KioscoConfig> KioscoConfigs { get; set; }
+        public DbSet<UserPreferences> UserPreferences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -103,6 +105,26 @@ namespace API.Data
                 .WithOne(cd => cd.Compra)
                 .HasForeignKey(cd => cd.CompraId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<KioscoConfig>()
+                .HasOne(kc => kc.Kiosco)
+                .WithOne(k => k.Configuracion)
+                .HasForeignKey<KioscoConfig>(kc => kc.KioscoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserPreferences>()
+                .HasOne(up => up.User)
+                .WithOne(u => u.Preferencias)
+                .HasForeignKey<UserPreferences>(up => up.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<KioscoConfig>()
+                .HasIndex(kc => kc.KioscoId)
+                .IsUnique();
+
+            builder.Entity<UserPreferences>()
+                .HasIndex(up => up.UserId)
+                .IsUnique();
         }
 
     }

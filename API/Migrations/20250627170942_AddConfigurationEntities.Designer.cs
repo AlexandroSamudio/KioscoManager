@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace API.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250627170942_AddConfigurationEntities")]
+    partial class AddConfigurationEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,7 +155,7 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categorias", (string)null);
+                    b.ToTable("Categorias");
                 });
 
             modelBuilder.Entity("API.Entities.CodigoInvitacion", b =>
@@ -184,7 +187,7 @@ namespace API.Migrations
 
                     b.HasIndex("KioscoId");
 
-                    b.ToTable("CodigosInvitacion", (string)null);
+                    b.ToTable("CodigosInvitacion");
                 });
 
             modelBuilder.Entity("API.Entities.Compra", b =>
@@ -219,7 +222,7 @@ namespace API.Migrations
 
                     b.HasIndex("UsuarioId");
 
-                    b.ToTable("Compras", (string)null);
+                    b.ToTable("Compras");
                 });
 
             modelBuilder.Entity("API.Entities.CompraDetalle", b =>
@@ -248,7 +251,7 @@ namespace API.Migrations
 
                     b.HasIndex("ProductoId");
 
-                    b.ToTable("CompraDetalles", (string)null);
+                    b.ToTable("CompraDetalles");
                 });
 
             modelBuilder.Entity("API.Entities.DetalleVenta", b =>
@@ -277,7 +280,7 @@ namespace API.Migrations
 
                     b.HasIndex("VentaId", "ProductoId");
 
-                    b.ToTable("DetalleVentas", (string)null);
+                    b.ToTable("DetalleVentas");
                 });
 
             modelBuilder.Entity("API.Entities.Kiosco", b =>
@@ -303,7 +306,7 @@ namespace API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Kioscos", (string)null);
+                    b.ToTable("Kioscos");
                 });
 
             modelBuilder.Entity("API.Entities.KioscoConfig", b =>
@@ -349,7 +352,7 @@ namespace API.Migrations
                     b.HasIndex("KioscoId")
                         .IsUnique();
 
-                    b.ToTable("KioscoConfigs", (string)null);
+                    b.ToTable("KioscoConfigs");
                 });
 
             modelBuilder.Entity("API.Entities.Producto", b =>
@@ -394,7 +397,7 @@ namespace API.Migrations
                     b.HasIndex("KioscoId", "Sku")
                         .IsUnique();
 
-                    b.ToTable("Productos", (string)null);
+                    b.ToTable("Productos");
                 });
 
             modelBuilder.Entity("API.Entities.UserPreferences", b =>
@@ -431,7 +434,7 @@ namespace API.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserPreferences", (string)null);
+                    b.ToTable("UserPreferences");
                 });
 
             modelBuilder.Entity("API.Entities.Venta", b =>
@@ -462,7 +465,7 @@ namespace API.Migrations
 
                     b.HasIndex("KioscoId", "Fecha");
 
-                    b.ToTable("Ventas", (string)null);
+                    b.ToTable("Ventas");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
