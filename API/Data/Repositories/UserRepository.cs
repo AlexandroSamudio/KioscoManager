@@ -1,5 +1,6 @@
 using API.DTOs;
 using API.Entities;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
@@ -23,11 +24,11 @@ public class UserRepository : IUserRepository
         _mapper = mapper;
     }
 
-    public async Task<UserManagementDto?> GetUserByIdAsync(int userId)
+    public async Task<UserManagementDto?> GetUserByIdAsync(int userId,CancellationToken cancellationToken)
     {
         var user = await _context.Users
             .Include(u => u.Kiosco)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user == null) return null;
 
@@ -39,43 +40,49 @@ public class UserRepository : IUserRepository
         return userDto;
     }
 
-    public async Task<IEnumerable<UserManagementDto>> GetUsersAsync()
+    public async Task<PagedList<UserManagementDto>> GetUsersAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
     {
-        var users = await _context.Users
+        var query = _context.Users
             .Include(u => u.Kiosco)
-            .ToListAsync();
+            .OrderBy(u => u.Id);
 
-        var userDtos = new List<UserManagementDto>();
+        var totalCount = await query.CountAsync(cancellationToken);
+        var users = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
 
-        foreach (var user in users)
+        var userIds = users.Select(u => u.Id).ToList();
+        var userRolesDict = await GetUserRolesDictionaryAsync(userIds, cancellationToken);
+
+        var userDtos = users.Select(user =>
         {
-            var roles = await _userManager.GetRolesAsync(user);
             var userDto = _mapper.Map<UserManagementDto>(user);
-            userDto.Role = roles.FirstOrDefault();
+            userDto.Role = userRolesDict.GetValueOrDefault(user.Id);
             userDto.NombreKiosco = user.Kiosco?.Nombre;
-            userDtos.Add(userDto);
-        }
+            return userDto;
+        }).ToList();
 
-        return userDtos;
+        return new PagedList<UserManagementDto>(userDtos, totalCount, pageNumber, pageSize);
     }
 
-    public async Task<IEnumerable<UserManagementDto>> GetUsersByKioscoAsync(int kioscoId)
+    public async Task<IEnumerable<UserManagementDto>> GetUsersByKioscoAsync(int kioscoId, CancellationToken cancellationToken)
     {
         var users = await _context.Users
             .Include(u => u.Kiosco)
             .Where(u => u.KioscoId == kioscoId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
-        var userDtos = new List<UserManagementDto>();
+        var userIds = users.Select(u => u.Id).ToList();
+        var userRolesDict = await GetUserRolesDictionaryAsync(userIds, cancellationToken);
 
-        foreach (var user in users)
+        var userDtos = users.Select(user =>
         {
-            var roles = await _userManager.GetRolesAsync(user);
             var userDto = _mapper.Map<UserManagementDto>(user);
-            userDto.Role = roles.FirstOrDefault();
+            userDto.Role = userRolesDict.GetValueOrDefault(user.Id);
             userDto.NombreKiosco = user.Kiosco?.Nombre;
-            userDtos.Add(userDto);
-        }
+            return userDto;
+        }).ToList();
 
         return userDtos;
     }
@@ -130,20 +137,32 @@ public class UserRepository : IUserRepository
 
         var currentRoles = await _userManager.GetRolesAsync(targetUser);
 
-        if (currentRoles.Any())
+        using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        try
         {
-            var removeResult = await _userManager.RemoveFromRolesAsync(targetUser, currentRoles);
-            if (!removeResult.Succeeded)
+            if (currentRoles.Any())
             {
-                response.Message = "Error al remover roles actuales";
+                var removeResult = await _userManager.RemoveFromRolesAsync(targetUser, currentRoles);
+                if (!removeResult.Succeeded)
+                {
+                    response.Message = "Error al remover roles actuales";
+                    return response;
+                }
+            }
+
+            var addResult = await _userManager.AddToRoleAsync(targetUser, roleName);
+            if (!addResult.Succeeded)
+            {
+                response.Message = $"Error al asignar el rol: {string.Join(", ", addResult.Errors.Select(e => e.Description))}";
                 return response;
             }
-        }
 
-        var addResult = await _userManager.AddToRoleAsync(targetUser, roleName);
-        if (!addResult.Succeeded)
+            await transaction.CommitAsync(cancellationToken);
+        }
+        catch (Exception)
         {
-            response.Message = $"Error al asignar el rol: {string.Join(", ", addResult.Errors.Select(e => e.Description))}";
+            await transaction.RollbackAsync(cancellationToken);
+            response.Message = "Error al procesar el cambio de rol. La operación ha sido revertida.";
             return response;
         }
 
@@ -156,17 +175,17 @@ public class UserRepository : IUserRepository
         return response;
     }
 
-    public async Task<IEnumerable<string>> GetUserRolesAsync(int userId)
+    public async Task<IEnumerable<string>> GetUserRolesAsync(int userId, CancellationToken cancellationToken)
     {
-        var user = await _context.Users.FindAsync(userId);
+        var user = await _context.Users.FindAsync(userId,cancellationToken);
         if (user == null) return [];
 
         return await _userManager.GetRolesAsync(user);
     }
 
-    public async Task<bool> IsUserAdminAsync(int userId)
+    public async Task<bool> IsUserAdminAsync(int userId, CancellationToken cancellationToken)
     {
-        var user = await _context.Users.FindAsync(userId);
+        var user = await _context.Users.FindAsync(userId, cancellationToken);
         if (user == null) return false;
 
         return await _userManager.IsInRoleAsync(user, "administrador");
@@ -180,7 +199,7 @@ public class UserRepository : IUserRepository
         if (user == null) return null;
 
         await UpdateUniqueFieldAsync(
-            userId,
+            user,
             profileData.UserName,
             u => u.UserName,
             (u, value) => u.UserName = value,
@@ -189,7 +208,7 @@ public class UserRepository : IUserRepository
         );
 
         await UpdateUniqueFieldAsync(
-            userId,
+            user,
             profileData.Email,
             u => u.Email,
             (u, value) => u.Email = value,
@@ -242,7 +261,7 @@ public class UserRepository : IUserRepository
     }
     
     private async Task UpdateUniqueFieldAsync(
-        int userId,
+        AppUser user,
         string? newValue,
         Func<AppUser, string?> selector,
         Action<AppUser, string> setter,
@@ -252,7 +271,7 @@ public class UserRepository : IUserRepository
         if (!string.IsNullOrWhiteSpace(newValue))
         {
             var existingUser = await _context.Users
-                .Where(u => selector(u) == newValue && u.Id != userId)
+                .Where(u => selector(u) == newValue && u.Id != user.Id)
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (existingUser != null)
@@ -260,11 +279,35 @@ public class UserRepository : IUserRepository
                 throw new InvalidOperationException(errorMessage);
             }
 
-            var user = await _context.Users.FindAsync(new object[] { userId }, cancellationToken);
-            if (user != null)
+            setter(user, newValue);
+        }
+    }
+
+    private async Task<Dictionary<int, string?>> GetUserRolesDictionaryAsync(IList<int> userIds, CancellationToken cancellationToken)
+    {
+        var userRolesDict = new Dictionary<int, string?>();
+
+        var userRoles = await (from ur in _context.UserRoles
+                              join r in _context.Roles on ur.RoleId equals r.Id
+                              where userIds.Contains(ur.UserId)
+                              select new { ur.UserId, r.Name })
+                              .ToListAsync(cancellationToken);
+
+        var userRoleGroups = userRoles.GroupBy(ur => ur.UserId);
+        
+        foreach (var group in userRoleGroups)
+        {
+            userRolesDict[group.Key] = group.FirstOrDefault()?.Name;
+        }
+
+        foreach (var userId in userIds)
+        {
+            if (!userRolesDict.ContainsKey(userId))
             {
-                setter(user, newValue);
+                userRolesDict[userId] = null;
             }
         }
+
+        return userRolesDict;
     }
 }

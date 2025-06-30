@@ -16,10 +16,9 @@ public class KioscoBasicInfoDto
 
 public class KioscoBasicInfoUpdateDto
 {
-    [Required]
     [MaxLength(100, ErrorMessage = "El nombre no puede exceder 100 caracteres")]
     [MinLength(2, ErrorMessage = "El nombre debe tener al menos 2 caracteres")]
-    public required string Nombre { get; set; }
+    public string? Nombre { get; set; }
     
     [MaxLength(200, ErrorMessage = "La dirección no puede exceder 200 caracteres")]
     public string? Direccion { get; set; }

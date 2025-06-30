@@ -39,6 +39,7 @@ namespace API.Extensions
         public static async Task EnsureAllKioscoConfigsAsync(this DataContext context)
         {
             var kioscosWithoutConfig = await context.Kioscos
+                .Include(k => k.Configuracion)
                 .Where(k => k.Configuracion == null)
                 .ToListAsync();
 
@@ -57,6 +58,7 @@ namespace API.Extensions
         public static async Task EnsureAllUserPreferencesAsync(this DataContext context)
         {
             var usersWithoutPreferences = await context.Users
+                .Include(u => u.Preferencias)
                 .Where(u => u.Preferencias == null)
                 .ToListAsync();
 

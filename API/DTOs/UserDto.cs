@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API.DTOs;
 
 public class UserDto
@@ -12,8 +14,13 @@ public class UserDto
 public class UserManagementDto
 {
     public int Id { get; set; }
-    public string UserName { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
+    [Required]
+    [MaxLength(20, ErrorMessage = "El nombre de usuario no puede exceder 20 caracteres")]
+    [MinLength(3, ErrorMessage = "El nombre de usuario debe tener al menos 3 caracteres")]
+    public required string UserName { get; set; }
+    [Required]
+    [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]
+    public required string Email { get; set; }
     public string? Role { get; set; }
     public int? KioscoId { get; set; }
     public string? NombreKiosco { get; set; }
@@ -23,13 +30,6 @@ public class ProfileUpdateDto
 {
     public string? UserName { get; set; }
     public string? Email { get; set; }
-}
-
-public class PasswordChangeDto
-{
-    public required string CurrentPassword { get; set; }
-    public required string NewPassword { get; set; }
-    public required string ConfirmNewPassword { get; set; }
 }
 
 public class PasswordChangeResponseDto

@@ -21,12 +21,7 @@ public class UserPreferences
     {
         return new UserPreferences
         {
-            UserId = userId,
-            NotificacionesStockBajo = true,
-            NotificacionesVentas = false,
-            NotificacionesReportes = false,
-            FechaCreacion = DateTime.UtcNow,
-            FechaActualizacion = DateTime.UtcNow
+            UserId = userId
         };
     }
 }

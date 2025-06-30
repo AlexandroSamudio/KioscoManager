@@ -1,8 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace API.DTOs;
 
 public class UserRoleAssignmentDto
 {
-    public string Role { get; set; } = string.Empty;
+    [Required]
+    public required string Role { get; set; }
 }
 
 public class UserRoleResponseDto

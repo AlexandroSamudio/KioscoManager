@@ -14,16 +14,15 @@ namespace API.DTOs
     public class CategoriaCreateDto
     {
         [Required]
-        [MaxLength(100)]
-        [MinLength(2)]
+        [MaxLength(100,ErrorMessage = "El nombre no puede exceder 100 caracteres")]
+        [MinLength(2, ErrorMessage = "El nombre debe tener al menos 2 caracteres")]
         public required string Nombre { get; set; }
     }
 
     public class CategoriaUpdateDto
     {
-        [Required]
-        [MaxLength(100)]
-        [MinLength(2)]
-        public required string Nombre { get; set; }
+        [MaxLength(100,ErrorMessage = "El nombre no puede exceder 100 caracteres")]
+        [MinLength(2, ErrorMessage = "El nombre debe tener al menos 2 caracteres")]
+        public string? Nombre { get; set; }
     }
 }

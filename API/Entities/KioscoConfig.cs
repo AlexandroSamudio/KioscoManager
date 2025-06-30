@@ -31,14 +31,7 @@ public class KioscoConfig
     {
         return new KioscoConfig
         {
-            KioscoId = kioscoId,
-            Moneda = "ARS",
-            ImpuestoPorcentaje = 21.0m,
-            DecimalesPrecios = 2,
-            StockMinimoDefault = 5,
-            AlertasStockHabilitadas = true,
-            FechaCreacion = DateTime.UtcNow,
-            FechaActualizacion = DateTime.UtcNow
+            KioscoId = kioscoId
         };
     }
 }

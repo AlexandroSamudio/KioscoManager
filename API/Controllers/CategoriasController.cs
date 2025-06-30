@@ -51,14 +51,20 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<CategoriaDto>> UpdateCategoria(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken = default)
         {
-            var categoria = await _categoriaRepository.UpdateCategoriaAsync(id, updateDto, cancellationToken);
-            return Ok(categoria);
+            await _categoriaRepository.UpdateCategoriaAsync(id, updateDto, cancellationToken);
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCategoria(int id, CancellationToken cancellationToken = default)
         {
-            await _categoriaRepository.DeleteCategoriaAsync(id, cancellationToken);
+            var result = await _categoriaRepository.DeleteCategoriaAsync(id, cancellationToken);
+
+            if (!result)
+            {
+                return NotFound("Categoría no encontrada");
+            }
+
             return NoContent();
         }
     }

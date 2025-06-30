@@ -18,18 +18,29 @@ public class UsersController : BaseApiController
 
     [HttpGet]
     [Authorize(Roles = "administrador")]
-    public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsers()
+    public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersPaginated(
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 10, 
+        CancellationToken cancellationToken = default)
     {
-        var users = await _userRepository.GetUsersAsync();
+        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest("Los parámetros de paginación deben ser válidos. PageNumber >= 1, PageSize entre 1 y 100.");
+        }
+
+        var users = await _userRepository.GetUsersAsync(pageNumber, pageSize, cancellationToken);
+        
+        Response.AddPaginationHeader(users);
+        
         return Ok(users);
     }
 
     [HttpGet("{id}")]
     [Authorize(Roles = "administrador")]
-    public async Task<ActionResult<UserManagementDto>> GetUser(int id)
+    public async Task<ActionResult<UserManagementDto>> GetUser(int id, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetUserByIdAsync(id);
-        
+        var user = await _userRepository.GetUserByIdAsync(id, cancellationToken);
+
         if (user == null)
         {
             return NotFound("Usuario no encontrado");
@@ -40,9 +51,9 @@ public class UsersController : BaseApiController
 
     [HttpGet("kiosco/{kioscoId}")]
     [Authorize(Roles = "administrador")]
-    public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersByKiosco(int kioscoId)
+    public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersByKiosco(int kioscoId, CancellationToken cancellationToken)
     {
-        var users = await _userRepository.GetUsersByKioscoAsync(kioscoId);
+        var users = await _userRepository.GetUsersByKioscoAsync(kioscoId, cancellationToken);
         return Ok(users);
     }
 
@@ -64,17 +75,17 @@ public class UsersController : BaseApiController
 
     [HttpGet("{userId}/roles")]
     [Authorize(Roles = "administrador")]
-    public async Task<ActionResult<IEnumerable<string>>> GetUserRoles(int userId)
+    public async Task<ActionResult<IEnumerable<string>>> GetUserRoles(int userId, CancellationToken cancellationToken)
     {
-        var roles = await _userRepository.GetUserRolesAsync(userId);
+        var roles = await _userRepository.GetUserRolesAsync(userId, cancellationToken);
         return Ok(roles);
     }
 
     [HttpGet("{userId}/is-admin")]
     [Authorize(Roles = "administrador")]
-    public async Task<ActionResult<bool>> IsUserAdmin(int userId)
+    public async Task<ActionResult<bool>> IsUserAdmin(int userId, CancellationToken cancellationToken)
     {
-        var isAdmin = await _userRepository.IsUserAdminAsync(userId);
+        var isAdmin = await _userRepository.IsUserAdminAsync(userId, cancellationToken);
         return Ok(isAdmin);
     }
 
@@ -83,11 +94,10 @@ public class UsersController : BaseApiController
     public async Task<ActionResult<UserManagementDto>> UpdateProfile(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
     {
         var requestingUserId = User.GetUserId();
-        
+
         if (requestingUserId != userId)
-        {
-            var requestingUser = await _userRepository.GetUserByIdAsync(requestingUserId);
-            if (requestingUser?.Role != "administrador")
+        {   
+            if(!User.IsInRole("administrador"))
             {
                 return Forbid("Solo puedes actualizar tu propio perfil");
             }

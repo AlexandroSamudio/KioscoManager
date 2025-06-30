@@ -25,23 +25,12 @@ namespace API.Controllers
         }
 
         [HttpPut("kiosco")]
-        public async Task<ActionResult<KioscoConfigDto>> UpdateKioscoConfig(KioscoConfigUpdateDto configUpdateDto, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> UpdateKioscoConfig(KioscoConfigUpdateDto configUpdateDto, CancellationToken cancellationToken = default)
         {
             var kioscoId = User.GetKioscoId();
 
-            try
-            {
-                var configDto = await _configRepository.UpdateKioscoConfigAsync(kioscoId, configUpdateDto, cancellationToken);
-                return Ok(configDto);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error al actualizar la configuración: {ex.Message}");
-            }
+            await _configRepository.UpdateKioscoConfigAsync(kioscoId, configUpdateDto, cancellationToken);
+            return NoContent();
         }
 
         [HttpPut("kiosko/info-basico")]
@@ -50,9 +39,8 @@ namespace API.Controllers
         {
             var kioscoId = User.GetKioscoId();
 
-            var responseDto = await _configRepository.UpdateKioscoBasicInfoAsync(kioscoId, updateDto, cancellationToken);
-            return Ok(responseDto);
-            
+            await _configRepository.UpdateKioscoBasicInfoAsync(kioscoId, updateDto, cancellationToken);
+            return NoContent();
         }
 
         [HttpGet("user/preferencias")]
@@ -69,8 +57,8 @@ namespace API.Controllers
         {
             var userId = User.GetUserId();
 
-            var preferencesDto = await _configRepository.UpdateUserPreferencesAsync(userId, updateDto, cancellationToken);
-            return Ok(preferencesDto);
+            await _configRepository.UpdateUserPreferencesAsync(userId, updateDto, cancellationToken);
+            return NoContent();
         }
     }
 }
