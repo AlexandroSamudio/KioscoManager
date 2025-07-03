@@ -1,0 +1,87 @@
+<div class="configuracion-layout min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
+  <app-navbar></app-navbar>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex gap-6">
+      <aside class="w-64 bg-white rounded-xl shadow-lg border border-amber-200 h-fit">
+        <div class="p-6 border-b border-amber-200">
+          <h2 class="text-xl font-bold text-amber-900">Configuración</h2>
+          <p class="text-sm text-amber-700 mt-1">Personaliza tu experiencia</p>
+        </div>
+
+        <nav class="mt-6">
+          <ul class="space-y-2 px-4 pb-6">
+            <li *ngFor="let section of configSections">
+              <button
+                *ngIf="canAccessSection(section)"
+                (click)="selectSection(section.id, section.route)"
+                [class]="'w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ' +
+                        (isActivePath(section.route)
+                          ? 'bg-amber-100 text-amber-900 border-l-4 border-amber-500 shadow-sm'
+                          : 'text-amber-800 hover:bg-amber-50 hover:text-amber-900')"
+                [attr.aria-current]="isActivePath(section.route) ? 'page' : null">
+                <i [class]="section.icon + ' w-5 h-5'"></i>
+                <div class="flex-1">
+                  <div class="font-medium">{{ section.title }}</div>
+                  <div class="text-xs text-amber-600 mt-1">{{ section.description }}</div>
+                </div>
+                <i class="fas fa-chevron-right text-amber-400 text-sm"
+                   [class.text-amber-600]="isActivePath(section.route)"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="flex-1">
+        <div class="mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-amber-900">
+                {{ getCurrentSectionTitle() }}
+              </h1>
+              <p class="text-amber-700 mt-1">
+                {{ getCurrentSectionDescription() }}
+              </p>
+            </div>
+
+            <div class="flex space-x-3">
+              <button class="px-4 py-2 text-amber-700 border border-amber-300 rounded-lg hover:bg-amber-50 transition-all duration-200 shadow-sm">
+                <i class="fas fa-undo mr-2"></i>
+                Restablecer
+              </button>
+              <button class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-all duration-200 shadow-sm">
+                <i class="fas fa-save mr-2"></i>
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg border border-amber-200 min-h-96">
+          <router-outlet></router-outlet>
+
+          <div *ngIf="!isSpecificRouteLoaded()" class="p-8 text-center">
+            <div class="text-amber-400 mb-4">
+              <i class="fas fa-cog text-6xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-amber-900 mb-2">
+              Selecciona una sección de configuración
+            </h3>
+            <p class="text-amber-700">
+              Utiliza el menú lateral para navegar entre las diferentes opciones de configuración.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div *ngIf="hasUnsavedChanges()"
+       class="fixed bottom-4 right-4 bg-amber-100 border border-amber-400 text-amber-700 px-4 py-3 rounded-lg shadow-lg">
+    <div class="flex items-center space-x-2">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span class="text-sm font-medium">Tienes cambios sin guardar</span>
+    </div>
+  </div>
+</div>

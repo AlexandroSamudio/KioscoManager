@@ -1,0 +1,200 @@
+.configuracion-layout {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+aside {
+  transition: all 0.3s ease;
+}
+
+nav button {
+  position: relative;
+  overflow: hidden;
+}
+
+nav button::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
+  transition: width 0.3s ease;
+}
+
+nav button:hover::before {
+  width: 100%;
+}
+
+nav button[aria-current="page"] {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  box-shadow: 0 1px 3px rgba(251, 191, 36, 0.2);
+  transform: translateX(2px);
+}
+
+.flex-1 {
+  transition: all 0.3s ease;
+}
+
+.bg-white.rounded-xl.shadow-lg {
+  transition: box-shadow 0.3s ease;
+}
+
+.bg-white.rounded-xl.shadow-lg:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+button {
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.bg-amber-600:hover {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+}
+
+.border-amber-300:hover {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+}
+
+.fixed.bottom-4.right-4 {
+  animation: slideInUp 0.3s ease;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.bg-gradient-to-br {
+  background-size: 120% 120%;
+  animation: gradientShift 20s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@media (max-width: 768px) {
+  aside {
+    position: fixed;
+    left: -100%;
+    z-index: 50;
+    height: 100vh;
+    transition: left 0.3s ease;
+    margin-top: 0;
+  }
+
+  aside.mobile-open {
+    left: 0;
+  }
+
+  .flex {
+    flex-direction: column;
+  }
+
+  .flex-1 {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.loading {
+  position: relative;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 2px solid #fde68a;
+  border-top-color: #f59e0b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 1;
+  position: relative;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 1px solid #fde68a;
+  border-radius: 0.75rem;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+button:focus {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+aside::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, #fde68a, transparent);
+}
+
+.fas {
+  transition: transform 0.2s ease;
+}
+
+button:hover .fas {
+  transform: scale(1.1);
+}
+
+nav button[aria-current="page"] .fas {
+  color: #d97706;
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(251, 191, 36, 0.1), 0 4px 6px -2px rgba(251, 191, 36, 0.05);
+}
