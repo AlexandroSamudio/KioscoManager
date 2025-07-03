@@ -17,9 +17,9 @@ namespace API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<PagedList<CategoriaDto>>> GetCategorias(
+            CancellationToken cancellationToken,
             [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            CancellationToken cancellationToken = default)
+            [FromQuery] int pageSize = 10)
         {
             var categorias = await _categoriaRepository.GetCategoriasAsync(pageNumber, pageSize, cancellationToken);
             
@@ -29,7 +29,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CategoriaDto>> GetCategoria(int id, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<CategoriaDto>> GetCategoria(int id, CancellationToken cancellationToken)
         {
             var categoria = await _categoriaRepository.GetCategoriaByIdAsync(id, cancellationToken);
             
@@ -42,21 +42,21 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CategoriaDto>> CreateCategoria(CategoriaCreateDto createDto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<CategoriaDto>> CreateCategoria(CategoriaCreateDto createDto, CancellationToken cancellationToken)
         {
             var categoria = await _categoriaRepository.CreateCategoriaAsync(createDto, cancellationToken);
             return CreatedAtAction(nameof(GetCategoria), new { id = categoria.Id }, categoria);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<CategoriaDto>> UpdateCategoria(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> UpdateCategoria(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken)
         {
             await _categoriaRepository.UpdateCategoriaAsync(id, updateDto, cancellationToken);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteCategoria(int id, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> DeleteCategoria(int id, CancellationToken cancellationToken)
         {
             var result = await _categoriaRepository.DeleteCategoriaAsync(id, cancellationToken);
 

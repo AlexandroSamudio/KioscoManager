@@ -16,7 +16,7 @@ namespace API.Controllers
         }
 
         [HttpGet("kiosco")]
-        public async Task<ActionResult<KioscoConfigDto>> GetKioscoConfig(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<KioscoConfigDto>> GetKioscoConfig(CancellationToken cancellationToken)
         {
             var kioscoId = User.GetKioscoId();
 
@@ -25,7 +25,7 @@ namespace API.Controllers
         }
 
         [HttpPut("kiosco")]
-        public async Task<IActionResult> UpdateKioscoConfig(KioscoConfigUpdateDto configUpdateDto, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> UpdateKioscoConfig(KioscoConfigUpdateDto configUpdateDto, CancellationToken cancellationToken)
         {
             var kioscoId = User.GetKioscoId();
 
@@ -35,7 +35,7 @@ namespace API.Controllers
 
         [HttpPut("kiosko/info-basico")]
         [Authorize(Roles = "administrador")]
-        public async Task<ActionResult<KioscoBasicInfoDto>> UpdateKioscoBasicInfo(KioscoBasicInfoUpdateDto updateDto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<KioscoBasicInfoDto>> UpdateKioscoBasicInfo(KioscoBasicInfoUpdateDto updateDto, CancellationToken cancellationToken)
         {
             var kioscoId = User.GetKioscoId();
 
@@ -44,7 +44,7 @@ namespace API.Controllers
         }
 
         [HttpGet("user/preferencias")]
-        public async Task<ActionResult<UserPreferencesDto>> GetUserPreferences(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<UserPreferencesDto>> GetUserPreferences(CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
 
@@ -53,7 +53,7 @@ namespace API.Controllers
         }
 
         [HttpPut("user/preferencias")]
-        public async Task<ActionResult<UserPreferencesDto>> UpdateUserPreferences(UserPreferencesUpdateDto updateDto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<UserPreferencesDto>> UpdateUserPreferences(UserPreferencesUpdateDto updateDto, CancellationToken cancellationToken)
         {
             var userId = User.GetUserId();
 

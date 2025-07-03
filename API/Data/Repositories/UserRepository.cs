@@ -95,7 +95,7 @@ public class UserRepository : IUserRepository
             Success = false
         };
 
-        var requestingUser = await _context.Users.FindAsync(requestingUserId, cancellationToken);
+        var requestingUser = await _context.Users.FindAsync([requestingUserId], cancellationToken);
         if (requestingUser == null)
         {
             response.Message = "Usuario solicitante no encontrado";
@@ -115,7 +115,7 @@ public class UserRepository : IUserRepository
             return response;
         }
 
-        var targetUser = await _context.Users.FindAsync(userId, cancellationToken);
+        var targetUser = await _context.Users.FindAsync([userId], cancellationToken);
         if (targetUser == null)
         {
             response.Message = "Usuario no encontrado";
@@ -177,7 +177,7 @@ public class UserRepository : IUserRepository
 
     public async Task<IEnumerable<string>> GetUserRolesAsync(int userId, CancellationToken cancellationToken)
     {
-        var user = await _context.Users.FindAsync(userId,cancellationToken);
+        var user = await _context.Users.FindAsync([userId], cancellationToken);
         if (user == null) return [];
 
         return await _userManager.GetRolesAsync(user);
@@ -185,7 +185,7 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> IsUserAdminAsync(int userId, CancellationToken cancellationToken)
     {
-        var user = await _context.Users.FindAsync(userId, cancellationToken);
+        var user = await _context.Users.FindAsync([userId], cancellationToken);
         if (user == null) return false;
 
         return await _userManager.IsInRoleAsync(user, "administrador");
@@ -234,7 +234,7 @@ public class UserRepository : IUserRepository
             Message = "Error al cambiar la contraseña"
         };
 
-        var user = await _context.Users.FindAsync(userId, cancellationToken);
+        var user = await _context.Users.FindAsync([userId], cancellationToken);
         if (user == null)
         {
             response.Message = "Usuario no encontrado";

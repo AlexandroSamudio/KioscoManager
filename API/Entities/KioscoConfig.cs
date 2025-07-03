@@ -29,9 +29,12 @@ public class KioscoConfig
 
     public static KioscoConfig CreateDefault(int kioscoId)
     {
+        var now = DateTime.UtcNow;
         return new KioscoConfig
         {
-            KioscoId = kioscoId
+            KioscoId = kioscoId,
+            FechaCreacion = now,
+            FechaActualizacion = now
         };
     }
 }

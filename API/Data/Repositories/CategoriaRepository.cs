@@ -19,7 +19,7 @@ namespace API.Data.Repositories
             _mapper = mapper;
         }
 
-        public async Task<PagedList<CategoriaDto>> GetCategoriasAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        public async Task<PagedList<CategoriaDto>> GetCategoriasAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
         {
             var query = _context.Categorias!
                 .AsNoTracking()
@@ -29,7 +29,7 @@ namespace API.Data.Repositories
             return await PagedList<CategoriaDto>.CreateAsync(query, pageNumber, pageSize, cancellationToken);
         }
 
-        public async Task<CategoriaDto?> GetCategoriaByIdAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<CategoriaDto?> GetCategoriaByIdAsync(int id, CancellationToken cancellationToken)
         {
             return await _context.Categorias!
                 .AsNoTracking()
@@ -38,7 +38,7 @@ namespace API.Data.Repositories
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<CategoriaDto> CreateCategoriaAsync(CategoriaCreateDto createDto, CancellationToken cancellationToken = default)
+        public async Task<CategoriaDto> CreateCategoriaAsync(CategoriaCreateDto createDto, CancellationToken cancellationToken)
         {   
             if (await CategoriaExistsAsync(createDto.Nombre, cancellationToken: cancellationToken))
             {
@@ -53,7 +53,7 @@ namespace API.Data.Repositories
             return _mapper.Map<CategoriaDto>(categoria);
         }
 
-        public async Task<CategoriaDto?> UpdateCategoriaAsync(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken = default)
+        public async Task<CategoriaDto?> UpdateCategoriaAsync(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken)
         {
             var categoria = await _context.Categorias!
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
@@ -66,7 +66,7 @@ namespace API.Data.Repositories
                     throw new InvalidOperationException("El nombre de la categoría no puede estar vacío");
                 }
 
-            if (await CategoriaExistsAsync(updateDto.Nombre, id, cancellationToken))
+            if (await CategoriaExistsAsync(updateDto.Nombre, cancellationToken, id))
                 {
                     throw new InvalidOperationException($"Ya existe otra categoría con el nombre '{updateDto.Nombre}'");
                 }
@@ -77,7 +77,7 @@ namespace API.Data.Repositories
             return _mapper.Map<CategoriaDto>(categoria);
         }
 
-        public async Task<bool> DeleteCategoriaAsync(int id, CancellationToken cancellationToken = default)
+        public async Task<bool> DeleteCategoriaAsync(int id, CancellationToken cancellationToken)
         {
             var categoria = await _context.Categorias!
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
@@ -102,7 +102,7 @@ namespace API.Data.Repositories
             return true;
         }
 
-        public async Task<bool> CategoriaExistsAsync(string nombre, int? excludeId = null, CancellationToken cancellationToken = default)
+        public async Task<bool> CategoriaExistsAsync(string nombre, CancellationToken cancellationToken, int? excludeId = null)
         {
             var query = _context.Categorias!.Where(c => c.Nombre.ToLower() == nombre.ToLower());
 

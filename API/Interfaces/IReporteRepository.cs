@@ -9,7 +9,7 @@ namespace API.Interfaces
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken);
 
         Task<PagedList<ProductoMasVendidoDto>> GetTopProductsByVentasAsync(
             int kioscoId,
@@ -17,19 +17,19 @@ namespace API.Interfaces
             int pageSize,
             DateTime fechaInicio,
             DateTime fechaFin,
-            int limit = 5,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken,
+            int limit = 5);
 
         Task<IReadOnlyList<VentasPorDiaDto>> GetVentasPorDiaAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken);
 
         Task<IReadOnlyList<CategoriasRentabilidadDto>> GetCategoriasRentabilidadAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
-            CancellationToken cancellationToken = default);
+            CancellationToken cancellationToken);
     }
 }

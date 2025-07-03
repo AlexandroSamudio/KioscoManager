@@ -37,7 +37,7 @@ namespace API.Data.Repositories
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
         {
             fechaInicio = NormalizeToUtcDate(fechaInicio);
             fechaFin = NormalizeToUtcDate(fechaFin);
@@ -109,8 +109,8 @@ namespace API.Data.Repositories
             int pageSize,
             DateTime fechaInicio,
             DateTime fechaFin,
-            int limit = 5,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken,
+            int limit = 5)
         {
             fechaInicio = NormalizeToUtcDate(fechaInicio);
             fechaFin = NormalizeToUtcDate(fechaFin);
@@ -169,7 +169,7 @@ namespace API.Data.Repositories
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
         {
             fechaInicio = NormalizeToUtcDate(fechaInicio);
             fechaFin = NormalizeToUtcDate(fechaFin);
@@ -243,7 +243,7 @@ namespace API.Data.Repositories
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
         {
             var endOfDay = NormalizeToUtcDate(new DateTime(fechaFin.Year, fechaFin.Month, fechaFin.Day, 23, 59, 59));
             string cacheKey = $"categoriasRentabilidad_{kioscoId}_{fechaInicio:yyyyMMdd}_{fechaFin:yyyyMMdd}";
@@ -303,7 +303,7 @@ namespace API.Data.Repositories
 
         private async Task<Dictionary<int, decimal?>> ObtenerCostosHistoricosBulkAsync(
             IEnumerable<(int ProductoId, DateTime Fecha)> productosYFechas,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken)
         {
             var productosIds = productosYFechas.Select(p => p.ProductoId).Distinct().ToList();
 
