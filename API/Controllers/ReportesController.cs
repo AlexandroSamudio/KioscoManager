@@ -18,6 +18,7 @@ namespace API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<ReporteDto>> GetReporte(
+            CancellationToken cancellationToken,
             [FromQuery] DateTime? fechaInicio = null,
             [FromQuery] DateTime? fechaFin = null)
         {
@@ -27,12 +28,13 @@ namespace API.Controllers
                 return BadRequest(errorMessage);
             }
 
-            var summary = await _reportRepository.CalculateKpiReporteAsync(KioscoId, start, end);
+            var summary = await _reportRepository.CalculateKpiReporteAsync(KioscoId, start, end, cancellationToken);
             return Ok(summary);
         }
 
         [HttpGet("top-productos")]
         public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetTopProductos(
+            CancellationToken cancellationToken,
             [FromQuery] DateTime? fechaInicio = null,
             [FromQuery] DateTime? fechaFin = null,
             [FromQuery] int pageNumber = 1,
@@ -55,6 +57,7 @@ namespace API.Controllers
                 pageSize,
                 start,
                 end,
+                cancellationToken,
                 limit);
 
             if (topProducts.Count == 0)
@@ -68,6 +71,7 @@ namespace API.Controllers
 
         [HttpGet("ventas-por-dia")]
         public async Task<ActionResult<IReadOnlyList<VentasPorDiaDto>>> GetVentasPorDia(
+            CancellationToken cancellationToken,
             [FromQuery] DateTime? fechaInicio = null,
             [FromQuery] DateTime? fechaFin = null)
         {
@@ -80,7 +84,8 @@ namespace API.Controllers
             var salesOverTime = await _reportRepository.GetVentasPorDiaAsync(
                 KioscoId,
                 start,
-                end);
+                end,
+                cancellationToken);
 
             if (salesOverTime.Count == 0)
             {
@@ -92,6 +97,7 @@ namespace API.Controllers
 
         [HttpGet("rentabilidad-categorias")]
         public async Task<ActionResult<IReadOnlyList<CategoriasRentabilidadDto>>> GetCategoriasRentabilidad(
+            CancellationToken cancellationToken,
             [FromQuery] DateTime? fechaInicio = null,
             [FromQuery] DateTime? fechaFin = null)
         {
@@ -101,7 +107,7 @@ namespace API.Controllers
                 return BadRequest(errorMessage);
             }
 
-            var categorias = await _reportRepository.GetCategoriasRentabilidadAsync(KioscoId, start, end);
+            var categorias = await _reportRepository.GetCategoriasRentabilidadAsync(KioscoId, start, end, cancellationToken);
 
             if (categorias.Count == 0)
             {

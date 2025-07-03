@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,6 +19,7 @@ public class DBSeeder
         var productoLogger = loggerFactory.CreateLogger("SeedProductos");
         var userAndRoleLogger = loggerFactory.CreateLogger("SeedUsersAndRoles");
         var kioscoLogger = loggerFactory.CreateLogger("SeedKioscos");
+        var configLogger = loggerFactory.CreateLogger("SeedConfigurations");
 
         await context.Database.MigrateAsync();
 
@@ -28,5 +30,8 @@ public class DBSeeder
         await JsonDataSeeder.SeedAsync<Kiosco>(context, "kioscos.json", kioscoLogger);
         await context.Database.ExecuteSqlRawAsync("SELECT setval(pg_get_serial_sequence('public.\"Kioscos\"', 'Id'), COALESCE((SELECT MAX(\"Id\") FROM public.\"Kioscos\"), 0) + 1, false);");
         await JsonDataSeeder.SeedAsync<Producto>(context, "productos.json", productoLogger);
+
+        await context.EnsureAllKioscoConfigsAsync();
+        await context.EnsureAllUserPreferencesAsync();
     }
 }
