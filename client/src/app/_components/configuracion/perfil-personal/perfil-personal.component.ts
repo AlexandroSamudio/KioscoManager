@@ -11,7 +11,12 @@ import {
 import { AccountService } from '../../../_services/account.service';
 import { UserService } from '../../../_services/user.service';
 import { NotificationService } from '../../../_services/notification.service';
-import { UserManagement, PasswordChangeRequest, ProfileUpdateRequest, PasswordChangeResponse } from '../../../_models/user.model';
+import {
+  UserManagement,
+  PasswordChangeRequest,
+  ProfileUpdateRequest,
+  PasswordChangeResponse,
+} from '../../../_models/user.model';
 
 enum PasswordChangeErrorCode {
   None = 0,
@@ -37,7 +42,7 @@ export class PerfilPersonalComponent implements OnInit {
   isLoading = signal(true);
   isSubmittingProfile = signal(false);
   isSubmittingPassword = signal(false);
-  initialProfileData = signal<{ userName: string; email: string } | null>(null);
+  initialProfileData = signal<{ username: string; email: string } | null>(null);
   showCurrentPassword = signal(false);
   showNewPassword = signal(false);
   showConfirmPassword = signal(false);
@@ -47,7 +52,7 @@ export class PerfilPersonalComponent implements OnInit {
 
   constructor() {
     this.profileForm = this.fb.group({
-      userName: [
+      username: [
         '',
         [
           Validators.required,
@@ -93,7 +98,7 @@ export class PerfilPersonalComponent implements OnInit {
     }
 
     const profileData = {
-      userName: currentUser.username,
+      username: currentUser.username,
       email: currentUser.email,
     };
 
@@ -153,7 +158,7 @@ export class PerfilPersonalComponent implements OnInit {
 
     const current = this.profileForm.value;
     return (
-      initial.userName !== current.userName || initial.email !== current.email
+      initial.username !== current.username || initial.email !== current.email
     );
   }
 
@@ -170,7 +175,7 @@ export class PerfilPersonalComponent implements OnInit {
     this.isSubmittingProfile.set(true);
 
     const profileData: ProfileUpdateRequest = {
-      userName: this.profileForm.value.userName,
+      username: this.profileForm.value.username,
       email: this.profileForm.value.email,
     };
 
@@ -183,14 +188,14 @@ export class PerfilPersonalComponent implements OnInit {
           if (currentUser) {
             const updatedCurrentUser = {
               ...currentUser,
-              username: updatedUser.userName,
+              username: updatedUser.username,
               email: updatedUser.email,
             };
             this.accountService.setCurrentUser(updatedCurrentUser);
           }
 
           this.initialProfileData.set({
-            userName: updatedUser.userName,
+            username: updatedUser.username,
             email: updatedUser.email,
           });
           this.notificationService.success(

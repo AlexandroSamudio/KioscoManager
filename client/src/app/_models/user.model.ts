@@ -7,7 +7,7 @@ export interface User {
 
 export interface UserManagement {
   id: number;
-  userName: string;
+  username: string;
   email: string;
   role?: string;
   kioscoId?: number;
@@ -20,7 +20,7 @@ export interface UserRoleAssignment {
 
 export interface UserRoleResponse {
   userId: number;
-  userName: string;
+  username: string;
   email: string;
   role: string;
   success: boolean;
@@ -38,6 +38,6 @@ export interface PasswordChangeRequest {
 }
 
 export interface ProfileUpdateRequest {
-  userName?: string;
+  username?: string;
   email?: string;
 }
