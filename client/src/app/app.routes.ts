@@ -10,6 +10,12 @@ import { InventarioComponent } from './_components/inventario/inventario.compone
 import { PuntoVentaComponent } from './_components/ventas/punto-venta.component';
 import { RegistrarCompraComponent } from './_components/compras/registrar-compra.component';
 import { ReportesPageComponent } from './_components/reportes/reportes-page.component';
+import { ConfiguracionComponent } from './_components/configuracion/configuracion.component';
+import { PerfilPersonalComponent } from './_components/configuracion/perfil-personal/perfil-personal.component';
+import { InformacionNegocioComponent } from './_components/configuracion/informacion-negocio/informacion-negocio.component';
+import { UsuariosPermisosComponent } from './_components/configuracion/usuarios-permisos/usuarios-permisos.component';
+import { ConfiguracionInventarioComponent } from './_components/configuracion/configuracion-inventario/configuracion-inventario.component';
+import { ConfiguracionReportesComponent } from './_components/configuracion/configuracion-reportes/configuracion-reportes.component';
 
 export const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -21,6 +27,24 @@ export const routes: Routes = [
   {path: 'punto-de-venta', component: PuntoVentaComponent, canActivate: [authGuard]},
   {path: 'registrar-compra', component: RegistrarCompraComponent, canActivate: [authGuard]},
   {path: 'reportes', component: ReportesPageComponent, canActivate: [authGuard]},
+  {
+    path: 'configuracion',
+    component: ConfiguracionComponent,
+    canActivate: [authGuard],
+    children: [
+      /* {path: '', redirectTo: 'perfil', pathMatch: 'full'},
+      {path: 'perfil', component: PerfilPersonalComponent},
+      {path: 'negocio', component: InformacionNegocioComponent},
+      {path: 'usuarios', component: UsuariosPermisosComponent},
+      {path: 'inventario', component: ConfiguracionInventarioComponent},
+      {path: 'reportes', component: ConfiguracionReportesComponent} */
+    ]
+  },
+  {path: 'perfil-personal', component: PerfilPersonalComponent, canActivate: [authGuard]},
+  {path: 'informacion-negocio', component: InformacionNegocioComponent, canActivate: [authGuard]},
+  {path: 'usuarios-permisos', component: UsuariosPermisosComponent, canActivate: [authGuard]},
+  {path: 'configuracion-inventario', component: ConfiguracionInventarioComponent, canActivate: [authGuard]},
+  {path: 'configuracion-reportes', component: ConfiguracionReportesComponent, canActivate: [authGuard]},
   {path: 'login', component: LoginComponent},
   {path: '**', component: HomeComponent},
 ];
