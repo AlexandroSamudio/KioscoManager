@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment.development';
-import { User } from '../_models/user';
+import { User } from '../_models/user.model';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Login } from '../_models/login.model';
@@ -88,7 +88,7 @@ export class AccountService {
   }
 
   setCurrentUser(user: User) {
-    if (!user?.username || !user?.email || !user?.token) {
+    if (!user?.id || !user?.username || !user?.email || !user?.token) {
       console.error('Usuario inválido, no se puede guardar en localStorage');
       return;
     }

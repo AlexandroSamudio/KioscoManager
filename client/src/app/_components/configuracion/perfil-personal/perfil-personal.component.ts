@@ -9,12 +9,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { AccountService } from '../../../_services/account.service';
-import {
-  UserService,
-  ProfileUpdateRequest,
-  PasswordChangeRequest,
-} from '../../../_services/user.service';
+import { UserService } from '../../../_services/user.service';
 import { NotificationService } from '../../../_services/notification.service';
+import { UserManagement, PasswordChangeRequest, ProfileUpdateRequest, PasswordChangeResponse } from '../../../_models/user.model';
 
 enum PasswordChangeErrorCode {
   None = 0,
@@ -68,7 +65,7 @@ export class PerfilPersonalComponent implements OnInit {
           '',
           [
             Validators.required,
-            Validators.minLength(6),
+            Validators.minLength(8),
             this.passwordStrengthValidator,
           ],
         ],
@@ -181,7 +178,7 @@ export class PerfilPersonalComponent implements OnInit {
       .updateProfile(currentUser.id, profileData)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (updatedUser) => {
+        next: (updatedUser: UserManagement) => {
           const currentUser = this.accountService.currentUser();
           if (currentUser) {
             const updatedCurrentUser = {
@@ -231,7 +228,7 @@ export class PerfilPersonalComponent implements OnInit {
       .changePassword(currentUser.id, passwordData)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: _ => {
+        next: (_: PasswordChangeResponse) => {
           this.notificationService.success(
             'Éxito',
             'Contraseña cambiada correctamente'
@@ -273,28 +270,28 @@ export class PerfilPersonalComponent implements OnInit {
     this.passwordForm.markAsPristine();
   }
 
-  private getCurrentPassword(): string {
+  private getNewPassword(): string {
     return this.passwordForm.get('newPassword')?.value || '';
   }
 
   checkPasswordLength(): boolean {
-    const password = this.getCurrentPassword();
+    const password = this.getNewPassword();
     return password.length >= 8 && password.length <= 128;
   }
   checkPasswordUppercase(): boolean {
-    const password = this.getCurrentPassword();
+    const password = this.getNewPassword();
     return /[A-Z]/.test(password);
   }
   checkPasswordLowercase(): boolean {
-    const password = this.getCurrentPassword();
+    const password = this.getNewPassword();
     return /[a-z]/.test(password);
   }
   checkPasswordNumber(): boolean {
-    const password = this.getCurrentPassword();
+    const password = this.getNewPassword();
     return /\d/.test(password);
   }
   checkPasswordSpecialChar(): boolean {
-    const password = this.getCurrentPassword();
+    const password = this.getNewPassword();
     return /[\W_]/.test(password);
   }
 
