@@ -1,0 +1,122 @@
+.custom-input:focus {
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+input {
+  transition: all 0.2s ease-in-out;
+}
+
+.input-loading {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(245, 158, 11, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+input[type="tel"] {
+  letter-spacing: 0.5px;
+}
+
+.error-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.success-glow {
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+input:not(:disabled):hover {
+  border-color: rgb(245, 158, 11);
+}
+
+input:disabled {
+  cursor: not-allowed;
+  background-color: rgb(249, 250, 251);
+  color: rgb(156, 163, 175);
+}
+
+input::-webkit-scrollbar {
+  height: 4px;
+}
+
+input::-webkit-scrollbar-track {
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 2px;
+}
+
+input::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.3);
+  border-radius: 2px;
+}
+
+input::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.5);
+}
+
+@media (max-width: 640px) {
+  .form-container {
+    padding: 1rem;
+  }
+
+  input {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-contrast: high) {
+  input {
+    border-width: 2px;
+  }
+
+  .error-icon,
+  .success-icon {
+    filter: contrast(1.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  input,
+  .error-shake,
+  .loading-shimmer {
+    transition: none;
+    animation: none;
+  }
+}
+
+@media print {
+  .form-container {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  input {
+    border: 1px solid #000;
+    background: white;
+  }
+}

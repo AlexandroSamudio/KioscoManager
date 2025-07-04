@@ -1,0 +1,241 @@
+<div class="bg-white border-2 border-amber-200 rounded-xl p-8 shadow-lg">
+  <div class="flex flex-col items-center text-center">
+    <div
+      class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-6"
+    >
+      <svg
+        class="h-10 w-10 text-amber-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+        />
+      </svg>
+    </div>
+
+    <h2 class="text-2xl font-bold text-amber-900 mb-4">
+      Información Básica del Negocio @if (isLoadingData) {
+      <svg
+        class="inline h-6 w-6 ml-3 text-amber-600 animate-spin"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+        />
+      </svg>
+      }
+    </h2>
+
+    <p class="text-amber-700 mb-8 max-w-lg">
+      @if (isLoadingData) { Cargando información del negocio... } @else {
+      Proporciona la información básica de tu negocio. Esta información será
+      visible para todos los miembros de tu equipo y aparecerá en los reportes.
+      }
+    </p>
+
+    <form
+      class="w-full max-w-lg space-y-6"
+      [formGroup]="businessForm"
+      (submit)="$event.preventDefault()"
+    >
+      <div class="text-left">
+        <label
+          for="kioscoName"
+          class="block text-sm font-semibold text-amber-800 mb-2"
+        >
+          Nombre del Kiosco
+          <span class="text-red-500 ml-1" aria-label="Campo obligatorio"
+            >*</span
+          >
+        </label>
+        <div class="relative">
+          <input
+            id="kioscoName"
+            type="text"
+            placeholder="Ej: Mi Tienda Principal"
+            formControlName="nombre"
+            [class]="
+              'w-full border rounded-lg py-3 px-4 pr-10 text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ' +
+              (hasFieldError('nombre')
+                ? 'bg-red-50 border-red-300 focus:ring-red-500 focus:border-transparent'
+                : 'bg-amber-50 border-amber-300 focus:ring-amber-500 focus:border-transparent')
+            "
+            aria-describedby="kioscoName-error"
+            [attr.aria-invalid]="hasFieldError('nombre')"
+          />
+        </div>
+
+        @if (hasFieldError('nombre')) {
+        <div id="kioscoName-error" class="mt-2 flex items-start" role="alert">
+          <svg
+            class="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span class="text-sm text-red-600">{{
+            getFieldError("nombre")
+          }}</span>
+        </div>
+        }
+      </div>
+
+      <div class="text-left">
+        <label
+          for="address"
+          class="block text-sm font-semibold text-amber-800 mb-2"
+        >
+          Dirección
+          <span class="text-gray-500 text-xs ml-1">(Opcional)</span>
+        </label>
+        <div class="relative">
+          <input
+            id="address"
+            type="text"
+            placeholder="Ej: Calle Principal 123"
+            formControlName="direccion"
+            [class]="
+              'w-full border rounded-lg py-3 px-4 pr-10 text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ' +
+              (hasFieldError('direccion')
+                ? 'bg-red-50 border-red-300 focus:ring-red-500 focus:border-transparent'
+                : 'bg-amber-50 border-amber-300 focus:ring-amber-500 focus:border-transparent')
+            "
+            aria-describedby="address-error"
+            [attr.aria-invalid]="hasFieldError('direccion')"
+          />
+        </div>
+
+        @if (hasFieldError('direccion')) {
+        <div id="address-error" class="mt-2 flex items-start" role="alert">
+          <svg
+            class="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span class="text-sm text-red-600">{{
+            getFieldError("direccion")
+          }}</span>
+        </div>
+        }
+      </div>
+
+      <div class="text-left">
+        <label
+          for="phone"
+          class="block text-sm font-semibold text-amber-800 mb-2"
+        >
+          Teléfono
+          <span class="text-gray-500 text-xs ml-1">(Opcional)</span>
+        </label>
+        <div class="relative">
+          <input
+            id="phone"
+            type="tel"
+            placeholder="Ej: +57 300 123 4567 o 3001234567"
+            formControlName="telefono"
+            [class]="
+              'w-full border rounded-lg py-3 px-4 pr-10 text-amber-800 placeholder-amber-400 focus:outline-none focus:ring-2 transition-colors disabled:opacity-50 ' +
+              (hasFieldError('telefono')
+                ? 'bg-red-50 border-red-300 focus:ring-red-500 focus:border-transparent'
+                : 'bg-amber-50 border-amber-300 focus:ring-amber-500 focus:border-transparent')
+            "
+            aria-describedby="phone-error"
+            [attr.aria-invalid]="hasFieldError('telefono')"
+          />
+        </div>
+
+        @if (hasFieldError('telefono')) {
+        <div id="phone-error" class="mt-2 flex items-start" role="alert">
+          <svg
+            class="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span class="text-sm text-red-600">{{
+            getFieldError("telefono")
+          }}</span>
+        </div>
+        }
+      </div>
+
+      <div class="flex justify-center space-x-4 mt-8">
+        <button
+          type="button"
+          class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 disabled:opacity-50"
+          [disabled]="isBusy || !hasChanges()"
+          (click)="cancelChanges()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50"
+          [disabled]="isBusy || !isFormValid() || !hasChanges()"
+          (click)="saveBusinessInfo()"
+        >
+          @if (isSubmitting()) {
+          <span class="inline-block mr-2">
+            <svg
+              class="animate-spin h-4 w-4 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </span>
+          } Guardar Cambios
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -12,7 +12,7 @@ import { RegistrarCompraComponent } from './_components/compras/registrar-compra
 import { ReportesPageComponent } from './_components/reportes/reportes-page.component';
 import { ConfiguracionComponent } from './_components/configuracion/configuracion.component';
 import { PerfilPersonalComponent } from './_components/configuracion/perfil-personal/perfil-personal.component';
-// import { InformacionNegocioComponent } from './_components/configuracion/informacion-negocio/informacion-negocio.component';
+import { InfoNegocioComponent } from './_components/info-negocio/info-negocio.component';
 // import { UsuariosPermisosComponent } from './_components/configuracion/usuarios-permisos/usuarios-permisos.component';
 // import { ConfiguracionInventarioComponent } from './_components/configuracion/configuracion-inventario/configuracion-inventario.component';
 // import { ConfiguracionReportesComponent } from './_components/configuracion/configuracion-reportes/configuracion-reportes.component';
@@ -34,8 +34,8 @@ export const routes: Routes = [
     children: [
       {path: '', redirectTo: 'perfil', pathMatch: 'full'},
       {path: 'perfil', component: PerfilPersonalComponent},
-      /* {path: 'negocio', component: InformacionNegocioComponent},
-      {path: 'usuarios', component: UsuariosPermisosComponent},
+      {path: 'negocio', component: InfoNegocioComponent},
+      /* {path: 'usuarios', component: UsuariosPermisosComponent},
       {path: 'inventario', component: ConfiguracionInventarioComponent},
       {path: 'reportes', component: ConfiguracionReportesComponent} */
     ]
