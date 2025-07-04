@@ -7,7 +7,7 @@ import {
   UserPreferences,
   KioscoBasicInfo,
 } from '../_models/configuracion.model';
-import { environment } from '../environments/environment';
+import { environment } from '../environments/environment.development';
 import { NotificationService } from './notification.service';
 
 @Injectable({
@@ -30,11 +30,11 @@ export class ConfiguracionService {
 
   getKioscoConfig(): Observable<KioscoConfig> {
     return this.http
-      .get<KioscoConfig>(`${this.baseUrl}config/kiosco`)
+      .get<KioscoConfig>(`${this.baseUrl}config/kiosko`)
       .pipe(
         catchError(
           this.handleError<KioscoConfig>(
-            `Error al cargar la configuración del kiosco`
+            `Error al cargar la configuración del kiosko`
           )
         )
       );
@@ -42,7 +42,7 @@ export class ConfiguracionService {
 
   updateKioscoConfig(config: KioscoConfig): Observable<KioscoConfig> {
     return this.http
-      .put<KioscoConfig>(`${this.baseUrl}config/kiosco`, config)
+      .put<KioscoConfig>(`${this.baseUrl}config/kiosko`, config)
       .pipe(
         catchError(
           this.handleError<KioscoConfig>(
