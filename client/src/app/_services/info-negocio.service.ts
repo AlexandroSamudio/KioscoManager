@@ -1,5 +1,5 @@
 import { DestroyRef, Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, catchError, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, tap, throwError } from 'rxjs';
 import { ConfiguracionService } from './configuracion.service';
 import { NotificationService } from './notification.service';
 import { KioscoBasicInfo } from '../_models/configuracion.model';
@@ -16,6 +16,16 @@ export class InfoNegocioService {
   private loadingSubject = new BehaviorSubject<boolean>(false);
   public loading$ = this.loadingSubject.asObservable();
 
+  private handleError<T>(message: string) {
+      return (error: any) => {
+        this.notificationService.error(
+          message,
+          error?.message ?? 'Inténtelo de nuevo'
+        );
+        return throwError(() => error);
+      };
+    }
+
   saveBusinessInfo(businessInfo: KioscoBasicInfo): Observable<KioscoBasicInfo> {
     this.loadingSubject.next(true);
 
@@ -28,14 +38,7 @@ export class InfoNegocioService {
         );
         return businessInfo;
       }),
-      catchError((error) => {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Error desconocido';
-
-        this.notificationService.error('Error al guardar', errorMessage);
-
-        throw error;
-      }),
+      catchError(this.handleError<KioscoBasicInfo>('Error al guardar la información del negocio')),
       tap({
         finalize: () => this.loadingSubject.next(false),
       })
@@ -47,17 +50,7 @@ export class InfoNegocioService {
 
     return this.configuracionService.getKioscoBasicInfo().pipe(
       takeUntilDestroyed(this.destroyRef),
-      catchError((error) => {
-        const errorMessage =
-          error instanceof Error ? error.message : 'Error desconocido';
-
-        this.notificationService.error(
-          'Error al cargar',
-          `No se pudo cargar la información del negocio: ${errorMessage}`
-        );
-
-        throw error;
-      }),
+      catchError(this.handleError<KioscoBasicInfo>('Error al cargar la información del negocio')),
       tap({
         finalize: () => this.loadingSubject.next(false),
       })

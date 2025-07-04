@@ -7,7 +7,7 @@ import {
   UserPreferences,
   KioscoBasicInfo,
 } from '../_models/configuracion.model';
-import { environment } from '../environments/environment.development';
+import { environment } from '../environments/environment';
 import { NotificationService } from './notification.service';
 
 @Injectable({
@@ -29,11 +29,27 @@ export class ConfiguracionService {
   }
 
   getKioscoConfig(): Observable<KioscoConfig> {
-    return this.http.get<KioscoConfig>(`${this.baseUrl}config/kiosco`);
+    return this.http
+      .get<KioscoConfig>(`${this.baseUrl}config/kiosco`)
+      .pipe(
+        catchError(
+          this.handleError<KioscoConfig>(
+            `Error al cargar la configuración del kiosco`
+          )
+        )
+      );
   }
 
   updateKioscoConfig(config: KioscoConfig): Observable<KioscoConfig> {
-    return this.http.put<KioscoConfig>(`${this.baseUrl}config/kiosco`, config);
+    return this.http
+      .put<KioscoConfig>(`${this.baseUrl}config/kiosco`, config)
+      .pipe(
+        catchError(
+          this.handleError<KioscoConfig>(
+            `Error al actualizar la configuración del kiosco`
+          )
+        )
+      );
   }
 
   updateKioscoBasicInfo(
@@ -66,17 +82,31 @@ export class ConfiguracionService {
   }
 
   getUserPreferences(): Observable<UserPreferences> {
-    return this.http.get<UserPreferences>(
-      `${this.baseUrl}config/user/preferences`
-    );
+    return this.http
+      .get<UserPreferences>(`${this.baseUrl}config/user/preferences`)
+      .pipe(
+        catchError(
+          this.handleError<UserPreferences>(
+            `Error al cargar las preferencias del usuario`
+          )
+        )
+      );
   }
 
   updateUserPreferences(
     preferences: UserPreferences
   ): Observable<UserPreferences> {
-    return this.http.put<UserPreferences>(
-      `${this.baseUrl}config/user/preferences`,
-      preferences
-    );
+    return this.http
+      .put<UserPreferences>(
+        `${this.baseUrl}config/user/preferences`,
+        preferences
+      )
+      .pipe(
+        catchError(
+          this.handleError<UserPreferences>(
+            `Error al actualizar las preferencias del usuario`
+          )
+        )
+      );
   }
 }
