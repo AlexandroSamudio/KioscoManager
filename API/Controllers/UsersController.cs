@@ -126,11 +126,17 @@ public class UsersController : BaseApiController
 
         var result = await _userRepository.ChangePasswordAsync(userId, passwordData, cancellationToken);
         
-        if (result.Success)
+        if (result.IsSuccess)
         {
-            return Ok(result);
+            return Ok(result.Data);
         }
 
-        return BadRequest(result);
+        return result.ErrorCode switch
+        {
+            nameof(PasswordChangeErrorCode.UserNotFound) => NotFound(result.Data),
+            nameof(PasswordChangeErrorCode.InvalidCurrentPassword) => BadRequest(result.Data),
+            nameof(PasswordChangeErrorCode.PasswordValidationFailed) => BadRequest(result.Data),
+            _ => BadRequest(result.Data)
+        };
     }
 }

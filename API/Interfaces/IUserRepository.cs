@@ -12,5 +12,5 @@ public interface IUserRepository
     Task<IEnumerable<string>> GetUserRolesAsync(int userId, CancellationToken cancellationToken);
     Task<bool> IsUserAdminAsync(int userId, CancellationToken cancellationToken);
     Task<UserManagementDto?> UpdateProfileAsync(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken);
-    Task<PasswordChangeResponseDto> ChangePasswordAsync(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken);
+    Task<Result<PasswordChangeResponseDto>> ChangePasswordAsync(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken);
 }
