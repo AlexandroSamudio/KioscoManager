@@ -14,7 +14,7 @@ import { ConfiguracionComponent } from './_components/configuracion/configuracio
 import { PerfilPersonalComponent } from './_components/configuracion/perfil-personal/perfil-personal.component';
 import { InfoNegocioComponent } from './_components/info-negocio/info-negocio.component';
 // import { UsuariosPermisosComponent } from './_components/configuracion/usuarios-permisos/usuarios-permisos.component';
-// import { ConfiguracionInventarioComponent } from './_components/configuracion/configuracion-inventario/configuracion-inventario.component';
+import { ConfiguracionCategoriasComponent } from './_components/configuracion/configuracion-categorias/configuracion-categorias.component';
 // import { ConfiguracionReportesComponent } from './_components/configuracion/configuracion-reportes/configuracion-reportes.component';
 
 export const routes: Routes = [
@@ -35,9 +35,9 @@ export const routes: Routes = [
       {path: '', redirectTo: 'perfil', pathMatch: 'full'},
       {path: 'perfil', component: PerfilPersonalComponent},
       {path: 'negocio', component: InfoNegocioComponent},
-      /* {path: 'usuarios', component: UsuariosPermisosComponent},
-      {path: 'inventario', component: ConfiguracionInventarioComponent},
-      {path: 'reportes', component: ConfiguracionReportesComponent} */
+      // {path: 'usuarios', component: UsuariosPermisosComponent},
+      {path: 'categorias', component: ConfiguracionCategoriasComponent},
+      // {path: 'reportes', component: ConfiguracionReportesComponent}
     ]
   },
   {path: 'login', component: LoginComponent},

@@ -1,0 +1,57 @@
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+  <h3 class="text-lg font-semibold text-amber-900 mb-4">
+    {{ isEditMode() ? "Editar Categoría" : "Nueva Categoría" }}
+  </h3>
+
+  <form [formGroup]="categoriaForm" (ngSubmit)="onSubmit()" class="space-y-4">
+    <div class="form-group">
+      <label for="nombre" class="block text-sm font-medium text-amber-800 mb-1">
+        Nombre de la categoría <span class="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        id="nombre"
+        formControlName="nombre"
+        class="w-full p-2 border rounded-md text-amber-900 border-amber-200 focus:border-amber-500 focus:ring focus:ring-amber-200 focus:ring-opacity-50"
+        [class.border-red-500]="hasFieldError('nombre')"
+        placeholder="Ej: Bebidas, Snacks, Golosinas..."
+      />
+      <div *ngIf="hasFieldError('nombre')" class="mt-1 text-sm text-red-600">
+        {{ getFieldError("nombre") }}
+      </div>
+    </div>
+
+    <div
+      *ngIf="errorMessage()"
+      class="p-3 bg-red-50 text-red-700 rounded-md border border-red-200"
+    >
+      {{ errorMessage() }}
+    </div>
+
+    <div class="flex justify-end space-x-3 mt-6">
+      <button
+        type="button"
+        (click)="onCancel()"
+        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm font-medium"
+        [disabled]="isSubmitting()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-sm font-medium"
+        [disabled]="isSubmitting()"
+      >
+        <div *ngIf="isSubmitting()" class="flex items-center">
+          <div
+            class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+          ></div>
+          Guardando...
+        </div>
+        <span *ngIf="!isSubmitting()">{{
+          isEditMode() ? "Actualizar" : "Guardar"
+        }}</span>
+      </button>
+    </div>
+  </form>
+</div>
