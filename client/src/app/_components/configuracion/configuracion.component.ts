@@ -48,9 +48,9 @@ export class ConfiguracionComponent {
     },
     {
       id: 'inventario',
-      title: 'Configuración de Inventario',
+      title: 'Configuración de Categorías',
       icon: 'fas fa-boxes',
-      description: 'Gestion de categorías de productos',
+      description: 'Gestión de categorías de productos',
       route: '/configuracion/categorias',
       adminOnly: true
     },
