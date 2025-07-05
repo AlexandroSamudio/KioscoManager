@@ -48,10 +48,10 @@ export class ConfiguracionComponent {
     },
     {
       id: 'inventario',
-      title: 'Configuración de Inventario',
+      title: 'Configuración de Categorías',
       icon: 'fas fa-boxes',
-      description: 'Categorías y alertas de stock',
-      route: '/configuracion/inventario',
+      description: 'Gestión de categorías de productos',
+      route: '/configuracion/categorias',
       adminOnly: true
     },
     {

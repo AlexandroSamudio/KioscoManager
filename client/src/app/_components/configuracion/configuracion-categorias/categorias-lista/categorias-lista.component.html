@@ -1,0 +1,161 @@
+<div class="p-4">
+  <div class="flex justify-between mb-4">
+    <div class="flex items-center">
+      <span class="text-sm text-amber-800">Mostrar</span>
+      <select
+        class="ml-2 p-1 text-sm border border-amber-200 rounded bg-white text-amber-900"
+        [ngModel]="pageSize()"
+        (ngModelChange)="onPageSizeChange($event)"
+      >
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="25">25</option>
+        <option [value]="50">50</option>
+      </select>
+      <span class="ml-2 text-sm text-amber-800">entradas</span>
+    </div>
+
+    <button
+      (click)="toggleForm()"
+      class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+    >
+      Nueva categoría
+    </button>
+  </div>
+
+  <app-categoria-form
+    *ngIf="showForm()"
+    [categoria]="categoriaToEdit()"
+    (categoriaSaved)="handleCategoriaSaved()"
+    (formCancelled)="handleFormCancelled()"
+  >
+  </app-categoria-form>
+
+  <div class="relative overflow-x-auto sm:rounded-lg shadow-md">
+    <table class="w-full text-sm text-left text-amber-900">
+      <thead
+        class="text-xs text-amber-950 uppercase bg-amber-100 border-b border-amber-200"
+      >
+        <tr>
+          <th class="px-4 py-3 w-20">ID</th>
+          <th class="px-4 py-3">Nombre</th>
+          <th class="px-4 py-3 text-right w-44">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let categoria of categorias()"
+          class="bg-white hover:bg-amber-50 border-b border-amber-100"
+        >
+          <td class="px-4 py-3">{{ categoria.id }}</td>
+          <td class="px-4 py-3">{{ categoria.nombre }}</td>
+          <td class="px-4 py-3 text-right">
+            <button
+              class="text-blue-600 hover:text-blue-800 mr-3 px-2 py-1 border border-blue-300 rounded"
+              (click)="editCategoria(categoria)"
+              aria-label="Editar categoría"
+            >
+              Editar
+            </button>
+            <button
+              class="text-red-600 hover:text-red-800 px-2 py-1 border border-red-300 rounded"
+              [disabled]="isDeletingCategoria()"
+              (click)="confirmDeleteCategoria(categoria)"
+              aria-label="Eliminar categoría"
+            >
+              <span
+                *ngIf="isDeletingCategoria()"
+                class="inline-flex items-center"
+              >
+                <div
+                  class="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-1"
+                ></div>
+                Eliminando...
+              </span>
+              <span *ngIf="!isDeletingCategoria()">Eliminar</span>
+            </button>
+          </td>
+        </tr>
+        <tr
+          *ngIf="categorias().length === 0 && !isLoading()"
+          class="bg-white border-b border-amber-100"
+        >
+          <td colspan="3" class="px-4 py-6 text-center text-amber-700">
+            No hay categorías registradas.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div
+      *ngIf="isLoading()"
+      class="absolute inset-0 bg-white bg-opacity-70 flex justify-center items-center"
+    >
+      <div
+        class="w-8 h-8 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin"
+      ></div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="pagination() && categorias().length > 0"
+    class="flex justify-between items-center p-3 bg-white border-t border-amber-100"
+  >
+    <div class="text-sm text-amber-900">
+      Mostrando
+      {{ (pagination()!.currentPage - 1) * pagination()!.itemsPerPage + 1 }} a
+      {{
+        Math.min(
+          pagination()!.currentPage * pagination()!.itemsPerPage,
+          pagination()!.totalItems
+        )
+      }}
+      de {{ pagination()!.totalItems }} categorías
+    </div>
+
+    <div class="inline-flex mt-2 xs:mt-0">
+      <button
+        [disabled]="pagination()!.currentPage === 1"
+        (click)="onPageChange(pagination()!.currentPage - 1)"
+        [ngClass]="{
+          'opacity-50 cursor-not-allowed': pagination()!.currentPage === 1
+        }"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium text-amber-900 bg-white border border-amber-200 hover:bg-amber-100 rounded-l"
+      >
+        Anterior
+      </button>
+
+      <ng-container *ngFor="let page of pages()">
+        <button
+          *ngIf="page !== -1"
+          (click)="onPageChange(page)"
+          [ngClass]="{
+            'bg-amber-500 text-amber-800 hover:bg-amber-600 border-amber-500':
+              page === pagination()!.currentPage
+          }"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-amber-900 bg-white border-t border-b border-amber-200 hover:bg-amber-100"
+        >
+          {{ page }}
+        </button>
+        <span
+          *ngIf="page === -1"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-amber-900 bg-white border-t border-b border-amber-200"
+        >
+          ...
+        </span>
+      </ng-container>
+
+      <button
+        [disabled]="pagination()!.currentPage === pagination()!.totalPages"
+        (click)="onPageChange(pagination()!.currentPage + 1)"
+        [ngClass]="{
+          'opacity-50 cursor-not-allowed':
+            pagination()!.currentPage === pagination()!.totalPages
+        }"
+        class="inline-flex items-center px-4 py-2 text-sm font-medium text-amber-900 bg-white border border-amber-200 hover:bg-amber-100 rounded-r"
+      >
+        Siguiente
+      </button>
+    </div>
+  </div>
+</div>
