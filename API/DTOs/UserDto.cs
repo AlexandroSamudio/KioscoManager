@@ -4,6 +4,7 @@ namespace API.DTOs;
 
 public class UserDto
 {
+    public int Id { get; set; }
     public required string Email { get; set; }
     public required string Token { get; set; }
     public required string Username { get; set; }
@@ -34,6 +35,5 @@ public class ProfileUpdateDto
 
 public class PasswordChangeResponseDto
 {
-    public bool Success { get; set; }
-    public string Message { get; set; } = string.Empty;
+    public PasswordChangeErrorCode ErrorCode { get; set; } = PasswordChangeErrorCode.None;
 }
