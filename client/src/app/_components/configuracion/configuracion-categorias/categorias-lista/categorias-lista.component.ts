@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CategoriaService } from '../../../../_services/categoria.service';
 import { Categoria } from '../../../../_models/categoria.model';
@@ -33,6 +33,37 @@ export class CategoriasListaComponent implements OnInit {
 
   currentPage = signal<number>(1);
   pageSize = signal<number>(5);
+  pages = computed<number[]>(() => {
+    const totalPages = this.pagination()?.totalPages || 1;
+    const currentPage = this.pagination()?.currentPage || 1;
+
+    const pages: number[] = [];
+
+    pages.push(1);
+
+    const startPage = Math.max(2, currentPage - 1);
+    const endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    if (startPage > 2) {
+      pages.push(-1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      if (i !== 1 && i !== totalPages) {
+        pages.push(i);
+      }
+    }
+
+    if (endPage < totalPages - 1) {
+      pages.push(-1);
+    }
+
+    if (totalPages > 1) {
+      pages.push(totalPages);
+    }
+
+    return pages;
+  });
 
   ngOnInit(): void {
     this.loadCategorias();
@@ -72,37 +103,6 @@ export class CategoriasListaComponent implements OnInit {
     this.loadCategorias();
   }
 
-  get pages(): number[] {
-    const totalPages = this.pagination()?.totalPages || 1;
-    const currentPage = this.pagination()?.currentPage || 1;
-
-    let pages: number[] = [];
-
-    pages.push(1);
-
-    const startPage = Math.max(2, currentPage - 1);
-    const endPage = Math.min(totalPages - 1, currentPage + 1);
-
-    if (startPage > 2) {
-      pages.push(-1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      if (i !== 1 && i !== totalPages) {
-        pages.push(i);
-      }
-    }
-
-    if (endPage < totalPages - 1) {
-      pages.push(-1);
-    }
-
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
-
-    return pages;
-  }
 
   toggleForm(): void {
     this.categoriaToEdit.set(null);

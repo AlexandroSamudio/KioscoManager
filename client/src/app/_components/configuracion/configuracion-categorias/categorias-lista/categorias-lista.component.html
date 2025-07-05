@@ -1,13 +1,4 @@
 <div class="p-4">
-  <div class="mb-6">
-    <h3 class="text-lg font-semibold text-amber-900">
-      Categorías de Productos
-    </h3>
-    <p class="text-sm text-amber-700">
-      Gestiona las categorías para organizar tu inventario
-    </p>
-  </div>
-
   <div class="flex justify-between mb-4">
     <div class="flex items-center">
       <span class="text-sm text-amber-800">Mostrar</span>
@@ -134,7 +125,7 @@
         Anterior
       </button>
 
-      <ng-container *ngFor="let page of pages">
+      <ng-container *ngFor="let page of pages()">
         <button
           *ngIf="page !== -1"
           (click)="onPageChange(page)"

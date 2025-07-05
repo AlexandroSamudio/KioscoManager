@@ -140,7 +140,6 @@ export class CategoriaFormComponent implements OnInit, OnChanges {
     this.categoriaForm.reset();
     this.errorMessage.set(null);
     if (this.isEditMode()) {
-      this.categoria = null;
       this.isEditMode.set(false);
     }
   }
