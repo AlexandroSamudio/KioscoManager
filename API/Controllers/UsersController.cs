@@ -96,21 +96,32 @@ public class UsersController : BaseApiController
         var requestingUserId = User.GetUserId();
 
         if (requestingUserId != userId)
-        {   
-            if(!User.IsInRole("administrador"))
+        {
+            if (!User.IsInRole("administrador"))
             {
                 return Forbid("Solo puedes actualizar tu propio perfil");
             }
         }
 
-        var updatedUser = await _userRepository.UpdateProfileAsync(userId, profileData, cancellationToken);
-        
-        if (updatedUser == null)
+        var result = await _userRepository.UpdateProfileAsync(userId, profileData, cancellationToken);
+
+        if (result.IsSuccess && result.Data?.User != null)
         {
-            return NotFound("Usuario no encontrado");
+            return Ok(result.Data.User);
         }
 
-        return Ok(updatedUser);
+        var errorResponse = new {
+            errorCode = (int)(result.Data?.ErrorCode ?? UpdateProfileErrorCode.UnknownError),
+            message = result.Message
+        };
+        
+        return (result.Data?.ErrorCode ?? UpdateProfileErrorCode.UnknownError) switch
+        {
+            UpdateProfileErrorCode.UserNotFound => NotFound(errorResponse),
+            UpdateProfileErrorCode.UsernameExists => BadRequest(errorResponse),
+            UpdateProfileErrorCode.EmailExists => BadRequest(errorResponse),
+            _ => BadRequest(errorResponse)
+        };
     }
 
     [HttpPut("{userId}/password")]
@@ -131,11 +142,11 @@ public class UsersController : BaseApiController
             return Ok(result.Data);
         }
 
-        return result.ErrorCode switch
+        return result.Data?.ErrorCode switch
         {
-            nameof(PasswordChangeErrorCode.UserNotFound) => NotFound(result.Data),
-            nameof(PasswordChangeErrorCode.InvalidCurrentPassword) => BadRequest(result.Data),
-            nameof(PasswordChangeErrorCode.PasswordValidationFailed) => BadRequest(result.Data),
+            PasswordChangeErrorCode.UserNotFound => NotFound(result.Data),
+            PasswordChangeErrorCode.InvalidCurrentPassword => BadRequest(result.Data),
+            PasswordChangeErrorCode.PasswordValidationFailed => BadRequest(result.Data),
             _ => BadRequest(result.Data)
         };
     }

@@ -190,14 +190,38 @@ public class UserRepository : IUserRepository
         return await _userManager.IsInRoleAsync(user, "administrador");
     }
 
-    public async Task<UserManagementDto?> UpdateProfileAsync(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
+    public async Task<Result<UserProfileResponseDto>> UpdateProfileAsync(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
-        if (user == null) return null;
+        if (user == null)
+        {
+            var notFoundResponse = new UserProfileResponseDto
+            {
+                ErrorCode = UpdateProfileErrorCode.UserNotFound
+            };
+            return Result<UserProfileResponseDto>.Failure(notFoundResponse, notFoundResponse.ErrorCode.ToString(), "Usuario no encontrado");
+        }
 
-        await ValidateUniqueFieldAsync(user, profileData.UserName, UserNameField, "El nombre de usuario ya está en uso", cancellationToken);
-        await ValidateUniqueFieldAsync(user, profileData.Email, EmailField, "El correo electrónico ya está en uso", cancellationToken);
+        var userNameResult = await ValidateUniqueFieldAsync(user, profileData.UserName, UserNameField, cancellationToken);
+        if (!userNameResult.IsSuccess)
+        {
+            var usernameExistsResponse = new UserProfileResponseDto
+            {
+                ErrorCode = UpdateProfileErrorCode.UsernameExists
+            };
+            return Result<UserProfileResponseDto>.Failure(usernameExistsResponse, usernameExistsResponse.ErrorCode.ToString(), "El nombre de usuario ya está en uso");
+        }
+
+        var emailResult = await ValidateUniqueFieldAsync(user, profileData.Email, EmailField, cancellationToken);
+        if (!emailResult.IsSuccess)
+        {
+            var emailExistsResponse = new UserProfileResponseDto
+            {
+                ErrorCode = UpdateProfileErrorCode.EmailExists
+            };
+            return Result<UserProfileResponseDto>.Failure(emailExistsResponse, emailExistsResponse.ErrorCode.ToString(), "El correo electrónico ya está en uso");
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -205,7 +229,13 @@ public class UserRepository : IUserRepository
         var userDto = _mapper.Map<UserManagementDto>(user);
         userDto.Role = roles.FirstOrDefault();
 
-        return userDto;
+        var successResponse = new UserProfileResponseDto
+        {
+            ErrorCode = UpdateProfileErrorCode.None,
+            User = userDto
+        };
+        
+        return Result<UserProfileResponseDto>.Success(successResponse, "Perfil actualizado correctamente");
     }
 
     public async Task<Result<PasswordChangeResponseDto>> ChangePasswordAsync(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken = default)
@@ -217,7 +247,7 @@ public class UserRepository : IUserRepository
             {
                 ErrorCode = PasswordChangeErrorCode.UserNotFound
             };
-            return Result<PasswordChangeResponseDto>.Failure(notFoundResponse, "USER_NOT_FOUND", "Usuario no encontrado");
+            return Result<PasswordChangeResponseDto>.Failure(notFoundResponse,notFoundResponse.ErrorCode.ToString() ,"Usuario no encontrado");
         }
 
         var passwordCheckResult = await _userManager.CheckPasswordAsync(user, passwordData.CurrentPassword);
@@ -227,7 +257,7 @@ public class UserRepository : IUserRepository
             {
                 ErrorCode = PasswordChangeErrorCode.InvalidCurrentPassword
             };
-            return Result<PasswordChangeResponseDto>.Failure(invalidPasswordResponse, "INVALID_CURRENT_PASSWORD", "La contraseña actual es incorrecta");
+            return Result<PasswordChangeResponseDto>.Failure(invalidPasswordResponse, invalidPasswordResponse.ErrorCode.ToString(), "La contraseña actual es incorrecta");
         }
 
         var changePasswordResult = await _userManager.ChangePasswordAsync(user, passwordData.CurrentPassword, passwordData.NewPassword);
@@ -238,7 +268,7 @@ public class UserRepository : IUserRepository
             {
                 ErrorCode = PasswordChangeErrorCode.PasswordValidationFailed
             };
-            return Result<PasswordChangeResponseDto>.Failure(validationFailedResponse, "PASSWORD_VALIDATION_FAILED", errorMessage);
+            return Result<PasswordChangeResponseDto>.Failure(validationFailedResponse, validationFailedResponse.ErrorCode.ToString(), errorMessage);
         }
 
         var successResponse = new PasswordChangeResponseDto
@@ -249,9 +279,12 @@ public class UserRepository : IUserRepository
         return Result<PasswordChangeResponseDto>.Success(successResponse, "Contraseña cambiada exitosamente");
     }
     
-    private async Task ValidateUniqueFieldAsync(AppUser user, string? newValue, string fieldName, string errorMessage, CancellationToken cancellationToken)
+    private async Task<Result> ValidateUniqueFieldAsync(AppUser user, string? newValue, string fieldName, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(newValue)) return;
+        if (string.IsNullOrWhiteSpace(newValue))
+        {
+            return Result.Success();
+        }
 
         var fieldConfigs = new Dictionary<string, (Func<IQueryable<AppUser>, Task<AppUser?>> QueryFunc, Action<string> UpdateAction)>
         {
@@ -265,18 +298,20 @@ public class UserRepository : IUserRepository
             )
         };
 
+
         if (!fieldConfigs.TryGetValue(fieldName, out var fieldConfig))
         {
-            throw new ArgumentException($"Campo no soportado: {fieldName}", nameof(fieldName));
+            return Result.Failure(string.Empty, $"Campo no soportado: {fieldName}");
         }
 
         var existingUser = await fieldConfig.QueryFunc(_context.Users);
         if (existingUser != null)
         {
-            throw new InvalidOperationException(errorMessage);
+            return Result.Failure(string.Empty);
         }
 
         fieldConfig.UpdateAction(newValue);
+        return Result.Success();
     }
 
     private async Task<Dictionary<int, string?>> GetUserRolesDictionaryAsync(IList<int> userIds, CancellationToken cancellationToken)
