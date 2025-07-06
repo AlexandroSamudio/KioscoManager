@@ -9,6 +9,7 @@ import { Login } from '../_models/login.model';
 import { Register } from '../_models/register.model';
 import { JoinKiosco } from '../_models/join-kiosco.model';
 import { CreateKiosco } from '../_models/create-kiosco.model';
+import { GeneratedInvitationCode } from '../_models/invitation-code.model';
 
 interface JwtPayload {
   role?: string | string[];
@@ -118,6 +119,16 @@ export class AccountService {
         return throwError(() => err);
       })
     );
+  }
+
+  generateInvitationCode(): Observable<GeneratedInvitationCode> {
+    return this.http.post<GeneratedInvitationCode>(`${this.baseUrl}account/generate-invitation-code`, {})
+      .pipe(
+        catchError((error) => {
+          console.error('Error al generar código de invitación:', error);
+          return throwError(() => error);
+        })
+      );
   }
 }
 

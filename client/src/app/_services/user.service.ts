@@ -3,7 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { Observable, catchError, throwError, map } from 'rxjs';
 import { environment } from '../environments/environment.development';
 import { UserManagement, UserRoleAssignment, UserRoleResponse, PasswordChangeRequest, PasswordChangeResponse, ProfileUpdateRequest } from '../_models/user.model';
-import { NotificationService } from './notification.service';
 import { PaginatedResult, setPaginatedResponse } from './pagination.helper';
 
 
@@ -13,7 +12,6 @@ import { PaginatedResult, setPaginatedResponse } from './pagination.helper';
 })
 export class UserService {
   private http = inject(HttpClient);
-  private notificationService = inject(NotificationService);
   private baseUrl = environment.apiUrl + 'users';
 
   private handleError(operation: string, errorMessage?: string) {
@@ -93,14 +91,11 @@ export class UserService {
             errorMessage = 'Usuario no encontrado. Refresca la página e inténtalo de nuevo.';
           } else if (error.status === 409) {
             errorMessage = 'El usuario ya tiene asignado este rol.';
+          } else if (error.status === 0) {
+            errorMessage = 'Error de conexión. Compruebe su conexión e inténtelo de nuevo.';
           }
 
-          console.error('Error al asignar rol:', error);
-
-          return throwError(() => ({
-            error,
-            message: errorMessage
-          }));
+          return this.handleError('Asignar rol', errorMessage)(error);
         })
       );
   }

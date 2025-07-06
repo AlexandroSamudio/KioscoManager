@@ -71,7 +71,7 @@ export class UsuariosListaComponent implements OnInit {
     this.getCurrentKioscoId();
   }
 
-  private getCurrentKioscoId(): boolean {
+  private getCurrentKioscoId(): void {
     const kioscoId = this.accountService.kioscoId();
 
     if (!kioscoId) {
@@ -79,14 +79,12 @@ export class UsuariosListaComponent implements OnInit {
         'Error',
         'No se pudo determinar el kiosco actual. Por favor, inicie sesión nuevamente.'
       );
-      return false;
     }
 
     const kioscoIdNumber = typeof kioscoId === 'string' ? parseInt(kioscoId, 10) : kioscoId;
 
     this.currentKioscoId.set(kioscoIdNumber);
     this.loadUsers();
-    return true;
   }
 
   loadUsers(): void {
@@ -163,11 +161,11 @@ export class UsuariosListaComponent implements OnInit {
     if (!role) return 'bg-gray-200 text-gray-700';
 
     switch (role.toLowerCase()) {
-      case 'admin':
+      case 'administrador':
         return 'bg-amber-200 text-amber-800';
-      case 'manager':
+      case 'empleado':
         return 'bg-blue-200 text-blue-800';
-      case 'employee':
+      case 'miembro':
         return 'bg-green-200 text-green-800';
       default:
         return 'bg-gray-200 text-gray-700';

@@ -151,7 +151,7 @@
       </div>
 
       <div
-        *ngIf="!isLoading() && (productosPaginados?.items)!.length > 0"
+        *ngIf="!isLoading() && (productosPaginados?.result)!.length > 0"
         class="bg-white rounded-lg shadow-md p-6 mb-8"
       >
         <h3 class="text-lg font-bold text-amber-800 mb-4">
@@ -190,7 +190,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-amber-100">
               <tr
-                *ngFor="let producto of productosPaginados?.items"
+                *ngFor="let producto of productosPaginados?.result"
                 class="hover:bg-amber-50"
               >
                 <td

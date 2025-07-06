@@ -93,17 +93,7 @@ export class RoleSelectorComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Error al asignar rol:', error);
-
-          if (error.error?.status === 403) {
-            this.errorMessage.set('No tienes permisos para asignar roles.');
-          } else if (error.error?.status === 400 && error.error?.message) {
-            this.errorMessage.set(error.error.message);
-          } else if (error.message) {
-            this.errorMessage.set(error.message);
-          } else {
-            this.errorMessage.set('Error de conexión. Compruebe su conexión e inténtelo de nuevo.');
-          }
+          this.errorMessage.set(error.message || 'Error al asignar rol. Por favor, inténtalo de nuevo.');
         }
       });
   }

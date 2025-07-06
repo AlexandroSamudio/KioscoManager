@@ -16,7 +16,6 @@ export class ProductoService {
   private baseUrl = environment.apiUrl;
   private notificationService = inject(NotificationService);
 
-  // productosPaginados = signal<PaginatedResult<Producto[]> | null>(null);
   productosPaginados: WritableSignal<PaginatedResult<Producto[]> | null> = signal(null);
 
   private handleError<T>(message: string) {
