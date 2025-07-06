@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+.code-container {
+  background-color: #fffbeb;
+  border-radius: 0.5rem;
+  overflow-wrap: break-word;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

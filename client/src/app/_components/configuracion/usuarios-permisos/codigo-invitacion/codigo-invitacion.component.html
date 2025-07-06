@@ -1,0 +1,55 @@
+<div class="mt-6 bg-white shadow-md rounded-lg">
+  <div class="p-6">
+    <h3 class="text-lg font-semibold text-amber-800 mb-4">Códigos de Invitación</h3>
+
+    <p class="mb-4 text-gray-700">
+      Genera un código de invitación para que nuevos empleados puedan unirse a tu kiosco.
+      El código será válido por 24 horas.
+    </p>
+
+    <div class="mt-6">
+      <button
+        (click)="generateInvitationCode()"
+        [disabled]="isLoading()"
+        class="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span *ngIf="isLoading()">Generando...</span>
+        <span *ngIf="!isLoading()">Generar Código</span>
+      </button>
+    </div>
+
+    <div *ngIf="generatedCode()" class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-md">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm text-amber-700 font-medium">Código de Invitación:</p>
+          <p class="text-xl font-mono font-semibold mt-1">{{ generatedCode()?.code }}</p>
+          <p class="text-xs text-gray-500 mt-1">
+            Expira el: {{ generatedCode()?.expirationDate | date:'medium' }}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <button
+            [cdkCopyToClipboard]="generatedCode()?.code || ''"
+            (click)="copyToClipboard()"
+            class="px-3 py-1.5 text-sm bg-amber-100 text-amber-800 rounded hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50"
+          >
+            Copiar
+          </button>
+          <button
+            (click)="clearCode()"
+            class="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+          >
+            Limpiar
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 p-3 bg-amber-100 rounded-md">
+        <p class="text-sm text-amber-800">
+          <span class="font-medium">Instrucciones:</span> Comparte este código con el empleado que deseas
+          que se una al kiosco. Deberán usar este código durante el proceso de registro.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
