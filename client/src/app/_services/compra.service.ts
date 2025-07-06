@@ -55,7 +55,7 @@ export class CompraService {
     }).pipe(
       map((response: any) => {
         const result: PaginatedResult<Compra[]> = {
-          items: response.body as Compra[],
+          result: response.body as Compra[],
           pagination: JSON.parse(response.headers.get('Pagination') || '{}')
         };
         return result;

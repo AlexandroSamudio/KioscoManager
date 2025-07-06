@@ -83,11 +83,11 @@ export class CategoriasListaComponent implements OnInit {
       )
       .subscribe({
         next: (result) => {
-          this.categorias.set(result.items);
+          this.categorias.set(result.result);
           this.pagination.set(result.pagination);
         },
         error: (error) => {
-          console.error('Error al cargar categorías', error)
+          console.error('Error al cargar categorías', error);
           this.notificationService.error(
             'Error al cargar categorías',
             'Ocurrió un error al intentar cargar las categorías. Por favor, inténtalo de nuevo más tarde.'

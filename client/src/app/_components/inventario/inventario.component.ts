@@ -6,7 +6,7 @@ import { Producto } from '../../_models/producto.model';
 import { FormsModule } from '@angular/forms';
 import { Subject} from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
-import { setPaginatedResponse } from '../../_services/pagination.helper';
+import { setPaginatedResponse, setPaginatedResponseSignal } from '../../_services/pagination.helper';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductoFormComponent } from '../producto-form/producto-form.component';
 import { NotificationService } from '../../_services/notification.service';
@@ -79,7 +79,7 @@ export class InventarioComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (response) => {
-        setPaginatedResponse(response, this.productoService.productosPaginados);
+        setPaginatedResponseSignal(response, this.productoService.productosPaginados);
       }
     });
   }

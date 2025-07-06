@@ -204,8 +204,8 @@
 
           <tbody class="bg-white divide-y divide-amber-100">
             <ng-container
-              *ngIf="productosPaginados && productosPaginados.items && productosPaginados.items.length > 0; else estadoVacio">
-              <tr *ngFor="let producto of productosPaginados.items; trackBy: trackById">
+              *ngIf="productosPaginados && productosPaginados.result && productosPaginados.result.length > 0; else estadoVacio">
+              <tr *ngFor="let producto of productosPaginados.result; trackBy: trackById">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <input type="checkbox" class="rounded border-amber-300 text-amber-600 focus:ring-amber-500">
                 </td>

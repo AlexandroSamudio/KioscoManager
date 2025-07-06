@@ -1,5 +1,5 @@
 import { HttpParams, HttpResponse } from '@angular/common/http';
-import { signal, WritableSignal } from '@angular/core';
+import { WritableSignal } from '@angular/core';
 
 export interface Pagination {
   currentPage: number;
@@ -9,19 +9,25 @@ export interface Pagination {
 }
 
 export interface PaginatedResult<T> {
-  items: T;
+  result: T;
   pagination: Pagination;
 }
 
-export function setPaginatedResponse<T>(
+export function setPaginatedResponse<T>(response: HttpResponse<T>): PaginatedResult<T> {
+  const paginationHeader = response.headers.get('Pagination');
+  const result: PaginatedResult<T> = {
+    result: response.body as T,
+    pagination: paginationHeader ? JSON.parse(paginationHeader) : null
+  };
+  return result;
+}
+
+export function setPaginatedResponseSignal<T>(
   response: HttpResponse<T>,
   paginatedResultSignal: WritableSignal<PaginatedResult<T> | null>
 ) {
-  const paginationHeader = response.headers.get('Pagination');
-  paginatedResultSignal.set({
-    items: response.body as T,
-    pagination: paginationHeader ? JSON.parse(paginationHeader) : null
-  });
+  const paginatedResult = setPaginatedResponse(response);
+  paginatedResultSignal.set(paginatedResult);
 }
 
 export function setPaginationHeaders(pageNumber: number, pageSize: number): HttpParams {
