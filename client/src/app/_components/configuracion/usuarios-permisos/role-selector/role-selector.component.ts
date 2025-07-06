@@ -119,11 +119,11 @@ export class RoleSelectorComponent implements OnInit {
 
   getRoleClass(role: string): string {
     switch (role.toLowerCase()) {
-      case 'admin':
+      case 'administrador':
         return 'bg-amber-200 text-amber-800 border-amber-300';
-      case 'manager':
+      case 'empleado':
         return 'bg-blue-200 text-blue-800 border-blue-300';
-      case 'employee':
+      case 'miembro':
         return 'bg-green-200 text-green-800 border-green-300';
       default:
         return 'bg-gray-200 text-gray-700 border-gray-300';

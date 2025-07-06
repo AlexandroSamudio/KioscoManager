@@ -116,6 +116,10 @@ export class UsuariosListaComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error al cargar usuarios del kiosco paginados', error);
+          this.notificationService.error(
+            'Error',
+            'No se pudieron cargar los usuarios. Por favor, intente nuevamente.'
+          );
         }
       });
   }

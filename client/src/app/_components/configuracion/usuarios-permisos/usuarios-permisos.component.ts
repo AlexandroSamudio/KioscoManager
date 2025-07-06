@@ -9,30 +9,35 @@ import { UsuariosListaComponent } from './usuarios-lista/usuarios-lista.componen
   template: `
     <div class="p-6">
       <div class="mx-auto">
-        <!-- Header -->
         <div class="mb-6">
-          <h2 class="text-xl font-semibold text-amber-900">Usuarios y Permisos</h2>
-          <p class="text-amber-700 mt-1">Gestiona empleados, códigos de invitación y roles</p>
+          <h2 class="text-xl font-semibold text-amber-900">
+            Usuarios y Permisos
+          </h2>
+          <p class="text-amber-700 mt-1">
+            Gestiona empleados, códigos de invitación y roles
+          </p>
         </div>
 
-        <!-- Tabs -->
         <div class="border-b border-amber-200 mb-6">
           <nav class="-mb-px flex space-x-6">
-            <button class="border-amber-500 text-amber-700 border-b-2 py-3 px-2 font-medium text-sm">
+            <button
+              class="border-amber-500 text-amber-700 border-b-2 py-3 px-2 font-medium text-sm"
+            >
               Usuarios
             </button>
-            <button class="text-amber-600 hover:text-amber-800 py-3 px-2 font-medium text-sm">
+            <button
+              class="text-amber-600 hover:text-amber-800 py-3 px-2 font-medium text-sm"
+            >
               Códigos de Invitación
             </button>
           </nav>
         </div>
 
-        <!-- Content -->
         <app-usuarios-lista></app-usuarios-lista>
       </div>
     </div>
   `,
-  styles: []
+  styles: [],
 })
 export class UsuariosPermisosComponent {
   constructor() {}
