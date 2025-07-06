@@ -15,6 +15,21 @@ namespace API.Controllers
             _configRepository = configRepository;
         }
 
+        [HttpGet("kiosko/info-basico")]
+        public async Task<ActionResult<KioscoBasicInfoDto>> GetKioscoBasicInfo(CancellationToken cancellationToken)
+        {
+            var kioscoId = User.GetKioscoId();
+
+            var basicInfoDto = await _configRepository.GetKioscoBasicInfoAsync(kioscoId, cancellationToken);
+
+            if (basicInfoDto == null)
+            {
+                return NotFound("Información básica del kiosco no encontrada.");
+            }
+            
+            return Ok(basicInfoDto);
+        }
+
         [HttpGet("kiosco")]
         public async Task<ActionResult<KioscoConfigDto>> GetKioscoConfig(CancellationToken cancellationToken)
         {

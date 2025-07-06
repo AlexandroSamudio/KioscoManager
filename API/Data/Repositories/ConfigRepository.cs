@@ -86,6 +86,8 @@ namespace API.Data.Repositories
                 throw new InvalidOperationException("Debe proporcionar al menos un campo para actualizar");
             }
 
+            _mapper.Map(updateDto, kiosco);
+
             await _context.SaveChangesAsync(cancellationToken);
 
             return _mapper.Map<KioscoBasicInfoDto>(kiosco);
