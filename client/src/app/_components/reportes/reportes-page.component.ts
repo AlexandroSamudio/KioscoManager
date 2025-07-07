@@ -21,7 +21,7 @@ import { VentasChartComponent } from './ventas-chart/ventas-chart.component';
 import { CategoriasChartComponent } from './categorias-chart/categorias-chart.component';
 import { Observable } from 'rxjs';
 import { NotificationService } from '../../_services/notification.service';
-import { setPaginatedResponse } from '../../_services/pagination.helper';
+import { setPaginatedResponse, setPaginatedResponseSignal } from '../../_services/pagination.helper';
 
 export interface ReportesErrores {
   resumen: string | null;
@@ -135,7 +135,7 @@ export class ReportesPageComponent implements OnInit {
     observable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data: T | any) => {
         if (setPaginated) {
-          setPaginatedResponse(data, this.reporteService.productosPaginados);
+          setPaginatedResponseSignal(data, this.reporteService.productosPaginados);
         }
         if (setData) {
           setData(data);

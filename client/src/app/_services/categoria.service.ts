@@ -5,7 +5,7 @@ import { Categoria } from '../_models/categoria.model';
 import { environment } from '../environments/environment.development';
 import {
   PaginatedResult,
-  setPaginatedResponse,
+  setPaginatedResponseSignal,
   setPaginationHeaders,
 } from './pagination.helper';
 import { catchError, map } from 'rxjs/operators';
@@ -56,7 +56,7 @@ export class CategoriaService {
       })
       .pipe(
         map((response) => {
-          setPaginatedResponse(response, this.paginatedCategorias);
+          setPaginatedResponseSignal(response, this.paginatedCategorias);
           return this.paginatedCategorias() as PaginatedResult<Categoria[]>;
         })
       );

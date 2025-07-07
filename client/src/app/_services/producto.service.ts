@@ -1,5 +1,5 @@
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
+import { HttpClient} from '@angular/common/http';
+import { inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { environment } from '../environments/environment.development';
 import { Producto } from '../_models/producto.model';
 import { catchError, Observable, throwError } from 'rxjs';
@@ -16,7 +16,7 @@ export class ProductoService {
   private baseUrl = environment.apiUrl;
   private notificationService = inject(NotificationService);
 
-  productosPaginados = signal<PaginatedResult<Producto[]> | null>(null);
+  productosPaginados: WritableSignal<PaginatedResult<Producto[]> | null> = signal(null);
 
   private handleError<T>(message: string) {
     return (error: any) => {

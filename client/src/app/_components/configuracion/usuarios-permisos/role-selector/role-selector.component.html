@@ -1,0 +1,109 @@
+<div class="bg-white rounded-lg shadow-md p-6 border border-amber-200 mb-6">
+  <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-semibold text-amber-900">
+      Gestionar Rol de Usuario
+    </h3>
+  </div>
+
+  <div class="mb-4">
+    <div class="flex items-center space-x-3">
+      <div class="flex-shrink-0 h-10 w-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      </div>
+      <div>
+        <h4 class="text-md font-medium text-amber-900">{{ user?.username }}</h4>
+        <p class="text-sm text-amber-600">{{ user?.email }}</p>
+      </div>
+    </div>
+  </div>
+
+  <form (ngSubmit)="onSubmit()">
+    <div class="mb-4">
+      <label for="role" class="block text-sm font-medium text-amber-800 mb-1">
+        Seleccionar Rol
+      </label>
+
+      <div class="mt-2 space-y-3">
+        <div *ngFor="let role of roleOptions"
+             class="relative flex items-start cursor-pointer group">
+          <div class="flex items-center h-5">
+            <input
+              type="radio"
+              [id]="'role-' + role.value"
+              name="role"
+              [value]="role.value"
+              [(ngModel)]="selectedRole"
+              [disabled]="isSubmitting()"
+              class="h-4 w-4 border-amber-300 text-amber-600 focus:ring-amber-500 focus:ring-opacity-50"
+            />
+          </div>
+          <div class="ml-3 text-sm">
+            <label [for]="'role-' + role.value"
+                   [class]="'font-medium text-amber-900 cursor-pointer group-hover:text-amber-800'">
+              {{ role.label }}
+              <span
+                [class]="'ml-2 px-2 py-0.5 rounded-full text-xs border ' + getRoleClass(role.value)">
+                {{ role.value }}
+              </span>
+            </label>
+            <p class="text-amber-600 group-hover:text-amber-700">{{ role.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage()" class="mt-3 p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">
+        <div class="flex">
+          <svg class="h-5 w-5 text-red-400 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+          {{ errorMessage() }}
+        </div>
+      </div>
+
+      <div *ngIf="!selectedRole() && !errorMessage()" class="mt-3 p-2 bg-blue-50 text-blue-700 text-xs rounded-md border border-blue-200">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Seleccione un rol para el usuario
+        </div>
+      </div>
+
+      <div *ngIf="selectedRole() && selectedRole() === user?.role && !errorMessage()" class="mt-3 p-2 bg-amber-50 text-amber-700 text-xs rounded-md border border-amber-200">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          El usuario ya tiene este rol asignado
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end space-x-3 mt-6">
+      <button
+        type="button"
+        (click)="onCancel()"
+        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md text-sm font-medium transition"
+        [disabled]="isSubmitting()"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-md text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="isSubmitting() || !selectedRole() || selectedRole() === user?.role"
+        [title]="!selectedRole() ? 'Seleccione un rol' : (selectedRole() === user?.role ? 'El usuario ya tiene este rol' : 'Asignar rol')"
+      >
+        <div *ngIf="isSubmitting()" class="flex items-center">
+          <div
+            class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"
+          ></div>
+          Guardando...
+        </div>
+        <span *ngIf="!isSubmitting()">Asignar Rol</span>
+      </button>
+    </div>
+  </form>
+</div>

@@ -1,4 +1,4 @@
-import { Component, input, output, computed, signal, inject } from '@angular/core';
+import { Component, input, output, computed, signal, inject, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { NavigationItem, UserProfile } from '../../_models/navigation.interface';
@@ -18,7 +18,6 @@ export class NavbarComponent {
     { label: 'Inventario', path: '/inventario' },
     { label: 'Realizar Venta', path: '/punto-de-venta' },
     { label: 'Registrar Compra', path: '/registrar-compra' },
-    { label: 'Ventas', path: '/ventas' },
     { label: 'Reportes', path: '/reportes' },
     { label: 'Configuración', path: '/configuracion' }
   ];
@@ -59,6 +58,27 @@ export class NavbarComponent {
   protected onUserMenuClick(): void {
     this.isUserMenuOpen.update(isOpen => !isOpen);
     this.userMenuClick.emit();
+  }
+
+  protected onLogout(): void {
+    this.accountService.logout();
+    this.isUserMenuOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const userMenuContainer = target.closest('.relative');
+    const userMenuButton = target.closest('[aria-label="Menú de usuario"]');
+    const dropdownMenu = target.closest('[role="menu"]');
+
+    if (userMenuButton) {
+      return;
+    }
+
+    if (!userMenuContainer && !dropdownMenu) {
+      this.isUserMenuOpen.set(false);
+    }
   }
 
   private generateInitials(name: string): string {
