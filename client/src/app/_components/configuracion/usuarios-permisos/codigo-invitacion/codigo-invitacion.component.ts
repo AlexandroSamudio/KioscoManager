@@ -26,16 +26,6 @@ export class CodigoInvitacionComponent {
   generateInvitationCode(): void {
     this.isLoading.set(true);
 
-    const kioscoId = this.accountService.kioscoId();
-    if (!kioscoId) {
-      this.notificationService.error(
-        'Error',
-        'No se pudo determinar el kiosco actual. Por favor, inicie sesión nuevamente.'
-      );
-      this.isLoading.set(false);
-      return;
-    }
-
     this.accountService.generateInvitationCode()
       .pipe(
         takeUntilDestroyed(this.destroyRef),
