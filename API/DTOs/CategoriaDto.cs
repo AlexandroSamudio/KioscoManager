@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using API.Attributes;
 
 namespace API.DTOs
 {
@@ -7,22 +8,21 @@ namespace API.DTOs
         public int Id { get; set; }
         
         [Required]
-        [MaxLength(100)]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 100 caracteres.")]
         public required string Nombre { get; set; }
     }
 
     public class CategoriaCreateDto
     {
-        [Required]
-        [MaxLength(100,ErrorMessage = "El nombre no puede exceder 100 caracteres")]
-        [MinLength(2, ErrorMessage = "El nombre debe tener al menos 2 caracteres")]
+        [Required(ErrorMessage = "El nombre es requerido.")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 100 caracteres.")]
         public required string Nombre { get; set; }
     }
 
+    [AtLeastOneProperty(ErrorMessage = "Se debe proporcionar al menos un campo para actualizar.")]
     public class CategoriaUpdateDto
     {
-        [MaxLength(100,ErrorMessage = "El nombre no puede exceder 100 caracteres")]
-        [MinLength(2, ErrorMessage = "El nombre debe tener al menos 2 caracteres")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 100 caracteres.")]
         public string? Nombre { get; set; }
     }
 }
