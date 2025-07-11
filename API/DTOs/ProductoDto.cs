@@ -28,7 +28,7 @@ namespace API.DTOs
     [AtLeastOneProperty(ErrorMessage = "Se debe proporcionar al menos un campo para actualizar.")]
     public class ProductoUpdateDto
     {
-        [StringLength(100, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 100 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
         public string? Nombre { get; set; }
         
         [StringLength(50, MinimumLength = 1, ErrorMessage = "El SKU debe tener entre 1 y 50 caracteres.")]
@@ -56,7 +56,7 @@ namespace API.DTOs
     public class ProductoCreateDto
     {
         [Required]
-        [StringLength(100, MinimumLength = 2, ErrorMessage = "El nombre del producto debe tener entre 2 y 100 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre del producto debe tener entre 2 y 50 caracteres.")]
         public required string Nombre { get; set; }
 
         [Required]
