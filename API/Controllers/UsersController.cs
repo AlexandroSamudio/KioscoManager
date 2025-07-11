@@ -51,9 +51,21 @@ public class UsersController : BaseApiController
 
     [HttpGet("kiosco/{kioscoId}")]
     [Authorize(Roles = "administrador")]
-    public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersByKiosco(int kioscoId, CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersByKiosco(
+        int kioscoId, 
+        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageSize = 10, 
+        CancellationToken cancellationToken = default)
     {
-        var users = await _userRepository.GetUsersByKioscoAsync(kioscoId, cancellationToken);
+        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest("Los parámetros de paginación deben ser válidos. PageNumber >= 1, PageSize entre 1 y 100.");
+        }
+
+        var users = await _userRepository.GetUsersByKioscoAsync(kioscoId, pageNumber, pageSize, cancellationToken);
+        
+        Response.AddPaginationHeader(users);
+        
         return Ok(users);
     }
 
@@ -89,7 +101,7 @@ public class UsersController : BaseApiController
         return Ok(isAdmin);
     }
 
-    [HttpPut("{userId}/perfil")]
+    /* [HttpPut("{userId}/perfil")]
     [Authorize]
     public async Task<ActionResult<UserManagementDto>> UpdateProfile(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
     {
@@ -111,15 +123,15 @@ public class UsersController : BaseApiController
         }
 
         var errorResponse = new {
-            errorCode = (int)(result.Data?.ErrorCode ?? UpdateProfileErrorCode.UnknownError),
+            errorCode = (int)(result.Data?.ErrorCode ?? UpdateEntityErrorCode.UnknownError),
             message = result.Message
         };
         
-        return (result.Data?.ErrorCode ?? UpdateProfileErrorCode.UnknownError) switch
+        return (result.Data?.ErrorCode ?? UpdateEntityErrorCode.UnknownError) switch
         {
-            UpdateProfileErrorCode.UserNotFound => NotFound(errorResponse),
-            UpdateProfileErrorCode.UsernameExists => BadRequest(errorResponse),
-            UpdateProfileErrorCode.EmailExists => BadRequest(errorResponse),
+            UpdateEntityErrorCode.EntityNotFound => NotFound(errorResponse),
+            UpdateEntityErrorCode.FieldExists => BadRequest(errorResponse),
+            UpdateEntityErrorCode.EmailExists => BadRequest(errorResponse),
             _ => BadRequest(errorResponse)
         };
     }
@@ -149,5 +161,5 @@ public class UsersController : BaseApiController
             PasswordChangeErrorCode.PasswordValidationFailed => BadRequest(result.Data),
             _ => BadRequest(result.Data)
         };
-    }
+    } */
 }

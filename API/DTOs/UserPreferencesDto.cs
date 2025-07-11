@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace API.DTOs;
 
 public class UserPreferencesDto
@@ -20,18 +18,4 @@ public class UserPreferencesUpdateDto
     public bool? NotificacionesVentas { get; set; }
     public bool? NotificacionesReportes { get; set; }
     public string? ConfiguracionesAdicionales { get; set; }
-}
-
-public class ChangePasswordDto
-{
-    [Required]
-    public required string CurrentPassword { get; set; }
-
-    [RegularExpression("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W_]).{8,128}$", ErrorMessage = "La contraseña debe contener al menos una letra mayúscula, una letra minúscula, un número, un carácter especial y tener entre 8 y 128 caracteres.")]
-    [Required]
-    public required string NewPassword { get; set; }
-
-    [Required]
-    [Compare(nameof(NewPassword), ErrorMessage = "Las contraseñas no coinciden")]
-    public required string ConfirmPassword { get; set; }
 }

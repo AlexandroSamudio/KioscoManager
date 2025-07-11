@@ -65,6 +65,40 @@ public class UserRepository : IUserRepository
         return new PagedList<UserManagementDto>(userDtos, totalCount, pageNumber, pageSize);
     }
 
+    public async Task<PagedList<UserManagementDto>> GetUsersByKioscoAsync(int kioscoId, int pageNumber, int pageSize, CancellationToken cancellationToken)
+    {
+        // Crear una consulta base que filtre por kioscoId
+        var query = _context.Users
+            .Include(u => u.Kiosco)
+            .Where(u => u.KioscoId == kioscoId)
+            .OrderBy(u => u.UserName); // Ordenar por nombre de usuario para una presentación consistente
+
+        // Obtener el conteo total de usuarios que pertenecen a este kiosco
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Aplicar paginación a la consulta
+        var users = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        // Obtener los roles para todos los usuarios de la página actual
+        var userIds = users.Select(u => u.Id).ToList();
+        var userRolesDict = await GetUserRolesDictionaryAsync(userIds, cancellationToken);
+
+        // Mapear las entidades de usuarios a DTOs y asignar información adicional
+        var userDtos = users.Select(user =>
+        {
+            var userDto = _mapper.Map<UserManagementDto>(user);
+            userDto.Role = userRolesDict.GetValueOrDefault(user.Id);
+            userDto.NombreKiosco = user.Kiosco?.Nombre;
+            return userDto;
+        }).ToList();
+
+        // Devolver una lista paginada con los DTOs de usuarios y metadatos de paginación
+        return new PagedList<UserManagementDto>(userDtos, totalCount, pageNumber, pageSize);
+    }
+
     public async Task<IEnumerable<UserManagementDto>> GetUsersByKioscoAsync(int kioscoId, CancellationToken cancellationToken)
     {
         var users = await _context.Users
@@ -166,7 +200,7 @@ public class UserRepository : IUserRepository
         }
 
         response.Success = true;
-        response.UserName = targetUser.UserName ?? "";
+        response.Username = targetUser.UserName ?? "";
         response.Email = targetUser.Email ?? "";
         response.Role = roleName;
         response.Message = $"Rol '{roleName}' asignado exitosamente a {targetUser.UserName}";
@@ -190,7 +224,7 @@ public class UserRepository : IUserRepository
         return await _userManager.IsInRoleAsync(user, "administrador");
     }
 
-    public async Task<Result<UserProfileResponseDto>> UpdateProfileAsync(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
+    /* public async Task<Result<UserProfileResponseDto>> UpdateProfileAsync(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
@@ -198,7 +232,7 @@ public class UserRepository : IUserRepository
         {
             var notFoundResponse = new UserProfileResponseDto
             {
-                ErrorCode = UpdateProfileErrorCode.UserNotFound
+                ErrorCode = UpdateEntityErrorCode.EntityNotFound
             };
             return Result<UserProfileResponseDto>.Failure(notFoundResponse, notFoundResponse.ErrorCode.ToString(), "Usuario no encontrado");
         }
@@ -208,7 +242,7 @@ public class UserRepository : IUserRepository
         {
             var usernameExistsResponse = new UserProfileResponseDto
             {
-                ErrorCode = UpdateProfileErrorCode.UsernameExists
+                ErrorCode = UpdateEntityErrorCode.FieldExists
             };
             return Result<UserProfileResponseDto>.Failure(usernameExistsResponse, usernameExistsResponse.ErrorCode.ToString(), "El nombre de usuario ya está en uso");
         }
@@ -218,7 +252,7 @@ public class UserRepository : IUserRepository
         {
             var emailExistsResponse = new UserProfileResponseDto
             {
-                ErrorCode = UpdateProfileErrorCode.EmailExists
+                ErrorCode = UpdateEntityErrorCode.EmailExists
             };
             return Result<UserProfileResponseDto>.Failure(emailExistsResponse, emailExistsResponse.ErrorCode.ToString(), "El correo electrónico ya está en uso");
         }
@@ -231,7 +265,7 @@ public class UserRepository : IUserRepository
 
         var successResponse = new UserProfileResponseDto
         {
-            ErrorCode = UpdateProfileErrorCode.None,
+            ErrorCode = UpdateEntityErrorCode.None,
             User = userDto
         };
         
@@ -312,7 +346,7 @@ public class UserRepository : IUserRepository
 
         fieldConfig.UpdateAction(newValue);
         return Result.Success();
-    }
+    } */
 
     private async Task<Dictionary<int, string?>> GetUserRolesDictionaryAsync(IList<int> userIds, CancellationToken cancellationToken)
     {

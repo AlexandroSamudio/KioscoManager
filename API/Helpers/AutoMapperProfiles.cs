@@ -25,6 +25,9 @@ namespace API.Helpers
 
             CreateMap<ProductoCreateDto, Producto>();
 
+            CreateMap<VentaCreateDto, Venta>()
+                .ForMember(dest => dest.Detalles, opt => opt.MapFrom(src => src.Productos));
+
             CreateMap<ProductoVentaDto, DetalleVenta>()
                 .ForMember(dest => dest.ProductoId, opt => opt.MapFrom(src => src.ProductoId))
                 .ForMember(dest => dest.Cantidad, opt => opt.MapFrom(src => src.Cantidad))
@@ -39,7 +42,8 @@ namespace API.Helpers
                 .ForMember(dest => dest.Subtotal, opt => opt.MapFrom(src => src.Cantidad * src.CostoUnitario));
 
             CreateMap<CompraDetalleDto, CompraDetalle>();
-        
+            CreateMap<CompraCreateDto, Compra>();
+
             CreateMap<KioscoConfig, KioscoConfigDto>();
             CreateMap<KioscoConfigUpdateDto, KioscoConfig>()
                 .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow));
@@ -50,7 +54,7 @@ namespace API.Helpers
 
             CreateMap<AppUser, UserManagementDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.UserName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
                 .ForMember(dest => dest.KioscoId, opt => opt.MapFrom(src => src.KioscoId))
                 .ForMember(dest => dest.Role, opt => opt.Ignore()) 
