@@ -7,11 +7,11 @@ namespace API.DTOs
     public class ProductoDto
     {
         public required int Id { get; set; }
-        [Required, StringLength(50, MinimumLength = 3, ErrorMessage = "El SKU debe tener entre 3 y 50 caracteres.")]
+        [Required, StringLength(50, MinimumLength = 2, ErrorMessage = "El SKU debe tener entre 2 y 50 caracteres.")]
         public required string Sku { get; set; } = default!;
-        [Required, StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre debe tener entre 3 y 50 caracteres.")]
+        [Required, StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
         public required string Nombre { get; set; } = default!;
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "La descripción debe tener entre 3 y 50 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "La descripción debe tener entre 2 y 50 caracteres.")]
         public string? Descripcion { get; set; }
         [Range(0.01, 1000000)]
         [DataType(DataType.Currency)]
@@ -98,7 +98,7 @@ namespace API.DTOs
         public required int ProductoId { get; set; }
         
         [Required]
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre del producto debe tener entre 3 y 50 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre del producto debe tener entre 2 y 50 caracteres.")]
         public required string NombreProducto { get; set; }
             
         public string? Sku { get; set; }
@@ -108,7 +108,7 @@ namespace API.DTOs
         
         public decimal TotalVentas { get; set; }
         
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre de la categoría debe tener entre 3 y 50 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre de la categoría debe tener entre 2 y 50 caracteres.")]
         public string? CategoriaNombre { get; set; }
     }
 }

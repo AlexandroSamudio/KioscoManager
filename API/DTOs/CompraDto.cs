@@ -11,9 +11,9 @@ namespace API.DTOs
         [Required]
         public required decimal CostoTotal { get; set; }
 
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre del proveedor debe tener entre 3 y 50 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre del proveedor debe tener entre 2 y 50 caracteres.")]
         public string? Proveedor { get; set; }
-        [StringLength(100, MinimumLength = 3, ErrorMessage = "La nota debe tener entre 3 y 100 caracteres.")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "La nota debe tener entre 2 y 100 caracteres.")]
         public string? Nota { get; set; }
 
         [Required]
@@ -30,9 +30,9 @@ namespace API.DTOs
         [Required]
         public required int ProductoId { get; set; }
 
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre del producto debe tener entre 3 y 50 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre del producto debe tener entre 2 y 50 caracteres.")]
         public string? ProductoNombre { get; set; }
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "El SKU del producto debe tener entre 3 y 50 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El SKU del producto debe tener entre 2 y 50 caracteres.")]
         public string? ProductoSku { get; set; }
 
         [Required]
@@ -52,7 +52,10 @@ namespace API.DTOs
     {
         [Required]
         public required ICollection<CompraDetalleDto> Detalles { get; set; } = new List<CompraDetalleDto>();
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre del proveedor debe tener entre 2 y 50 caracteres.")]
         public string? Proveedor { get; set; }
+
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "La nota debe tener entre 2 y 100 caracteres.")]
         public string? Nota { get; set; }
     }
 

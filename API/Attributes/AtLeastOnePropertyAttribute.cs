@@ -10,7 +10,7 @@ namespace API.Attributes
         {
             if (value == null)
             {
-                return true; // O false, dependiendo de si el objeto puede ser nulo.
+                return true; // Los objetos nulos no son válidos para validaciones de actualización.
             }
 
             var type = value.GetType();
