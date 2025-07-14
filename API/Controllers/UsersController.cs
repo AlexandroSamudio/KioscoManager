@@ -7,33 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class UsersController : BaseApiController
+public class UsersController(IUserRepository userRepository) : BaseApiController
 {
-    private readonly IUserRepository _userRepository;
-
-    public UsersController(IUserRepository userRepository)
-    {
-        _userRepository = userRepository;
-    }
-
-    [HttpGet]
-    [Authorize(Roles = "administrador")]
-    public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersPaginated(
-        [FromQuery] int pageNumber = 1, 
-        [FromQuery] int pageSize = 10, 
-        CancellationToken cancellationToken = default)
-    {
-        if (pageNumber < 1 || pageSize < 1 || pageSize > 100)
-        {
-            return BadRequest("Los parámetros de paginación deben ser válidos. PageNumber >= 1, PageSize entre 1 y 100.");
-        }
-
-        var users = await _userRepository.GetUsersAsync(pageNumber, pageSize, cancellationToken);
-        
-        Response.AddPaginationHeader(users);
-        
-        return Ok(users);
-    }
+    private readonly IUserRepository _userRepository = userRepository;
+    protected int KioscoId => User.GetKioscoId();
+    protected int UserId => User.GetUserId();
 
     [HttpGet("{id}")]
     [Authorize(Roles = "administrador")]
@@ -63,7 +41,9 @@ public class UsersController : BaseApiController
         }
 
         var users = await _userRepository.GetUsersByKioscoAsync(kioscoId, pageNumber, pageSize, cancellationToken);
-        
+
+        if (users == null || users.Count == 0) return NotFound("No se encontraron usuarios para el kiosco especificado.");
+
         Response.AddPaginationHeader(users);
         
         return Ok(users);
@@ -73,24 +53,9 @@ public class UsersController : BaseApiController
     [Authorize(Roles = "administrador")]
     public async Task<ActionResult<UserRoleResponseDto>> AssignRole(int userId, UserRoleAssignmentDto roleAssignment, CancellationToken cancellationToken)
     {
-        var requestingUserId = User.GetUserId();
-        
-        var result = await _userRepository.AssignRoleAsync(userId, roleAssignment.Role, requestingUserId, cancellationToken);
-        
-        if (result.Success)
-        {
-            return Ok(result);
-        }
+        var result = await _userRepository.AssignRoleAsync(userId, roleAssignment.Role, UserId, cancellationToken);
 
-        return BadRequest(result);
-    }
-
-    [HttpGet("{userId}/roles")]
-    [Authorize(Roles = "administrador")]
-    public async Task<ActionResult<IEnumerable<string>>> GetUserRoles(int userId, CancellationToken cancellationToken)
-    {
-        var roles = await _userRepository.GetUserRolesAsync(userId, cancellationToken);
-        return Ok(roles);
+        return result.ToActionResult();
     }
 
     [HttpGet("{userId}/is-admin")]
@@ -101,65 +66,32 @@ public class UsersController : BaseApiController
         return Ok(isAdmin);
     }
 
-    /* [HttpPut("{userId}/perfil")]
+    [HttpPut("{userId}/perfil")]
     [Authorize]
-    public async Task<ActionResult<UserManagementDto>> UpdateProfile(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdateProfile(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
     {
-        var requestingUserId = User.GetUserId();
-
-        if (requestingUserId != userId)
+        if (UserId != userId)
         {
-            if (!User.IsInRole("administrador"))
-            {
-                return Forbid("Solo puedes actualizar tu propio perfil");
-            }
+            return StatusCode(403, "Solo puedes actualizar tu propio perfil");  
         }
 
         var result = await _userRepository.UpdateProfileAsync(userId, profileData, cancellationToken);
 
-        if (result.IsSuccess && result.Data?.User != null)
-        {
-            return Ok(result.Data.User);
-        }
+        return result.ToActionResult();
 
-        var errorResponse = new {
-            errorCode = (int)(result.Data?.ErrorCode ?? UpdateEntityErrorCode.UnknownError),
-            message = result.Message
-        };
-        
-        return (result.Data?.ErrorCode ?? UpdateEntityErrorCode.UnknownError) switch
-        {
-            UpdateEntityErrorCode.EntityNotFound => NotFound(errorResponse),
-            UpdateEntityErrorCode.FieldExists => BadRequest(errorResponse),
-            UpdateEntityErrorCode.EmailExists => BadRequest(errorResponse),
-            _ => BadRequest(errorResponse)
-        };
     }
 
     [HttpPut("{userId}/password")]
     [Authorize]
-    public async Task<ActionResult<PasswordChangeResponseDto>> ChangePassword(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken)
+    public async Task<IActionResult> ChangePassword(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken)
     {
-        var requestingUserId = User.GetUserId();
-        
-        if (requestingUserId != userId)
+        if (UserId != userId)
         {
-            return Forbid("Solo puedes cambiar tu propia contraseña");
+            return StatusCode(403,"Solo puedes cambiar tu propia contraseña");
         }
 
         var result = await _userRepository.ChangePasswordAsync(userId, passwordData, cancellationToken);
-        
-        if (result.IsSuccess)
-        {
-            return Ok(result.Data);
-        }
 
-        return result.Data?.ErrorCode switch
-        {
-            PasswordChangeErrorCode.UserNotFound => NotFound(result.Data),
-            PasswordChangeErrorCode.InvalidCurrentPassword => BadRequest(result.Data),
-            PasswordChangeErrorCode.PasswordValidationFailed => BadRequest(result.Data),
-            _ => BadRequest(result.Data)
-        };
-    } */
+        return result.ToActionResult();
+    }
 }

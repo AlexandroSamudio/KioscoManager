@@ -6,32 +6,17 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace API.Data.Repositories
 {
-    public class ReporteRepository : IReporteRepository
+    public class ReporteRepository(
+        DataContext context,
+        IMemoryCache cache,
+        IConfiguration configuration) : IReporteRepository
     {
-        private readonly DataContext _context;
-        private readonly IMemoryCache _cache;
-        private readonly TimeSpan _cacheDuration;
-        private readonly TimeSpan _absoluteExpiration;
-
-        public ReporteRepository(
-            DataContext context, 
-            IMemoryCache cache, 
-            IConfiguration configuration)
-        {
-            _context = context;
-            _cache = cache;
-            
-            _cacheDuration = TimeSpan.FromMinutes(
+        private readonly DataContext _context = context;
+        private readonly IMemoryCache _cache = cache;
+        private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(
                 configuration.GetValue<int>("Reporting:CacheDurationMinutes", 30));
-            
-            _absoluteExpiration = TimeSpan.FromHours(
+        private readonly TimeSpan _absoluteExpiration = TimeSpan.FromHours(
                 configuration.GetValue<int>("Reporting:AbsoluteExpirationHours", 4));
-        }
-
-        private static DateTime NormalizeToUtcDate(DateTime date)
-        {
-            return date.Kind == DateTimeKind.Utc ? date : DateTime.SpecifyKind(date, DateTimeKind.Utc);
-        }
 
         public async Task<ReporteDto> CalculateKpiReporteAsync(
             int kioscoId,
@@ -39,11 +24,7 @@ namespace API.Data.Repositories
             DateTime fechaFin,
             CancellationToken cancellationToken)
         {
-            fechaInicio = NormalizeToUtcDate(fechaInicio);
-            fechaFin = NormalizeToUtcDate(fechaFin);
-
-            var endOfDay = NormalizeToUtcDate(
-                fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59));
+            var endOfDay = DateTime.SpecifyKind(fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59), DateTimeKind.Utc);
 
             var cacheKey = $"KPIReporte_K{kioscoId}_S{fechaInicio:yyyyMMdd}_E{endOfDay:yyyyMMdd}";
 
@@ -112,13 +93,9 @@ namespace API.Data.Repositories
             CancellationToken cancellationToken,
             int limit = 5)
         {
-            fechaInicio = NormalizeToUtcDate(fechaInicio);
-            fechaFin = NormalizeToUtcDate(fechaFin);
-
             limit = Math.Clamp(limit, 1, 50);
 
-            var endOfDay = NormalizeToUtcDate(
-                fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59));
+            var endOfDay = DateTime.SpecifyKind(fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59), DateTimeKind.Utc);
 
             var cacheKey = $"TopProducts_K{kioscoId}_S{fechaInicio:yyyyMMdd}_E{endOfDay:yyyyMMdd}_L{limit}_P{pageNumber}_S{pageSize}";
 
@@ -171,24 +148,13 @@ namespace API.Data.Repositories
             DateTime fechaFin,
             CancellationToken cancellationToken)
         {
-            fechaInicio = NormalizeToUtcDate(fechaInicio);
-            fechaFin = NormalizeToUtcDate(fechaFin);
-
-            var endOfDay = NormalizeToUtcDate(
-                fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59));
-
-            var cacheKey = $"VentasPorDia_K{kioscoId}_S{fechaInicio:yyyyMMdd}_E{endOfDay:yyyyMMdd}";
-
-            if (_cache.TryGetValue(cacheKey, out IReadOnlyList<VentasPorDiaDto>? cachedResult) && cachedResult != null)
-            {
-                return cachedResult;
-            }
+            var endOfDay = DateTime.SpecifyKind(fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59), DateTimeKind.Utc);
 
             var ventasPorDiaSinGanancia = await _context.DetalleVentas!
                 .Where(d => d.Venta!.KioscoId == kioscoId &&
                           d.Venta.Fecha >= fechaInicio &&
                           d.Venta.Fecha <= endOfDay)
-                .GroupBy(d => d.Venta!.Fecha.Date)
+                .GroupBy(d => d.Venta!.Fecha)
                 .Select(g => new VentasPorDiaDto
                 {
                     Fecha = g.Key,
@@ -214,27 +180,20 @@ namespace API.Data.Repositories
 
             foreach (var ventaDia in ventasPorDiaSinGanancia)
             {
-                var fechaDia = ventaDia.Fecha;
-                var finDia = NormalizeToUtcDate(fechaDia.AddHours(23).AddMinutes(59).AddSeconds(59));
-
-                var detallesDelDia = todosLosDetalles
-                    .Where(d => d.Venta!.Fecha >= fechaDia && d.Venta.Fecha <= finDia)
+                var fechaExacta = ventaDia.Fecha;
+                
+                var detallesDeVenta = todosLosDetalles
+                    .Where(d => d.Venta!.Fecha == fechaExacta)
                     .ToList();
 
                 decimal costoMercaderia = 0;
-                foreach (var detalle in detallesDelDia)
+                foreach (var detalle in detallesDeVenta)
                 {
                     var costoHistorico = costosHistoricos.TryGetValue(detalle.ProductoId, out var costo) ? costo : null;
                     decimal costoPorUnidad = costoHistorico ?? detalle.Producto!.PrecioCompra;
                     costoMercaderia += detalle.Cantidad * costoPorUnidad;
                 }
             }
-
-            var cacheOptionsWithProfit = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(_cacheDuration)
-                .SetAbsoluteExpiration(_absoluteExpiration);
-
-            _cache.Set(cacheKey, ventasPorDiaSinGanancia, cacheOptionsWithProfit);
 
             return ventasPorDiaSinGanancia;
         }
@@ -245,7 +204,7 @@ namespace API.Data.Repositories
             DateTime fechaFin,
             CancellationToken cancellationToken)
         {
-            var endOfDay = NormalizeToUtcDate(new DateTime(fechaFin.Year, fechaFin.Month, fechaFin.Day, 23, 59, 59));
+            var endOfDay = DateTime.SpecifyKind(new DateTime(fechaFin.Year, fechaFin.Month, fechaFin.Day, 23, 59, 59), DateTimeKind.Utc);
             string cacheKey = $"categoriasRentabilidad_{kioscoId}_{fechaInicio:yyyyMMdd}_{fechaFin:yyyyMMdd}";
 
             if (_cache.TryGetValue(cacheKey, out IReadOnlyList<CategoriasRentabilidadDto>? cachedResult) && cachedResult != null)
@@ -324,12 +283,10 @@ namespace API.Data.Repositories
                     .Where(p => p.ProductoId == productoId)
                     .Max(p => p.Fecha);
 
-                var fechaNormalizada = NormalizeToUtcDate(fechaMasReciente);
-
                 var costoHistorico = compraDetalles
                     .Where(cd => cd.ProductoId == productoId &&
                                 cd.Compra != null &&
-                                cd.Compra.Fecha <= fechaNormalizada)
+                                cd.Compra.Fecha <= fechaMasReciente)
                     .OrderByDescending(cd => cd.Compra!.Fecha)
                     .FirstOrDefault()?.CostoUnitario;
 

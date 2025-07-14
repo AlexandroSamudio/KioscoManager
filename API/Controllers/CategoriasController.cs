@@ -44,15 +44,16 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<CategoriaDto>> CreateCategoria(CategoriaCreateDto createDto, CancellationToken cancellationToken)
         {
-            var categoria = await _categoriaRepository.CreateCategoriaAsync(createDto, cancellationToken);
-            return CreatedAtAction(nameof(GetCategoria), new { id = categoria.Id }, categoria);
+            var result = await _categoriaRepository.CreateCategoriaAsync(createDto, cancellationToken);
+    
+            return result.ToActionResult(categoria => CreatedAtAction(nameof(GetCategoria), new { id = categoria.Id }, categoria));
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategoria(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken)
         {
-            await _categoriaRepository.UpdateCategoriaAsync(id, updateDto, cancellationToken);
-            return NoContent();
+            var result = await _categoriaRepository.UpdateCategoriaAsync(id, updateDto, cancellationToken);
+            return result.ToActionResult();
         }
 
         [HttpDelete("{id}")]
@@ -60,12 +61,8 @@ namespace API.Controllers
         {
             var result = await _categoriaRepository.DeleteCategoriaAsync(id, cancellationToken);
 
-            if (!result)
-            {
-                return NotFound("Categoría no encontrada");
-            }
+            return result.ToActionResult();
 
-            return NoContent();
         }
     }
 }

@@ -1,3 +1,4 @@
+using API.Constants;
 using API.DTOs;
 using API.Entities;
 using API.Helpers;
@@ -38,11 +39,11 @@ namespace API.Data.Repositories
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<CategoriaDto> CreateCategoriaAsync(CategoriaCreateDto createDto, CancellationToken cancellationToken)
+        public async Task<Result<CategoriaDto>> CreateCategoriaAsync(CategoriaCreateDto createDto, CancellationToken cancellationToken)
         {   
-            if (await CategoriaExistsAsync(createDto.Nombre, cancellationToken: cancellationToken))
+            if (await CategoriaExistsAsync(createDto.Nombre, cancellationToken))
             {
-                throw new InvalidOperationException($"Ya existe una categoría con el nombre '{createDto.Nombre}'");
+                return Result<CategoriaDto>.Failure(ErrorCodes.FieldExists, $"Ya existe una categoría con el nombre '{createDto.Nombre}'");
             }
 
             var categoria = _mapper.Map<Categoria>(createDto);
@@ -50,40 +51,34 @@ namespace API.Data.Repositories
             _context.Categorias!.Add(categoria);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return _mapper.Map<CategoriaDto>(categoria);
+            var categoriaDto = _mapper.Map<CategoriaDto>(categoria);
+            return Result<CategoriaDto>.Success(categoriaDto);
         }
 
-        public async Task<CategoriaDto?> UpdateCategoriaAsync(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken)
+        public async Task<Result> UpdateCategoriaAsync(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken)
         {
             var categoria = await _context.Categorias!
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
             if (categoria == null)
-                return null;
-            
-            if (string.IsNullOrWhiteSpace(updateDto.Nombre))
-                {
-                    throw new InvalidOperationException("El nombre de la categoría no puede estar vacío");
-                }
+                return Result.Failure(ErrorCodes.EntityNotFound, "Categoría no encontrada");
 
-            if (await CategoriaExistsAsync(updateDto.Nombre, cancellationToken, id))
-                {
-                    throw new InvalidOperationException($"Ya existe otra categoría con el nombre '{updateDto.Nombre}'");
-                }
+            if (await CategoriaExistsAsync(updateDto.Nombre!, cancellationToken))
+                return Result.Failure(ErrorCodes.FieldExists, $"Ya existe una categoría con el nombre '{updateDto.Nombre}'");
 
             _mapper.Map(updateDto, categoria);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return _mapper.Map<CategoriaDto>(categoria);
+            return Result.Success();
         }
 
-        public async Task<bool> DeleteCategoriaAsync(int id, CancellationToken cancellationToken)
+        public async Task<Result> DeleteCategoriaAsync(int id, CancellationToken cancellationToken)
         {
             var categoria = await _context.Categorias!
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
             if (categoria == null)
-                return false;
+                return Result.Failure(ErrorCodes.EntityNotFound, "Categoría no encontrada");
 
             if (_context.Productos != null)
             {
@@ -92,24 +87,19 @@ namespace API.Data.Repositories
 
                 if (hasProducts)
                 {
-                    throw new InvalidOperationException("No se puede eliminar la categoría porque está siendo utilizada por uno o más productos");
+                    return Result.Failure(ErrorCodes.InvalidOperation, "No se puede eliminar la categoría porque tiene productos asociados.");
                 }
             }
 
             _context.Categorias!.Remove(categoria);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return true;
+            return Result.Success();
         }
 
-        public async Task<bool> CategoriaExistsAsync(string nombre, CancellationToken cancellationToken, int? excludeId = null)
+        public async Task<bool> CategoriaExistsAsync(string nombre, CancellationToken cancellationToken)
         {
             var query = _context.Categorias!.Where(c => c.Nombre.ToLower() == nombre.ToLower());
-
-            if (excludeId.HasValue)
-            {
-                query = query.Where(c => c.Id != excludeId.Value);
-            }
 
             return await query.AnyAsync(cancellationToken);
         }

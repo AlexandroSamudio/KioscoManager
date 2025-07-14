@@ -1,3 +1,4 @@
+using API.Constants;
 using API.DTOs;
 using API.Helpers;
 using API.Interfaces;
@@ -28,10 +29,10 @@ namespace API.Data.Repositories
         }
 
         public async Task<PagedList<ProductoDto>> GetProductosAsync(
+            CancellationToken cancellationToken,
             int kioscoId,
             int pageNumber,
             int pageSize,
-            CancellationToken cancellationToken,
             int? categoriaId = null,
             string? stockStatus = null,
             string? searchTerm = null,
@@ -72,7 +73,6 @@ namespace API.Data.Repositories
                 );
             }
 
-            // Ordenamiento dinámico
             query = (sortColumn, sortDirection?.ToLower()) switch
             {
                 ("sku", "desc") => query.OrderByDescending(p => p.Sku),
@@ -97,65 +97,63 @@ namespace API.Data.Repositories
             const int LowStockThreshold = 3;
             return await _context.Productos!
                 .Where(p => p.Stock <= LowStockThreshold && p.KioscoId == kioscoId)
+                .OrderBy(p => p.Stock)
                 .AsNoTracking()
                 .Take(cantidad) 
                 .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<bool> DeleteProductoAsync(int kioscoId, int id, CancellationToken cancellationToken)
+        public async Task<Result> DeleteProductoAsync(int kioscoId, int id, CancellationToken cancellationToken)
         {
             var producto = await _context.Productos!
                 .FirstOrDefaultAsync(p => p.Id == id && p.KioscoId == kioscoId, cancellationToken);
-            if (producto == null) return false;
+            if (producto == null) return Result.Failure(ErrorCodes.EntityNotFound, "Producto no encontrado");
 
             _context.Productos!.Remove(producto);
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return Result.Success();
         }
 
-        public async Task<ProductoDto?> CreateProductoAsync(int kioscoId, ProductoCreateDto dto, CancellationToken cancellationToken)
+        public async Task<Result<ProductoDto>> CreateProductoAsync(int kioscoId, ProductoCreateDto createDto, CancellationToken cancellationToken)
         {
             var exists = await _context.Productos!
-                .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == dto.Sku, cancellationToken);
+                .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == createDto.Sku, cancellationToken);
+
             if (exists)
             {
-                return null;
+                return Result<ProductoDto>.Failure(ErrorCodes.FieldExists, "El SKU ya existe para este kiosco.");
             }
 
-            var producto = _mapper.Map<Entities.Producto>(dto);
+            var producto = _mapper.Map<Entities.Producto>(createDto);
             producto.KioscoId = kioscoId;
 
             _context.Productos!.Add(producto);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return await _context.Productos!
-                .Where(p => p.Id == producto.Id)
-                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                .SingleOrDefaultAsync(cancellationToken);
+            var productoDto = _mapper.Map<ProductoDto>(producto);
+
+            return Result<ProductoDto>.Success(productoDto);
         }
 
-        public async Task<ProductoDto?> UpdateProductoAsync(int kioscoId, int id, ProductoCreateDto dto, CancellationToken cancellationToken)
+        public async Task<Result> UpdateProductoAsync(int kioscoId, int id, ProductoUpdateDto dto, CancellationToken cancellationToken)
         {
             var producto = await _context.Productos!
                 .FirstOrDefaultAsync(p => p.Id == id && p.KioscoId == kioscoId, cancellationToken);
-            if (producto == null) return null;
+            if (producto == null) return Result.Failure(ErrorCodes.EntityNotFound, "Producto no encontrado");
 
             var exists = await _context.Productos!
                 .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == dto.Sku && p.Id != id, cancellationToken);
             if (exists)
             {
-                return null;
+                return Result.Failure(ErrorCodes.FieldExists, "Ya existe un producto con el mismo SKU en este kiosco.");
             }
 
             _mapper.Map(dto, producto);
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            return await _context.Productos!
-                .Where(p => p.Id == producto.Id)
-                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
-                .SingleOrDefaultAsync(cancellationToken);
+            return Result.Success();
         }
 
         public async Task<ProductoDto?> GetProductoBySkuAsync(int kioscoId, string sku, CancellationToken cancellationToken)
@@ -165,6 +163,33 @@ namespace API.Data.Repositories
                 .AsNoTracking()
                 .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task<ProductoInfoDto> GetCapitalInvertidoTotalAsync(int kioscoId, CancellationToken cancellationToken)
+        {
+            var productos = await _context.Productos!
+                .Where(p => p.KioscoId == kioscoId)
+                .ToListAsync(cancellationToken);
+                
+            if (productos.Count == 0)
+            {
+                return new ProductoInfoDto
+                {
+                    TotalCapitalInvertido = 0,
+                };
+            }
+            
+            return new ProductoInfoDto
+            {
+                TotalCapitalInvertido = productos.Sum(p => p.PrecioCompra * p.Stock),
+            };
+        }
+
+        public async Task<int> GetTotalProductosUnicosAsync(int kioscoId, CancellationToken cancellationToken)
+        {
+            return await _context.Productos!
+                .Where(p => p.KioscoId == kioscoId)
+                .CountAsync(cancellationToken);
         }
     }
 }

@@ -35,6 +35,11 @@ namespace API.Middleware
 
             switch (exception)
             {
+                case ArgumentOutOfRangeException:
+                    response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    response.Message = $"Argumento fuera de rango: {exception.Message}";
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    break;
                 case ArgumentException or InvalidOperationException:
                     response.StatusCode = (int)HttpStatusCode.BadRequest;
                     response.Message = $"Solicitud incorrecta: {exception.Message}";

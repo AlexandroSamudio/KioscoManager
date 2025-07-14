@@ -1,5 +1,4 @@
 using API.DTOs;
-using API.Entities;
 using API.Helpers;
 
 namespace API.Interfaces
@@ -10,6 +9,6 @@ namespace API.Interfaces
         Task<CompraDto?> GetCompraByIdAsync(int kioscoId, int id, CancellationToken cancellationToken);
         Task<IReadOnlyList<CompraDto>> GetComprasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken);
         Task<decimal> GetTotalComprasDelPeriodoAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fechaDesde = null, DateTime? fechaHasta = null);
-        Task<CompraDto> CreateCompraAsync(CompraCreateDto compraData, int kioscoId, int usuarioId, CancellationToken cancellationToken = default);
+        Task<Result<CompraDto>> CreateCompraAsync(CompraCreateDto compraData, int kioscoId, int usuarioId, CancellationToken cancellationToken);
     }
 }

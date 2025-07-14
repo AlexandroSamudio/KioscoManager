@@ -1,23 +1,13 @@
 using API.DTOs;
 using API.Extensions;
 using API.Interfaces;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    public class VentasController : BaseApiController
+    public class VentasController(IVentaRepository ventaRepository) : BaseApiController
     {
-        private readonly IVentaRepository _ventaRepository;
-        private readonly IProductoRepository _productoRepository;
-        private readonly IMapper _mapper;
-
-        public VentasController(IVentaRepository ventaRepository, IProductoRepository productoRepository, IMapper mapper)
-        {
-            _ventaRepository = ventaRepository;
-            _productoRepository = productoRepository;
-            _mapper = mapper;
-        }
+        private readonly IVentaRepository _ventaRepository = ventaRepository;
 
         protected int KioscoId => User.GetKioscoId();
         protected int UserId => User.GetUserId();
@@ -89,26 +79,9 @@ namespace API.Controllers
                 return BadRequest("La venta debe contener al menos un producto");
             }
 
-            try
-            {
-                var venta = await _ventaRepository.CreateVentaAsync(ventaDto, KioscoId, UserId, cancellationToken);
-                
-                var ventaResponse = _mapper.Map<VentaDto>(venta);
-                
-                return Ok(ventaResponse);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Error al procesar la venta. Por favor, intenta nuevamente.");
-            }
+            var result = await _ventaRepository.CreateVentaAsync(ventaDto, KioscoId, UserId, cancellationToken);
+            
+            return result.ToActionResult(venta => CreatedAtAction(nameof(GetVentasDelDia), new { fecha = venta.Fecha.Date }, venta));
         }
     }
 }
