@@ -4,23 +4,18 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using API.Entities;
 using Microsoft.EntityFrameworkCore;
+using API.Constants;
 
 namespace API.Data.Repositories
 {
-    public class VentaRepository : IVentaRepository
+    public class VentaRepository(DataContext context, IMapper mapper) : IVentaRepository
     {
-        private readonly DataContext _context;
-        private readonly IMapper _mapper;
+        private readonly DataContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
-        public VentaRepository(DataContext context, IMapper mapper)
+        public async Task<Result<VentaDto>> CreateVentaAsync(VentaCreateDto ventaCreateDto, int kioscoId, int usuarioId, CancellationToken cancellationToken = default)
         {
-            _context = context;
-            _mapper = mapper;
-        }
-
-        public async Task<Venta> CreateVentaAsync(VentaCreateDto ventaData, int kioscoId, int usuarioId, CancellationToken cancellationToken = default)
-        {
-            var productosIds = ventaData.Productos.Select(p => p.ProductoId).Distinct().ToList();
+            var productosIds = ventaCreateDto.Productos.Select(p => p.ProductoId).Distinct().ToList();
             var productos = await _context.Productos!
                 .Where(p => p.KioscoId == kioscoId && productosIds.Contains(p.Id))
                 .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
@@ -28,57 +23,46 @@ namespace API.Data.Repositories
             if (productos.Count != productosIds.Count)
             {
                 var noEncontrados = productosIds.Except(productos.Keys).ToList();
-                throw new ArgumentException($"Los siguientes productos no se encontraron en el kiosco: {string.Join(", ", noEncontrados)}");
+                var errorMessage = $"Los siguientes productos no se encontraron: {string.Join(", ", noEncontrados)}";
+                return Result<VentaDto>.Failure(VentaErrorCodes.ProductosNoEncontrados, errorMessage);
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+            
             try
             {
-                var venta = new Venta
-                {
-                    KioscoId = kioscoId,
-                    UsuarioId = usuarioId,
-                    Fecha = DateTime.UtcNow
-                };
-
-                foreach (var productoVenta in ventaData.Productos)
-                {
-                    var producto = productos[productoVenta.ProductoId];
-                    var detalle = new DetalleVenta
-                    {
-                        ProductoId = producto.Id,
-                        Cantidad = productoVenta.Cantidad,
-                        PrecioUnitario = producto.PrecioVenta
-                    };
-                    
-                    venta.Detalles.Add(detalle);
-                }
-
-                venta.Total = venta.Detalles.Sum(d => d.PrecioUnitario * d.Cantidad);
-
-                _context.Ventas!.Add(venta);
+                var venta = _mapper.Map<Venta>(ventaCreateDto);
+                venta.KioscoId = kioscoId;
+                venta.UsuarioId = usuarioId;
+                venta.Fecha = DateTime.UtcNow;
 
                 foreach (var detalle in venta.Detalles)
                 {
                     var producto = productos[detalle.ProductoId];
                     if (producto.Stock < detalle.Cantidad)
                     {
-                        throw new InvalidOperationException($"Stock insuficiente para el producto {producto.Nombre}. Stock actual: {producto.Stock}, Cantidad solicitada: {detalle.Cantidad}");
+                        var errorMessage = $"Stock insuficiente para '{producto.Nombre}'. Solicitado: {detalle.Cantidad}, Disponible: {producto.Stock}.";
+                        return Result<VentaDto>.Failure(VentaErrorCodes.StockInsuficiente, errorMessage);
                     }
-
+                    
+                    detalle.PrecioUnitario = producto.PrecioVenta;
                     producto.Stock -= detalle.Cantidad;
                 }
 
+                venta.Total = venta.Detalles.Sum(d => d.PrecioUnitario * d.Cantidad);
+
+                _context.Ventas!.Add(venta);
                 await _context.SaveChangesAsync(cancellationToken);
                 
                 await transaction.CommitAsync(cancellationToken);
                 
-                return venta;
+                var ventaDto = _mapper.Map<VentaDto>(venta);
+                return Result<VentaDto>.Success(ventaDto);
             }
             catch (Exception)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                throw;
+                return Result<VentaDto>.Failure(VentaErrorCodes.ErrorDeCreacion, "Ocurrió un error al crear la venta.");
             }
         }
 
@@ -98,11 +82,6 @@ namespace API.Data.Repositories
 
         public async Task<IReadOnlyList<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken)
         {
-            if (cantidad <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
-            }
-
             return await _context.Ventas!
                 .Where(v => v.KioscoId == kioscoId)
                 .OrderByDescending(v => v.Fecha)
@@ -126,11 +105,6 @@ namespace API.Data.Repositories
 
         public async Task<IReadOnlyList<ProductoMasVendidoDto>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            if (cantidad <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
-            }
-
             var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
             var fechaFin = fechaUtc.AddDays(1);

@@ -6,21 +6,17 @@ using API.Interfaces;
 
 namespace API.Controllers
 {
-    public class ConfigController : BaseApiController
+    public class ConfigController(IConfigRepository configRepository) : BaseApiController
     {
-        private readonly IConfigRepository _configRepository;
+        private readonly IConfigRepository _configRepository = configRepository;
 
-        public ConfigController(IConfigRepository configRepository)
-        {
-            _configRepository = configRepository;
-        }
+        protected int KioscoId => User.GetKioscoId();
+        protected int UserId => User.GetUserId();
 
         [HttpGet("kiosko/info-basico")]
         public async Task<ActionResult<KioscoBasicInfoDto>> GetKioscoBasicInfo(CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-
-            var basicInfoDto = await _configRepository.GetKioscoBasicInfoAsync(kioscoId, cancellationToken);
+            var basicInfoDto = await _configRepository.GetKioscoBasicInfoAsync(KioscoId, cancellationToken);
 
             if (basicInfoDto == null)
             {
@@ -33,47 +29,37 @@ namespace API.Controllers
         [HttpGet("kiosco")]
         public async Task<ActionResult<KioscoConfigDto>> GetKioscoConfig(CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-
-            var configDto = await _configRepository.GetKioscoConfigAsync(kioscoId, cancellationToken);
+            var configDto = await _configRepository.GetKioscoConfigAsync(KioscoId, cancellationToken);
             return Ok(configDto);
         }
 
         [HttpPut("kiosco")]
         public async Task<IActionResult> UpdateKioscoConfig(KioscoConfigUpdateDto configUpdateDto, CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-
-            await _configRepository.UpdateKioscoConfigAsync(kioscoId, configUpdateDto, cancellationToken);
-            return NoContent();
+            var result = await _configRepository.UpdateKioscoConfigAsync(KioscoId, configUpdateDto, cancellationToken);
+            return result.ToActionResult();
         }
 
         [HttpPut("kiosko/info-basico")]
         [Authorize(Roles = "administrador")]
-        public async Task<ActionResult<KioscoBasicInfoDto>> UpdateKioscoBasicInfo(KioscoBasicInfoUpdateDto updateDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateKioscoBasicInfo(KioscoBasicInfoUpdateDto updateDto, CancellationToken cancellationToken)
         {
-            var kioscoId = User.GetKioscoId();
-
-            await _configRepository.UpdateKioscoBasicInfoAsync(kioscoId, updateDto, cancellationToken);
-            return NoContent();
+            var result = await _configRepository.UpdateKioscoBasicInfoAsync(KioscoId, updateDto, cancellationToken);
+            return result.ToActionResult();
         }
 
         [HttpGet("user/preferencias")]
         public async Task<ActionResult<UserPreferencesDto>> GetUserPreferences(CancellationToken cancellationToken)
         {
-            var userId = User.GetUserId();
-
-            var preferencesDto = await _configRepository.GetUserPreferencesAsync(userId, cancellationToken);
+            var preferencesDto = await _configRepository.GetUserPreferencesAsync(UserId, cancellationToken);
             return Ok(preferencesDto);
         }
 
         [HttpPut("user/preferencias")]
-        public async Task<ActionResult<UserPreferencesDto>> UpdateUserPreferences(UserPreferencesUpdateDto updateDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateUserPreferences(UserPreferencesUpdateDto updateDto, CancellationToken cancellationToken)
         {
-            var userId = User.GetUserId();
-
-            await _configRepository.UpdateUserPreferencesAsync(userId, updateDto, cancellationToken);
-            return NoContent();
+            var result = await _configRepository.UpdateUserPreferencesAsync(UserId, updateDto, cancellationToken);
+            return result.ToActionResult();
         }
     }
 }

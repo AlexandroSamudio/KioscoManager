@@ -123,9 +123,10 @@ namespace API.Controllers
             out DateTime start,
             out DateTime end)
         {
+            // Aseguramos que las fechas tengan el Kind UTC para PostgreSQL
             start = fechaInicio.HasValue
                 ? DateTime.SpecifyKind(fechaInicio.Value, DateTimeKind.Utc)
-                : new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                : DateTime.SpecifyKind(new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1), DateTimeKind.Utc);
 
             end = fechaFin.HasValue
                 ? DateTime.SpecifyKind(fechaFin.Value, DateTimeKind.Utc)

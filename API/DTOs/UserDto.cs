@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using API.Attributes;
 
 namespace API.DTOs;
 
@@ -30,17 +31,13 @@ public class UserManagementDto
     public string? NombreKiosco { get; set; }
 }
 
+[AtLeastOneProperty(ErrorMessage = "Se debe proporcionar al menos un campo para actualizar.")]
 public class ProfileUpdateDto
 {
     [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre de usuario debe tener entre 3 y 50 caracteres.")]
     public string? UserName { get; set; }
     [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]
     public string? Email { get; set; }
-}
-
-public class PasswordChangeResponseDto
-{
-    public PasswordChangeErrorCode ErrorCode { get; set; } = PasswordChangeErrorCode.None;
 }
 
 public class ChangePasswordDto

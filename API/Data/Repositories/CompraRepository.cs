@@ -1,3 +1,4 @@
+using API.Constants;
 using API.DTOs;
 using API.Entities;
 using API.Helpers;
@@ -8,24 +9,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data.Repositories
 {
-    public class CompraRepository : ICompraRepository
+    public class CompraRepository(DataContext context, IMapper mapper) : ICompraRepository
     {
-        private readonly DataContext _context;
-        private readonly IMapper _mapper;
+        private readonly DataContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
-        public CompraRepository(DataContext context, IMapper mapper)
+        public async Task<Result<CompraDto>> CreateCompraAsync(CompraCreateDto compraData, int kioscoId, int usuarioId, CancellationToken cancellationToken = default)
         {
-            _context = context;
-            _mapper = mapper;
-        }
-
-        public async Task<CompraDto> CreateCompraAsync(CompraCreateDto compraData, int kioscoId, int usuarioId, CancellationToken cancellationToken = default)
-        {
-            if (compraData.Detalles == null || !compraData.Detalles.Any())
-            {
-                throw new ArgumentException("La compra debe contener al menos un producto");
-            }
-
             var productosIds = compraData.Detalles.Select(p => p.ProductoId).Distinct().ToList();
 
             var productos = await _context.Productos!
@@ -35,47 +25,29 @@ namespace API.Data.Repositories
             if (productos.Count != productosIds.Count)
             {
                 var noEncontrados = productosIds.Except(productos.Keys).ToList();
-                throw new ArgumentException($"Los siguientes productos no se encontraron en el kiosco: {string.Join(", ", noEncontrados)}");
+                return Result<CompraDto>.Failure(CompraErrorCodes.ProductoNoEncontrado, $"Los siguientes productos no se encontraron en el kiosco: {string.Join(", ", noEncontrados)}");
             }
 
             using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
-                var compra = new Compra
-                {
-                    KioscoId = kioscoId,
-                    UsuarioId = usuarioId,
-                    Fecha = DateTime.UtcNow,
-                    Proveedor = compraData.Proveedor,
-                    Nota = compraData.Nota,
-                    CostoTotal = 0,
-                    Detalles = new List<CompraDetalle>()
-                };
-
                 foreach (var productoCompra in compraData.Detalles)
                 {
                     if (productoCompra.Cantidad <= 0)
                     {
-                        throw new ArgumentException($"La cantidad para el producto con ID {productoCompra.ProductoId} debe ser mayor que cero");
+                        return Result<CompraDto>.Failure(CompraErrorCodes.CantidadInvalida, $"La cantidad para el producto con ID {productoCompra.ProductoId} debe ser mayor que cero");
                     }
 
                     if (productoCompra.CostoUnitario <= 0)
                     {
-                        throw new ArgumentException($"El costo unitario para el producto con ID {productoCompra.ProductoId} debe ser mayor que cero");
+                        return Result<CompraDto>.Failure(CompraErrorCodes.CostoUnitarioInvalido, $"El costo unitario para el producto con ID {productoCompra.ProductoId} debe ser mayor que cero");
                     }
-
-                    var producto = productos[productoCompra.ProductoId];
-                    var detalle = new CompraDetalle
-                    {
-                        CompraId = 0,
-                        ProductoId = producto.Id,
-                        Cantidad = productoCompra.Cantidad,
-                        CostoUnitario = productoCompra.CostoUnitario
-                    };
-
-                    compra.Detalles.Add(detalle);
                 }
 
+                var compra = _mapper.Map<Compra>(compraData);
+                compra.KioscoId = kioscoId;
+                compra.UsuarioId = usuarioId;
+                compra.Fecha = DateTime.UtcNow;
                 compra.CostoTotal = compra.Detalles.Sum(d => d.CostoUnitario * d.Cantidad);
 
                 _context.Compras!.Add(compra);
@@ -98,17 +70,17 @@ namespace API.Data.Repositories
 
                 var compraDto = _mapper.Map<CompraDto>(compra);
 
-                return compraDto;
+                return Result<CompraDto>.Success(compraDto);
             }
-            catch (DbUpdateException dbEx)
+            catch (DbUpdateException)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                throw new InvalidOperationException("Error al guardar los datos en la base de datos", dbEx);
+                return Result<CompraDto>.Failure("Error al guardar los datos en la base de datos");
             }
-            catch (Exception ex) when (!(ex is ArgumentException))
+            catch (Exception ex) when (ex is not ArgumentException)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                throw new InvalidOperationException("Error al procesar la compra", ex);
+                return Result<CompraDto>.Failure("Error al procesar la compra");
             }
         }
 
@@ -167,11 +139,6 @@ namespace API.Data.Repositories
 
         public async Task<IReadOnlyList<CompraDto>> GetComprasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken)
         {
-            if (cantidad <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(cantidad), "La cantidad debe ser mayor que cero.");
-            }
-
             return await _context.Compras!
                 .Where(c => c.KioscoId == kioscoId)
                 .OrderByDescending(c => c.Fecha)

@@ -12,23 +12,24 @@ namespace API.Controllers
 
         [HttpGet]
         public async Task<ActionResult<PagedList<ProductoDto>>> GetProductos(
+            CancellationToken cancellationToken,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
-            CancellationToken cancellationToken = default,
             int categoriaId = 0,
             string? stockStatus = null,
             string? searchTerm = null,
             string? sortColumn = null,
-            string? sortDirection = null)
+            string? sortDirection = null
+            )
         {
             pageSize = Math.Clamp(pageSize, 1, 10);
             pageNumber = Math.Max(pageNumber, 1);
 
             var productos = await productoRepository.GetProductosAsync(
+                cancellationToken,
                 KioscoId,
                 pageNumber,
                 pageSize,
-                cancellationToken,
                 categoriaId == 0 ? null : categoriaId,
                 stockStatus,
                 searchTerm,
@@ -61,54 +62,50 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProducto(int id, CancellationToken cancellationToken)
         {
-            var deleted = await productoRepository.DeleteProductoAsync(KioscoId, id, cancellationToken);
-            if (!deleted) return NotFound();
-            return NoContent();
+            var result = await productoRepository.DeleteProductoAsync(KioscoId, id, cancellationToken);
+            return result.ToActionResult();
         }
 
         [HttpPost]
-        public async Task<ActionResult<ProductoDto>> CreateProducto([FromBody] ProductoCreateDto dto, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductoDto>> CreateProducto(ProductoCreateDto dto, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
             var result = await productoRepository.CreateProductoAsync(KioscoId, dto, cancellationToken);
-            if (result == null)
-            {
-                return Conflict("El SKU ya existe para este kiosco.");
-            }
-            return CreatedAtAction(nameof(GetProducto), new { id = result.Id }, result);
+            
+            return result.ToActionResult(producto => CreatedAtAction(nameof(GetProducto), new { id = producto.Id }, producto));
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ProductoDto>> UpdateProducto(int id, [FromBody] ProductoCreateDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateProducto(int id, ProductoUpdateDto updateDto, CancellationToken cancellationToken)
         {
-            var exists = await productoRepository.GetProductoByIdAsync(KioscoId, id, cancellationToken);
-            if (exists == null)
-            {
-                return NotFound();
-            }
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var updated = await productoRepository.UpdateProductoAsync(KioscoId, id, dto, cancellationToken);
-            if (updated == null)
-            {
-                return Conflict("El SKU ya existe para otro producto en este kiosco.");
-            }
-            return Ok(updated);
+            var result = await productoRepository.UpdateProductoAsync(KioscoId, id, updateDto, cancellationToken);
+            return result.ToActionResult();
         }
 
         [HttpGet("by-sku/{sku}")]
         public async Task<ActionResult<ProductoDto>> GetProductoBySku(string sku, CancellationToken cancellationToken)
         {
             var producto = await productoRepository.GetProductoBySkuAsync(KioscoId, sku, cancellationToken);
+
             if (producto == null)
             {
                 return NotFound($"No se encontró un producto con SKU '{sku}' en este kiosco");
             }
 
             return Ok(producto);
+        }
+
+        [HttpGet("capital-invertido")]
+        public async Task<ActionResult<ProductoInfoDto>> GetCapitalInvertido(CancellationToken cancellationToken)
+        {
+            var resultado = await productoRepository.GetCapitalInvertidoTotalAsync(KioscoId, cancellationToken);
+            return Ok(resultado);
+        }
+
+        [HttpGet("total")]
+        public async Task<ActionResult<int>> GetTotalProductos(CancellationToken cancellationToken)
+        {
+            var total = await productoRepository.GetTotalProductosUnicosAsync(KioscoId, cancellationToken);
+            return Ok(new { totalProductos = total });
         }
     }
 }
