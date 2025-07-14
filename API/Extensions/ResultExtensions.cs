@@ -42,6 +42,8 @@ namespace API.Extensions
                 ErrorCodes.InvalidOperation => new BadRequestObjectResult(result.Message),
                 ErrorCodes.ValidationError => new BadRequestObjectResult(result.Message),
                 ErrorCodes.Forbidden => new ObjectResult(result.Message) { StatusCode = 403 },
+                ErrorCodes.InvalidCurrentPassword => new BadRequestObjectResult("Contraseña actual incorrecta"),
+                ErrorCodes.Unauthorized => new UnauthorizedObjectResult("No autorizado"),
                 _ => new ObjectResult("Error interno del servidor") { StatusCode = 500 }
             };
         }
