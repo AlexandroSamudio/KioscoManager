@@ -154,7 +154,7 @@ namespace API.Data.Repositories
                 .Where(d => d.Venta!.KioscoId == kioscoId &&
                           d.Venta.Fecha >= fechaInicio &&
                           d.Venta.Fecha <= endOfDay)
-                .GroupBy(d => d.Venta!.Fecha.Date)
+                .GroupBy(d => d.Venta!.Fecha)
                 .Select(g => new VentasPorDiaDto
                 {
                     Fecha = g.Key,

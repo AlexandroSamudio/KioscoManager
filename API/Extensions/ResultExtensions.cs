@@ -1,5 +1,5 @@
 using API.Constants;
-using API.DTOs;
+using API.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Extensions
@@ -22,6 +22,7 @@ namespace API.Extensions
                 ErrorCodes.ValidationError => new BadRequestObjectResult(result.Message),
                 ErrorCodes.Forbidden => new ObjectResult(result.Message) { StatusCode = 403 },
                 ErrorCodes.InvalidCurrentPassword => new BadRequestObjectResult("Contraseña actual incorrecta"),
+                ErrorCodes.Unauthorized => new UnauthorizedObjectResult("No autorizado"),
                 _ => new ObjectResult("Error interno del servidor") { StatusCode = 500 }
             };
         }
@@ -30,7 +31,7 @@ namespace API.Extensions
         {
             if (result.IsSuccess)
             {
-                return result.Data;
+                return result.Data ?? throw new InvalidOperationException("Los resultados exitosos deben contener datos válidos");
             }
 
             return result.ErrorCode switch
@@ -49,7 +50,9 @@ namespace API.Extensions
         {
             if (result.IsSuccess)
             {
-                return successAction(result.Data);
+                return result.Data != null
+                ? successAction(result.Data)
+                : throw new InvalidOperationException("Los resultados exitosos deben contener datos válidos");
             }
 
             return result.ToActionResult();

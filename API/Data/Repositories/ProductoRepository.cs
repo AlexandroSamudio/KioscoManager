@@ -2,6 +2,7 @@ using API.Constants;
 using API.DTOs;
 using API.Helpers;
 using API.Interfaces;
+using API.Entities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -167,21 +168,13 @@ namespace API.Data.Repositories
 
         public async Task<ProductoInfoDto> GetCapitalInvertidoTotalAsync(int kioscoId, CancellationToken cancellationToken)
         {
-            var productos = await _context.Productos!
+            var totalCapital = await _context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
-                .ToListAsync(cancellationToken);
-                
-            if (productos.Count == 0)
-            {
-                return new ProductoInfoDto
-                {
-                    TotalCapitalInvertido = 0,
-                };
-            }
-            
+                .SumAsync(p => (decimal?)(p.PrecioCompra * p.Stock) ?? 0, cancellationToken);
+
             return new ProductoInfoDto
             {
-                TotalCapitalInvertido = productos.Sum(p => p.PrecioCompra * p.Stock),
+                TotalCapitalInvertido = totalCapital,
             };
         }
 

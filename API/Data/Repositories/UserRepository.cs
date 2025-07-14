@@ -162,7 +162,6 @@ public class UserRepository(DataContext context, UserManager<AppUser> userManage
         {
             return Result.Failure(ErrorCodes.FieldExists,"El nombre de usuario ya está en uso");
         }
-        user.UserName = profileData.UserName;
 
         var existsEmail = await _context.Users
             .AnyAsync(u => u.Email == profileData.Email && u.Id != userId, cancellationToken);
@@ -170,6 +169,8 @@ public class UserRepository(DataContext context, UserManager<AppUser> userManage
         {
             return Result.Failure(ErrorCodes.FieldExists,"El correo electrónico ya está en uso");
         }
+        
+        user.UserName = profileData.UserName;
         user.Email = profileData.Email;
 
 

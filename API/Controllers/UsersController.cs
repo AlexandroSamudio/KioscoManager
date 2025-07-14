@@ -7,9 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class UsersController(IUserRepository userRepository) : BaseApiController
+public class UsersController(IUserRepository _userRepository) : BaseApiController
 {
-    private readonly IUserRepository _userRepository = userRepository;
     protected int KioscoId => User.GetKioscoId();
     protected int UserId => User.GetUserId();
 

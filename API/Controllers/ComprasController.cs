@@ -6,10 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    public class ComprasController(ICompraRepository compraRepository) : BaseApiController
+    public class ComprasController(ICompraRepository _compraRepository) : BaseApiController
     {
         protected int KioscoId => User.GetKioscoId();
-        private readonly ICompraRepository _compraRepository = compraRepository;
 
         [HttpGet]
         public async Task<ActionResult<PagedList<CompraDto>>> GetCompras(
@@ -34,7 +33,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CompraDto>> GetCompra(int id,CancellationToken cancellationToken)
+        public async Task<ActionResult<CompraDto>> GetCompra(int id, CancellationToken cancellationToken)
         {
             var compra = await _compraRepository.GetCompraByIdAsync(KioscoId, id, cancellationToken);
 
@@ -44,7 +43,7 @@ namespace API.Controllers
         }
 
         [HttpGet("recientes")]
-        public async Task<ActionResult<IReadOnlyList<CompraDto>>> GetComprasRecientes(CancellationToken cancellationToken,[FromQuery] int cantidad = 5)
+        public async Task<ActionResult<IReadOnlyList<CompraDto>>> GetComprasRecientes(CancellationToken cancellationToken, [FromQuery] int cantidad = 5)
         {
             if (cantidad < 1 || cantidad > 50) return BadRequest("La cantidad debe estar entre 1 y 50");
             var compras = await _compraRepository.GetComprasRecientesAsync(KioscoId, cantidad, cancellationToken);
@@ -69,7 +68,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CompraDto>> CreateCompra(CompraCreateDto compraDto,CancellationToken cancellationToken)
+        public async Task<ActionResult<CompraDto>> CreateCompra(CompraCreateDto compraDto, CancellationToken cancellationToken)
         {
             var usuarioId = User.GetUserId();
             if (compraDto.Detalles.Count == 0)

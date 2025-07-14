@@ -1,4 +1,4 @@
-namespace API.DTOs
+namespace API.Constants
 {
     public static class VentaErrorCodes
     {

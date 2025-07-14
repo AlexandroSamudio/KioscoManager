@@ -1,4 +1,4 @@
-namespace API.DTOs;
+namespace API.Entities;
 
 public class Result<T>
 {
@@ -16,9 +16,9 @@ public class Result<T>
     }
 
     //Crea un resultado exitoso incluyendo datos
-    public static Result<T> Success(T? data, string? message = null, string? errorCode = null)
+    public static Result<T> Success(T? data, string? message = null)
     {
-        return new Result<T>(true, data, message, errorCode);
+        return new Result<T>(true, data, message,null);
     }
 
     // Crea un resultado con fallo con datos parciales.
