@@ -154,7 +154,7 @@ namespace API.Data.Repositories
                 .Where(d => d.Venta!.KioscoId == kioscoId &&
                           d.Venta.Fecha >= fechaInicio &&
                           d.Venta.Fecha <= endOfDay)
-                .GroupBy(d => d.Venta!.Fecha)
+                .GroupBy(d => d.Venta!.Fecha.Date)
                 .Select(g => new VentasPorDiaDto
                 {
                     Fecha = g.Key,
@@ -180,10 +180,10 @@ namespace API.Data.Repositories
 
             foreach (var ventaDia in ventasPorDiaSinGanancia)
             {
-                var fechaExacta = ventaDia.Fecha;
+                var fechaDia = ventaDia.Fecha.Date;
                 
                 var detallesDeVenta = todosLosDetalles
-                    .Where(d => d.Venta!.Fecha == fechaExacta)
+                    .Where(d => d.Venta!.Fecha.Date == fechaDia)
                     .ToList();
 
                 decimal costoMercaderia = 0;

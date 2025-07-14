@@ -3,11 +3,11 @@ namespace API.DTOs;
 public class Result<T>
 {
     public bool IsSuccess { get; init; }
-    public T Data { get; init; }
+    public T? Data { get; init; }
     public string? Message { get; init; }
     public string? ErrorCode { get; init; }
 
-    private Result(bool isSuccess, T data, string? message, string? errorCode)
+    private Result(bool isSuccess, T? data, string? message, string? errorCode)
     {
         IsSuccess = isSuccess;
         Data = data;
@@ -16,7 +16,7 @@ public class Result<T>
     }
 
     //Crea un resultado exitoso incluyendo datos
-    public static Result<T> Success(T data, string? message = null, string? errorCode = null)
+    public static Result<T> Success(T? data, string? message = null, string? errorCode = null)
     {
         return new Result<T>(true, data, message, errorCode);
     }

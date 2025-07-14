@@ -63,7 +63,9 @@ namespace API.Data.Repositories
             if (categoria == null)
                 return Result.Failure(ErrorCodes.EntityNotFound, "Categoría no encontrada");
 
-            if (await CategoriaExistsAsync(updateDto.Nombre!, cancellationToken))
+            var nombreDuplicado = await _context.Categorias!
+                .AnyAsync(c => c.Id != id && c.Nombre.Equals(updateDto.Nombre, StringComparison.CurrentCultureIgnoreCase), cancellationToken);
+            if (nombreDuplicado)
                 return Result.Failure(ErrorCodes.FieldExists, $"Ya existe una categoría con el nombre '{updateDto.Nombre}'");
 
             _mapper.Map(updateDto, categoria);
@@ -99,7 +101,7 @@ namespace API.Data.Repositories
 
         public async Task<bool> CategoriaExistsAsync(string nombre, CancellationToken cancellationToken)
         {
-            var query = _context.Categorias!.Where(c => c.Nombre.ToLower() == nombre.ToLower());
+            var query = _context.Categorias!.Where(c => c.Nombre.Equals(nombre, StringComparison.CurrentCultureIgnoreCase));
 
             return await query.AnyAsync(cancellationToken);
         }
