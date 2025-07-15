@@ -1,17 +1,17 @@
 import {
   HttpClient,
   HttpParams,
-  HttpErrorResponse,
   HttpResponse,
 } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { environment } from '../../app/environments/environment.development';
+import { environment } from '../../environments/environment.development';
 import { Reporte } from '../_models/reporte.model';
 import { ProductoMasVendido } from '../_models/producto-mas-vendido.model';
-import { Observable, catchError, retry, throwError } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import { VentaPorDia } from '../_models/venta-por-dia.model';
 import { CategoriaRentabilidad } from '../_models/categoria-rentabilidad.model';
 import { setPaginationHeaders, PaginatedResult } from './pagination.helper';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root',
@@ -19,24 +19,33 @@ import { setPaginationHeaders, PaginatedResult } from './pagination.helper';
 export class ReporteService {
   private baseUrl = environment.apiUrl;
   private http = inject(HttpClient);
+  private notificationService = inject(NotificationService);
   productosPaginados = signal<PaginatedResult<ProductoMasVendido[]> | null>(
     null
   );
+
+  private handleError<T>(message: string) {
+    return (error: any) => {
+      this.notificationService.error(message, error?.message ?? 'Inténtelo de nuevo');
+      return throwError(() => error);
+    };
+  }
+
 
   getReporteSummary(fechaInicio?: Date, fechaFin?: Date): Observable<Reporte> {
     let params = new HttpParams();
 
     if (fechaInicio) {
-      params = params.append('fechaInicio', fechaInicio.toISOString());
+      params = params.append('fechaInicio', this.formatDateToISO(fechaInicio));
     }
 
     if (fechaFin) {
-      params = params.append('fechaFin', fechaFin.toISOString());
+      params = params.append('fechaFin', this.formatDateToISO(fechaFin));
     }
 
     return this.http
       .get<Reporte>(`${this.baseUrl}reportes`, { params })
-      .pipe(retry(2), catchError(this.handleError));
+      .pipe(catchError(this.handleError<Reporte>('Error al obtener resumen de reporte')));
   }
 
   getTopProductos(
@@ -53,11 +62,11 @@ export class ReporteService {
     }
 
     if (fechaInicio) {
-      params = params.append('fechaInicio', fechaInicio.toISOString());
+      params = params.append('fechaInicio', this.formatDateToISO(fechaInicio));
     }
 
     if (fechaFin) {
-      params = params.append('fechaFin', fechaFin.toISOString());
+      params = params.append('fechaFin', this.formatDateToISO(fechaFin));
     }
 
     return this.http
@@ -65,7 +74,7 @@ export class ReporteService {
         params,
         observe: 'response',
       })
-      .pipe(retry(2), catchError(this.handleError));
+      .pipe(catchError(this.handleError<ProductoMasVendido[]>('Error al obtener productos más vendidos')));
   }
 
   getVentasPorDia(fechaInicio?: Date, fechaFin?: Date): Observable<VentaPorDia[]> {
@@ -81,7 +90,7 @@ export class ReporteService {
 
     return this.http
       .get<VentaPorDia[]>(`${this.baseUrl}reportes/ventas-por-dia`, { params })
-      .pipe(retry(2), catchError(this.handleError));
+      .pipe(catchError(this.handleError<VentaPorDia[]>('Error al obtener ventas por día')));
   }
 
   getCategoriasRentabilidad(
@@ -91,11 +100,11 @@ export class ReporteService {
     let params = new HttpParams();
 
     if (fechaInicio) {
-      params = params.append('fechaInicio', fechaInicio.toISOString());
+      params = params.append('fechaInicio', this.formatDateToISO(fechaInicio));
     }
 
     if (fechaFin) {
-      params = params.append('fechaFin', fechaFin.toISOString());
+      params = params.append('fechaFin', this.formatDateToISO(fechaFin));
     }
 
     return this.http
@@ -103,17 +112,22 @@ export class ReporteService {
         `${this.baseUrl}reportes/rentabilidad-categorias`,
         { params }
       )
-      .pipe(retry(2), catchError(this.handleError));
+      .pipe(catchError(this.handleError<CategoriaRentabilidad[]>('Error al obtener categorías de rentabilidad')));
   }
 
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'Error desconocido';
-    if (error.error instanceof ErrorEvent) {
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      errorMessage = `Código de error ${error.status}: ${error.message}`;
-    }
-    console.error(errorMessage);
-    return throwError(() => errorMessage);
+  private formatDateToISO(date: Date): string {
+    const isoString = new Date(
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        date.getHours(),
+        date.getMinutes(),
+        date.getSeconds(),
+        date.getMilliseconds()
+      )
+    ).toISOString();
+
+    return isoString;
   }
 }

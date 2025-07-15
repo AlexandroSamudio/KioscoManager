@@ -1,45 +1,84 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './_components/home/home.component';
-import { RegisterComponent } from './_components/register/register.component';
-import { LoginComponent } from './_components/login/login.component';
-import { BienvenidaComponent } from './_components/bienvenida/bienvenida.component';
 import { authGuard } from './_guards/auth.guard';
-import { CrearKioscoComponent } from './_components/crear-kiosco/crear-kiosco.component';
-import { DashboardComponent } from './_components/dashboard/dashboard.component';
-import { InventarioComponent } from './_components/inventario/inventario.component';
-import { PuntoVentaComponent } from './_components/ventas/punto-venta.component';
-import { RegistrarCompraComponent } from './_components/compras/registrar-compra.component';
-import { ReportesPageComponent } from './_components/reportes/reportes-page.component';
-import { ConfiguracionComponent } from './_components/configuracion/configuracion.component';
-import { PerfilPersonalComponent } from './_components/configuracion/perfil-personal/perfil-personal.component';
-import { InfoNegocioComponent } from './_components/info-negocio/info-negocio.component';
-import { UsuariosPermisosComponent } from './_components/configuracion/usuarios-permisos/usuarios-permisos.component';
-import { ConfiguracionCategoriasComponent } from './_components/configuracion/configuracion-categorias/configuracion-categorias.component';
-// import { ConfiguracionReportesComponent } from './_components/configuracion/configuracion-reportes/configuracion-reportes.component';
 
 export const routes: Routes = [
-  {path: '', component: HomeComponent},
-  {path: 'bienvenida', component: BienvenidaComponent, canActivate: [authGuard]},
-  {path: 'register', component: RegisterComponent},
-  {path: 'dashboard', component: DashboardComponent, canActivate: [authGuard]},
-  {path: 'crear-kiosco', component: CrearKioscoComponent, canActivate: [authGuard]},
-  {path: 'inventario', component: InventarioComponent, canActivate: [authGuard]},
-  {path: 'punto-de-venta', component: PuntoVentaComponent, canActivate: [authGuard]},
-  {path: 'registrar-compra', component: RegistrarCompraComponent, canActivate: [authGuard]},
-  {path: 'reportes', component: ReportesPageComponent, canActivate: [authGuard]},
+  {
+    path: '',
+    loadComponent: () => import('./_components/home/home.component').then(m => m.HomeComponent)
+  },
+  {
+    path: 'bienvenida',
+    loadComponent: () => import('./_components/bienvenida/bienvenida.component').then(m => m.BienvenidaComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./_components/register/register.component').then(m => m.RegisterComponent)
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./_components/dashboard/dashboard.component').then(m => m.DashboardComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'crear-kiosco',
+    loadComponent: () => import('./_components/crear-kiosco/crear-kiosco.component').then(m => m.CrearKioscoComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'inventario',
+    loadComponent: () => import('./_components/inventario/inventario.component').then(m => m.InventarioComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'punto-de-venta',
+    loadComponent: () => import('./_components/ventas/punto-venta.component').then(m => m.PuntoVentaComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'registrar-compra',
+    loadComponent: () => import('./_components/compras/registrar-compra.component').then(m => m.RegistrarCompraComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'reportes',
+    loadComponent: () => import('./_components/reportes/reportes-page.component').then(m => m.ReportesPageComponent),
+    canActivate: [authGuard]
+  },
   {
     path: 'configuracion',
-    component: ConfiguracionComponent,
+    loadComponent: () => import('./_components/configuracion/configuracion.component').then(m => m.ConfiguracionComponent),
     canActivate: [authGuard],
     children: [
-      {path: '', redirectTo: 'perfil', pathMatch: 'full'},
-      {path: 'perfil', component: PerfilPersonalComponent},
-      {path: 'negocio', component: InfoNegocioComponent},
-      {path: 'usuarios', component: UsuariosPermisosComponent},
-      {path: 'categorias', component: ConfiguracionCategoriasComponent},
-      // {path: 'reportes', component: ConfiguracionReportesComponent}
+      {
+        path: '',
+        redirectTo: 'perfil',
+        pathMatch: 'full'
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./_components/configuracion/perfil-personal/perfil-personal.component').then(m => m.PerfilPersonalComponent)
+      },
+      {
+        path: 'negocio',
+        loadComponent: () => import('./_components/info-negocio/info-negocio.component').then(m => m.InfoNegocioComponent)
+      },
+      {
+        path: 'usuarios',
+        loadComponent: () => import('./_components/configuracion/usuarios-permisos/usuarios-permisos.component').then(m => m.UsuariosPermisosComponent)
+      },
+      {
+        path: 'categorias',
+        loadComponent: () => import('./_components/configuracion/configuracion-categorias/configuracion-categorias.component').then(m => m.ConfiguracionCategoriasComponent)
+      }
     ]
   },
-  {path: 'login', component: LoginComponent},
-  {path: '**', component: HomeComponent},
+  {
+    path: 'login',
+    loadComponent: () => import('./_components/login/login.component').then(m => m.LoginComponent)
+  },
+  {
+    path: '**',
+    loadComponent: () => import('./_components/home/home.component').then(m => m.HomeComponent)
+  },
 ];
