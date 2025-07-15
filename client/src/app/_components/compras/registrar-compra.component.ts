@@ -1,9 +1,12 @@
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { Component, inject, signal, DestroyRef } from '@angular/core';
+import { Component, inject, signal, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Producto } from '../../_models/producto.model';
-import { CompraCreate, CompraDetalleCreate } from '../../_models/compra-create.model';
+import {
+  CompraCreate,
+  CompraDetalleCreate,
+} from '../../_models/compra-create.model';
 import { CompraService } from '../../_services/compra.service';
 import { NotificationService } from '../../_services/notification.service';
 import { CompraDetalleListComponent } from './compra-detalle-list.component';
@@ -13,11 +16,18 @@ import { ProductSearchComponent } from '../shared/product-search/product-search.
 @Component({
   selector: 'app-registrar-compra',
   standalone: true,
-  imports: [CommonModule, FormsModule, CompraDetalleListComponent, NavbarComponent, CurrencyPipe, ProductSearchComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CompraDetalleListComponent,
+    NavbarComponent,
+    CurrencyPipe,
+    ProductSearchComponent,
+  ],
   templateUrl: './registrar-compra.component.html',
-  styleUrl: './registrar-compra.component.css'
+  styleUrl: './registrar-compra.component.css',
 })
-export class RegistrarCompraComponent {
+export class RegistrarCompraComponent implements OnInit {
   private compraService = inject(CompraService);
   private notificationService = inject(NotificationService);
   private destroyRef = inject(DestroyRef);
@@ -32,6 +42,10 @@ export class RegistrarCompraComponent {
   itemsCompra = signal<CompraDetalleCreate[]>([]);
   cargando = signal<boolean>(false);
 
+  ngOnInit(): void {
+    this.updateCompraValues();
+  }
+
   onProductSelected(producto: Producto): void {
     this.productoActual.set(producto);
     this.costoUnitario.set(producto.precioCompra || 0);
@@ -39,17 +53,23 @@ export class RegistrarCompraComponent {
 
   agregarProducto(): void {
     if (!this.productoActual()) {
-      this.notificationService.showWarning('Debe seleccionar un producto primero');
+      this.notificationService.showWarning(
+        'Debe seleccionar un producto primero'
+      );
       return;
     }
 
     if (this.cantidad() <= 0) {
-      this.notificationService.showWarning('La cantidad debe ser mayor que cero');
+      this.notificationService.showWarning(
+        'La cantidad debe ser mayor que cero'
+      );
       return;
     }
 
     if (this.costoUnitario() <= 0) {
-      this.notificationService.showWarning('El costo unitario debe ser mayor que cero');
+      this.notificationService.showWarning(
+        'El costo unitario debe ser mayor que cero'
+      );
       return;
     }
 
@@ -57,10 +77,12 @@ export class RegistrarCompraComponent {
       productoId: this.productoActual()!.id,
       cantidad: this.cantidad(),
       costoUnitario: this.costoUnitario(),
-      productoSku: this.productoActual()!.sku
+      productoSku: this.productoActual()!.sku,
     };
 
-    const index = this.itemsCompra().findIndex(item => item.productoId === nuevoItem.productoId);
+    const index = this.itemsCompra().findIndex(
+      (item) => item.productoId === nuevoItem.productoId
+    );
 
     if (index >= 0) {
       const itemsActualizados = [...this.itemsCompra()];
@@ -68,7 +90,7 @@ export class RegistrarCompraComponent {
         ...itemsActualizados[index],
         cantidad: itemsActualizados[index].cantidad + nuevoItem.cantidad,
         costoUnitario: nuevoItem.costoUnitario,
-        productoSku: nuevoItem.productoSku
+        productoSku: nuevoItem.productoSku,
       };
       this.itemsCompra.set(itemsActualizados);
       this.notificationService.showSuccess('Producto actualizado en la lista');
@@ -100,7 +122,9 @@ export class RegistrarCompraComponent {
 
   registrarCompra(): void {
     if (this.itemsCompra().length === 0) {
-      this.notificationService.showWarning('Debe agregar al menos un producto a la compra');
+      this.notificationService.showWarning(
+        'Debe agregar al menos un producto a la compra'
+      );
       return;
     }
 
@@ -109,18 +133,21 @@ export class RegistrarCompraComponent {
     const compra: CompraCreate = {
       detalles: this.itemsCompra(),
       proveedor: this.proveedor() || undefined,
-      nota: this.nota() || undefined
+      nota: this.nota() || undefined,
     };
 
-    this.compraService.createCompra(compra).pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: () => {
-        this.notificationService.showSuccess('Compra registrada correctamente');
-        this.resetForm();
-        this.cargando.set(false);
-      }
-    });
+    this.compraService
+      .createCompra(compra)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.notificationService.showSuccess(
+            'Compra registrada correctamente'
+          );
+          this.resetForm();
+          this.cargando.set(false);
+        },
+      });
   }
 
   cancelarCompra(): void {
@@ -150,9 +177,5 @@ export class RegistrarCompraComponent {
   private updateCompraValues(): void {
     this.itemsCompraList.set(this.itemsCompra());
     this.totalCompra.set(this.calcularTotal());
-  }
-
-  ngOnInit(): void {
-    this.updateCompraValues();
   }
 }

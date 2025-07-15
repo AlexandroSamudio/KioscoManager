@@ -354,11 +354,6 @@ export class ReportesPageComponent implements OnInit {
     return this.reporteService.productosPaginados();
   }
 
-  getProductoWidthPercentage(index: number): number {
-    const percentages = this.productosWidthPercentages();
-    return percentages[index] ?? 0;
-  }
-
   cambiarPagina(page: number) {
     const fechaInicio = this.getFechaFromFormControl('fechaInicio');
     const fechaFin = this.getFechaFromFormControl('fechaFin', true);

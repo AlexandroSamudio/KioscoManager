@@ -1,4 +1,11 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -7,7 +14,10 @@ import { finalize } from 'rxjs';
 import { UserService } from '../../../../_services/user.service';
 import { NotificationService } from '../../../../_services/notification.service';
 import { AccountService } from '../../../../_services/account.service';
-import { UserManagement, UserRoleResponse } from '../../../../_models/user.model';
+import {
+  UserManagement,
+  UserRoleResponse,
+} from '../../../../_models/user.model';
 import { Pagination } from '../../../../_services/pagination.helper';
 import { RoleSelectorComponent } from '../role-selector/role-selector.component';
 
@@ -16,7 +26,7 @@ import { RoleSelectorComponent } from '../role-selector/role-selector.component'
   standalone: true,
   imports: [CommonModule, FormsModule, RoleSelectorComponent],
   templateUrl: './usuarios-lista.component.html',
-  styleUrls: ['./usuarios-lista.component.css']
+  styleUrls: ['./usuarios-lista.component.css'],
 })
 export class UsuariosListaComponent implements OnInit {
   private userService = inject(UserService);
@@ -81,7 +91,8 @@ export class UsuariosListaComponent implements OnInit {
       );
     }
 
-    const kioscoIdNumber = typeof kioscoId === 'string' ? parseInt(kioscoId, 10) : kioscoId;
+    const kioscoIdNumber =
+      typeof kioscoId === 'string' ? parseInt(kioscoId, 10) : kioscoId;
 
     this.currentKioscoId.set(kioscoIdNumber);
     this.loadUsers();
@@ -102,7 +113,8 @@ export class UsuariosListaComponent implements OnInit {
       return;
     }
 
-    this.userService.getUsersByKioscoPaginated(kioscoId, this.currentPage(), this.pageSize())
+    this.userService
+      .getUsersByKioscoPaginated(kioscoId, this.currentPage(), this.pageSize())
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.isLoading.set(false))
@@ -118,7 +130,7 @@ export class UsuariosListaComponent implements OnInit {
             'Error',
             'No se pudieron cargar los usuarios. Por favor, intente nuevamente.'
           );
-        }
+        },
       });
   }
 
@@ -142,7 +154,7 @@ export class UsuariosListaComponent implements OnInit {
   }
 
   handleRoleAssigned(response: UserRoleResponse): void {
-    const updatedUsers = this.users().map(user => {
+    const updatedUsers = this.users().map((user) => {
       if (user.id === response.userId) {
         return { ...user, role: response.role };
       }
