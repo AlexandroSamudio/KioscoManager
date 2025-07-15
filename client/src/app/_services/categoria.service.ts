@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { Categoria } from '../_models/categoria.model';
-import { environment } from '../environments/environment.development';
+import { environment } from '../../environments/environment';
 import {
   PaginatedResult,
   setPaginatedResponseSignal,
@@ -21,10 +21,7 @@ export class CategoriaService {
 
   private handleError<T>(message: string) {
     return (error: any) => {
-      this.notificationService.error(
-        message,
-        error?.message ?? 'Inténtelo de nuevo'
-      );
+      this.notificationService.error(message, error?.message ?? 'Inténtelo de nuevo');
       return throwError(() => error);
     };
   }

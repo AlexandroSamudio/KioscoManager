@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { environment } from '../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { User } from '../_models/user.model';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
