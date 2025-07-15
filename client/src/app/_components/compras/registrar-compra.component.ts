@@ -114,11 +114,6 @@ export class RegistrarCompraComponent {
         this.notificationService.showSuccess('Compra registrada correctamente');
         this.resetForm();
         this.cargando.set(false);
-      },
-      error: (error) => {
-        console.error('Error al registrar la compra:', error);
-        this.notificationService.showError('Error al registrar la compra: ' + (error.error || 'Ocurrió un error inesperado'));
-        this.cargando.set(false);
       }
     });
   }

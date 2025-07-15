@@ -1,161 +1,428 @@
-<header class="bg-white/80 backdrop-blur-sm border-b border-amber-200 sticky top-0 z-50">
+<header
+  class="fixed top-0 w-full bg-white/70 backdrop-blur-xl border-b border-amber-200/50 z-50 transition-all duration-300"
+>
   <div class="max-w-7xl mx-auto px-4 py-4">
     <div class="flex items-center justify-between">
-      <div class="flex items-center space-x-2">
-        <svg class="h-8 w-8 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-        </svg>
-        <span class="text-2xl font-bold text-amber-900">KioscoManager</span>
+      <div class="flex items-center space-x-3 group">
+        <div class="relative">
+          <div
+            class="absolute inset-0 bg-amber-400/20 rounded-full blur-lg group-hover:blur-xl transition-all duration-300"
+          ></div>
+          <div
+            class="relative w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300"
+          >
+            <svg
+              class="h-6 w-6 text-white group-hover:scale-110 transition-transform duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+          </div>
+        </div>
+        <span
+          class="text-2xl font-bold bg-gradient-to-r from-amber-800 to-amber-600 bg-clip-text text-transparent"
+        >
+          KioscoManager
+        </span>
       </div>
 
       <nav class="hidden md:flex items-center space-x-8">
-        <a (click)="scrollToSection('features')"
-           class="text-amber-800 hover:text-amber-600 transition-colors cursor-pointer">
-          Características
-        </a>
-        <a (click)="scrollToSection('testimonials')"
-           class="text-amber-800 hover:text-amber-600 transition-colors cursor-pointer">
-          Testimonios
-        </a>
-        <a (click)="scrollToSection('contact')"
-           class="text-amber-800 hover:text-amber-600 transition-colors cursor-pointer">
-          Contacto
+        <a
+          *ngFor="let item of navItems"
+          (click)="scrollToSection(item.section)"
+          class="relative text-amber-800 hover:text-amber-600 transition-all duration-300 cursor-pointer group py-2"
+        >
+          <span class="relative z-10">{{ item.label }}</span>
+          <div
+            class="absolute inset-0 bg-amber-100 rounded-lg scale-0 group-hover:scale-100 transition-transform duration-300 origin-center"
+          ></div>
         </a>
       </nav>
 
-      <div class="flex items-center space-x-4">        <button class="text-amber-800 hover:text-amber-600 px-4 py-2 rounded-md transition-all duration-200 hover:-translate-y-0.5"
-                (click)="redirectTo('/login')">
-          Iniciar Sesión
+      <div class="hidden md:flex items-center space-x-3">
+        <button
+          class="relative text-amber-800 hover:text-amber-600 px-4 py-2 rounded-xl transition-all duration-300 hover:bg-amber-50 group"
+          (click)="redirectTo('/login')"
+        >
+          <span class="relative z-10">Iniciar Sesión</span>
         </button>
-        <button class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-md transition-all duration-200 hover:-translate-y-0.5"
-                (click)="redirectTo('/register')">
-          Registrarse
+        <button
+          class="relative bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white px-6 py-2 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          (click)="redirectTo('/register')"
+        >
+          <span class="relative z-10">Registrarse</span>
+          <div
+            class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300"
+          ></div>
         </button>
       </div>
 
-      <button class="md:hidden" (click)="toggleMenu()">
-        <svg class="h-6 w-6 text-amber-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+      <button
+        class="md:hidden p-2 rounded-xl hover:bg-amber-50 transition-colors duration-300"
+        (click)="toggleMenu()"
+      >
+        <svg
+          class="h-6 w-6 text-amber-800 transition-transform duration-300"
+          [class.rotate-90]="isMenuOpen()"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
         </svg>
       </button>
     </div>
 
-    <div *ngIf="isMenuOpen()" class="md:hidden mt-4 pb-4 border-t border-amber-200">
-      <nav class="flex flex-col space-y-2 pt-4" aria-label="Menú móvil">        <a (click)="scrollToSection('features')"
-           class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
-          Características
+    <div
+      *ngIf="isMenuOpen()"
+      class="md:hidden mt-4 pb-4 border-t border-amber-200/50 animate-fade-in-down"
+    >
+      <nav class="flex flex-col space-y-1 pt-4">
+        <a
+          *ngFor="let item of navItems"
+          (click)="scrollToSection(item.section)"
+          class="text-amber-800 hover:text-amber-600 hover:bg-amber-50 py-3 px-4 rounded-lg cursor-pointer transition-all duration-300"
+        >
+          {{ item.label }}
         </a>
-        <a (click)="scrollToSection('testimonials')"
-           class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
-          Testimonios
-        </a>
-        <a (click)="scrollToSection('contact')"
-           class="text-amber-800 hover:text-amber-600 py-2 cursor-pointer" role="button" tabindex="0">
-          Contacto
-        </a>
+        <div
+          class="flex flex-col space-y-2 pt-4 border-t border-amber-200/50 mt-4"
+        >
+          <button
+            class="text-amber-800 hover:bg-amber-50 py-3 px-4 rounded-lg text-left transition-all duration-300"
+            (click)="redirectTo('/login')"
+          >
+            Iniciar Sesión
+          </button>
+          <button
+            class="bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300"
+            (click)="redirectTo('/register')"
+          >
+            Registrarse
+          </button>
+        </div>
       </nav>
     </div>
   </div>
 </header>
 
-<section class="py-20 px-4">
-  <div class="max-w-7xl mx-auto text-center">
+<section
+  class="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100"
+>
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div
+      class="floating-circle absolute top-20 left-10 w-32 h-32 bg-amber-300/20 rounded-full blur-xl"
+    ></div>
+    <div
+      class="floating-circle-delayed absolute top-40 right-20 w-24 h-24 bg-orange-300/30 rounded-full blur-lg"
+    ></div>
+    <div
+      class="floating-circle-slow absolute bottom-32 left-1/4 w-40 h-40 bg-amber-400/15 rounded-full blur-2xl"
+    ></div>
 
-    <h1 class="text-5xl md:text-6xl font-bold text-amber-900 mb-6 leading-tight">
-      Gestiona tu Kiosco con
-      <span class="text-amber-600 block">Inteligencia Total</span>
-    </h1>
+    <div class="absolute inset-0 opacity-5">
+      <div class="dots-pattern"></div>
+    </div>
+  </div>
 
-    <p class="text-xl text-amber-700 mb-8 max-w-3xl mx-auto leading-relaxed">
-      Sistema completo de gestión de inventario diseñado específicamente para kioscos.
-      Controla productos, ventas, stock y genera reportes automáticos para maximizar tus ganancias.
+  <div class="relative z-10 max-w-7xl mx-auto px-4 py-20 text-center">
+    <div class="mb-8">
+      <h1
+        class="text-5xl md:text-7xl font-bold text-amber-900 mb-6 leading-tight"
+      >
+        <span class="inline-block animate-fade-in-up"
+          >Gestiona tu Kiosco con</span
+        >
+        <span
+          class="block bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 bg-clip-text animate-fade-in-up animation-delay-200"
+        >
+          Inteligencia Total
+        </span>
+      </h1>
+    </div>
+
+    <p
+      class="text-xl md:text-2xl text-amber-700/80 mb-12 max-w-4xl mx-auto leading-relaxed animate-fade-in-up animation-delay-400"
+    >
+      Sistema completo de gestión de inventario diseñado específicamente para
+      kioscos.
+      <span class="block mt-2 font-medium text-amber-800">
+        Controla productos, ventas, stock y genera reportes automáticos para
+        maximizar tus ganancias.
+      </span>
     </p>
 
-    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">      <button
-        class="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-200 hover:-translate-y-0.5"
-        (click)="redirectTo('/login')">
-        Iniciar Sesión
-      </button>
+    <div
+      class="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-fade-in-up animation-delay-600"
+    >
       <button
-        class="border-2 border-amber-600 text-amber-600 hover:bg-amber-50 px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-200 hover:-translate-y-0.5"
-        (click)="redirectTo('/register')">
-        Registrarse
+        class="group relative bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white px-10 py-5 text-xl rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-amber-500/25"
+        (click)="redirectTo('/login')"
+      >
+        <span class="relative z-10 flex items-center justify-center">
+          <svg
+            class="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+            />
+          </svg>
+          Iniciar Sesión
+        </span>
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        ></div>
+      </button>
+
+      <button
+        class="group relative border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white px-10 py-5 text-xl rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-amber-500/25 backdrop-blur-sm bg-white/80"
+        (click)="redirectTo('/register')"
+      >
+        <span class="relative z-10 flex items-center justify-center">
+          <svg
+            class="h-6 w-6 mr-3 group-hover:scale-110 transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+            />
+          </svg>
+          Registrarse
+        </span>
       </button>
     </div>
-    </div>
-</section>
 
-<section id="features" class="py-20 px-4 bg-white">
-  <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-16">
-      <h2 class="text-4xl font-bold text-amber-900 mb-4">
-        Todo lo que necesitas para tu kiosco
-      </h2>
-      <p class="text-xl text-amber-700 max-w-2xl mx-auto">
-        Herramientas profesionales diseñadas para simplificar la gestión diaria de tu negocio
-      </p>
-    </div>
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div
+      class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-fade-in-up animation-delay-800"
+    >
       <div
-        *ngFor="let feature of features; trackBy: trackByFeatureTitle"
-        class="bg-white border border-amber-200 rounded-lg p-6 hover:shadow-xl transition-all duration-300">
-
-        <svg class="h-12 w-12 text-amber-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIconPath(feature.icon)"/>
-        </svg>
-
-        <h3 class="text-xl font-semibold text-amber-900 mb-3">{{ feature.title }}</h3>
-
-        <p class="text-amber-700 leading-relaxed">{{ feature.description }}</p>
+        class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-amber-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+      >
+        <div class="text-3xl font-bold text-amber-600 mb-2">1000+</div>
+        <div class="text-amber-700 font-medium">Kioscos Activos</div>
+      </div>
+      <div
+        class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-amber-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+      >
+        <div class="text-3xl font-bold text-amber-600 mb-2">99%</div>
+        <div class="text-amber-700 font-medium">Satisfacción</div>
+      </div>
+      <div
+        class="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-amber-200/50 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+      >
+        <div class="text-3xl font-bold text-amber-600 mb-2">24/7</div>
+        <div class="text-amber-700 font-medium">Soporte</div>
       </div>
     </div>
   </div>
 </section>
 
-<section id="testimonials" class="py-20 px-4 bg-gradient-to-r from-amber-50 to-orange-50">
-  <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-16">
-      <h2 class="text-4xl font-bold text-amber-900 mb-4">
+<section id="features" class="py-24 px-4 bg-white relative overflow-hidden">
+  <div
+    class="absolute inset-0 bg-gradient-to-b from-transparent via-amber-50/30 to-transparent"
+  ></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto">
+    <div class="text-center mb-20">
+      <div class="inline-block mb-4">
+        <span
+          class="bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-medium"
+        >
+          Características Principales
+        </span>
+      </div>
+      <h2 class="text-4xl md:text-5xl font-bold text-amber-900 mb-6">
+        Todo lo que necesitas para tu kiosco
+      </h2>
+      <p class="text-xl text-amber-700 max-w-3xl mx-auto leading-relaxed">
+        Herramientas profesionales diseñadas para simplificar la gestión diaria
+        de tu negocio
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div
+        *ngFor="
+          let feature of features;
+          trackBy: trackByFeatureTitle;
+          let i = index
+        "
+        class="group relative bg-white/80 backdrop-blur-sm border border-amber-200/50 rounded-2xl p-8 hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-fade-in-up"
+        [style.animation-delay]="i * 100 + 'ms'"
+      >
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/5 to-amber-400/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        ></div>
+
+        <div class="relative mb-6">
+          <div
+            class="absolute inset-0 bg-amber-400/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"
+          ></div>
+          <div
+            class="relative w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300"
+          >
+            <svg
+              class="h-8 w-8 text-white group-hover:scale-110 transition-transform duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                [attr.d]="getIconPath(feature.icon)"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <h3
+          class="text-xl font-bold text-amber-900 mb-4 group-hover:text-amber-700 transition-colors duration-300"
+        >
+          {{ feature.title }}
+        </h3>
+
+        <p class="text-amber-700/80 leading-relaxed">
+          {{ feature.description }}
+        </p>
+
+        <div
+          class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        >
+          <svg
+            class="h-5 w-5 text-amber-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section
+  id="testimonials"
+  class="py-24 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 relative overflow-hidden"
+>
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div
+      class="floating-circle absolute top-20 right-10 w-32 h-32 bg-orange-300/20 rounded-full blur-xl"
+    ></div>
+    <div
+      class="floating-circle-delayed absolute bottom-40 left-20 w-24 h-24 bg-amber-300/30 rounded-full blur-lg"
+    ></div>
+  </div>
+
+  <div class="relative z-10 max-w-7xl mx-auto">
+    <div class="text-center mb-20">
+      <div class="inline-block mb-4">
+        <span
+          class="bg-white/80 backdrop-blur-sm text-amber-800 px-4 py-2 rounded-full text-sm font-medium border border-amber-200/50"
+        >
+          Testimonios
+        </span>
+      </div>
+      <h2 class="text-4xl md:text-5xl font-bold text-amber-900 mb-6">
         Lo que dicen nuestros clientes
       </h2>
-      <p class="text-xl text-amber-700 max-w-2xl mx-auto">
-        Más de 1,000 kioscos confían en KioscoManager para optimizar su gestión diaria
+      <p class="text-xl text-amber-700 max-w-3xl mx-auto leading-relaxed">
+        Más de 1,000 kioscos confían en KioscoManager para optimizar su gestión
+        diaria
       </p>
     </div>
 
     <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
       <div
-        *ngFor="let testimonial of testimonials; trackBy: trackByTestimonialId"
-        class="bg-white rounded-lg shadow-lg border border-amber-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer"
+        *ngFor="
+          let testimonial of testimonials;
+          trackBy: trackByTestimonialId;
+          let i = index
+        "
+        class="group bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-amber-200/50 p-8 hover:shadow-2xl transition-all duration-500 cursor-pointer hover:scale-105 animate-fade-in-up"
+        [style.animation-delay]="i * 150 + 'ms'"
         tabindex="0"
-        role="article">
-
-        <div class="flex items-center mb-4" [attr.aria-label]="'Calificación: ' + testimonial.rating + ' estrellas'">
-          <svg
-            *ngFor="let star of getStarsArray(testimonial.rating)"
-            class="h-5 w-5 text-amber-400 fill-current mr-1"
-            viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
+        role="article"
+      >
+        <div
+          class="flex items-center mb-6"
+          [attr.aria-label]="
+            'Calificación: ' + testimonial.rating + ' estrellas'
+          "
+        >
+          <div class="flex space-x-1">
+            <svg
+              *ngFor="let star of getStarsArray(testimonial.rating)"
+              class="h-5 w-5 text-amber-400 fill-current group-hover:scale-110 transition-transform duration-300"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+              />
+            </svg>
+          </div>
         </div>
 
-        <blockquote class="text-amber-800 mb-6 leading-relaxed italic">
+        <blockquote
+          class="text-amber-800 mb-8 leading-relaxed italic text-lg relative"
+        >
           "{{ testimonial.comment }}"
         </blockquote>
 
         <div class="flex items-center">
-          <div class="w-12 h-12 bg-gradient-to-br from-amber-200 to-amber-300 rounded-full mr-4 flex items-center justify-center overflow-hidden">
-            <img *ngIf="testimonial.avatar;"
-                 ngSrc="{{ testimonial.avatar }}"
-                 [alt]="testimonial.name"
-                 width="48"
-                 height="48"
-                 class="w-full h-full object-cover rounded-full" />
+          <div
+            class="relative w-14 h-14 bg-gradient-to-br from-amber-200 to-amber-300 rounded-full mr-4 flex items-center justify-center overflow-hidden shadow-lg"
+          >
+            <img
+              *ngIf="testimonial.avatar"
+              [ngSrc]="testimonial.avatar"
+              [alt]="testimonial.name"
+              width="56"
+              height="56"
+              class="w-full h-full object-cover rounded-full"
+            />
+            <div
+              *ngIf="!testimonial.avatar"
+              class="text-amber-700 font-bold text-lg"
+            >
+              {{ testimonial.name.charAt(0) }}
+            </div>
           </div>
 
-          <div>
-            <div class="font-semibold text-amber-900 text-lg">
+          <div class="flex-1">
+            <div class="font-bold text-amber-900 text-lg">
               {{ testimonial.name }}
             </div>
             <div class="text-amber-700 text-sm">
@@ -164,75 +431,133 @@
           </div>
         </div>
 
-        <div class="mt-4 flex items-center text-amber-600 text-sm">
-          <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <span>Cliente verificado</span>
+        <div class="mt-6 flex items-center text-amber-600 text-sm">
+          <div
+            class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-2"
+          >
+            <svg
+              class="h-3 w-3 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <span class="font-medium">Cliente verificado</span>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="py-20 px-4 bg-gradient-to-r from-amber-100 to-orange-100">
-  <div class="max-w-7xl mx-auto">
-    <div class="grid lg:grid-cols-2 gap-12 items-center">
+<section class="py-24 px-4 bg-white relative overflow-hidden">
+  <div
+    class="absolute inset-0 bg-gradient-to-r from-amber-50/50 to-orange-50/50"
+  ></div>
 
-      <div>
-        <h2 class="text-4xl font-bold text-amber-900 mb-8">
+  <div class="relative z-10 max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div class="order-2 lg:order-1">
+        <div class="mb-8">
+          <span
+            class="bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-medium"
+          >
+            Optimización en Tiempo Real
+          </span>
+        </div>
+
+        <h2
+          class="text-4xl md:text-5xl font-bold text-amber-900 mb-8 leading-tight"
+        >
           Optimiza tu kiosco en tiempo real
-        </h2>        <div class="space-y-8">
+        </h2>
+
+        <div class="space-y-8">
           <div
-            *ngFor="let benefit of benefits; trackBy: trackByBenefit"
-            class="flex items-start space-x-4 group">
-
-            <div class="flex-shrink-0 w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center group-hover:bg-amber-700 transition-colors">
-              <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getIconPath(benefit.icon)"/>
-              </svg>
+            *ngFor="
+              let benefit of benefits;
+              trackBy: trackByBenefit;
+              let i = index
+            "
+            class="flex items-start space-x-6 group animate-fade-in-up"
+            [style.animation-delay]="i * 100 + 'ms'"
+          >
+            <div class="flex-shrink-0 relative">
+              <div
+                class="absolute inset-0 bg-amber-400/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"
+              ></div>
+              <div
+                class="relative w-14 h-14 bg-gradient-to-br from-amber-600 to-amber-700 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg"
+              >
+                <svg
+                  class="h-7 w-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    [attr.d]="getIconPath(benefit.icon)"
+                  />
+                </svg>
+              </div>
             </div>
-
             <div class="flex-1">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="font-semibold text-amber-900 text-lg">
+              <div class="flex items-center justify-between mb-3">
+                <h3
+                  class="font-bold text-amber-900 text-xl group-hover:text-amber-700 transition-colors duration-300"
+                >
                   {{ benefit.title }}
                 </h3>
                 <span
                   *ngIf="benefit.metric"
-                  class="bg-amber-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  class="bg-gradient-to-r from-amber-600 to-amber-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg"
+                >
                   {{ benefit.metric }}
                 </span>
               </div>
-              <p class="text-amber-700 leading-relaxed mb-3">
+              <p class="text-amber-700/80 leading-relaxed text-lg">
                 {{ benefit.description }}
               </p>
             </div>
           </div>
         </div>
       </div>
-      <div class="relative">
-        <div class="bg-white rounded-2xl shadow-xl p-8 border border-amber-200">
+
+      <div class="order-1 lg:order-2 relative">
+        <div
+          class="relative bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-amber-200/50"
+        >
           <img
-            ngSrc="https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            [ngSrc]="dashboardImage"
             alt="Panel de gestión de inventario en kiosco"
             width="600"
             height="400"
             priority
-            class="rounded-lg w-full h-auto">
+            class="rounded-2xl w-full h-auto shadow-lg"
+          />
         </div>
 
-        <div class="absolute -top-6 -right-6 bg-white rounded-lg shadow-lg p-4 border border-amber-200">
-          <div class="flex items-center space-x-2">
-            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span class="text-sm font-medium text-amber-900">Sistema Activo</span>
-          </div>
-        </div>
-
-        <div class="absolute -bottom-6 -left-6 bg-white rounded-lg shadow-lg p-4 border border-amber-200">
+        <div
+          class="absolute -bottom-6 -left-6 bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-amber-200/50 animate-float animation-delay-500"
+        >
           <div class="text-center">
-            <div class="text-2xl font-bold text-amber-600">+40%</div>
-            <div class="text-xs text-amber-700">Aumento en ventas</div>
+            <div
+              class="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent"
+            >
+              +40%
+            </div>
+            <div class="text-xs text-amber-700 font-medium">
+              Aumento en ventas
+            </div>
           </div>
         </div>
       </div>
@@ -240,92 +565,157 @@
   </div>
 </section>
 
-<section id="contact"  class="py-20 px-4 bg-gradient-to-r from-amber-600 to-orange-600 relative overflow-hidden">
-  <div class="absolute inset-0 opacity-10">
-    <svg class="w-full h-full" viewBox="0 0 100 100" fill="none">
-      <defs>
-        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
-        </pattern>
-      </defs>
-      <rect width="100" height="100" fill="url(#grid)"/>
-    </svg>
+<section
+  id="contact"
+  class="py-24 px-4 bg-gradient-to-br from-amber-600 via-amber-700 to-orange-600 relative overflow-hidden"
+>
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-0 left-0 w-full h-full opacity-10">
+      <svg class="w-full h-full" viewBox="0 0 100 100" fill="none">
+        <defs>
+          <pattern
+            id="grid"
+            width="10"
+            height="10"
+            patternUnits="userSpaceOnUse"
+          >
+            <path
+              d="M 10 0 L 0 0 0 10"
+              fill="none"
+              stroke="white"
+              stroke-width="0.5"
+            />
+          </pattern>
+        </defs>
+        <rect width="100" height="100" fill="url(#grid)" />
+      </svg>
+    </div>
+
+    <div
+      class="floating-circle absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl"
+    ></div>
+    <div
+      class="floating-circle-delayed absolute bottom-20 right-10 w-24 h-24 bg-white/20 rounded-full blur-lg"
+    ></div>
   </div>
 
-  <div class="max-w-7xl mx-auto text-center relative z-10">
+  <div class="relative z-10 max-w-7xl mx-auto text-center">
     <div class="max-w-4xl mx-auto">
-      <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+      <h2 class="text-4xl md:text-6xl font-bold text-white mb-8 leading-tight">
         ¿Listo para transformar tu kiosco?
       </h2>
 
-      <p class="text-xl text-amber-100 mb-8 max-w-2xl mx-auto leading-relaxed">
-        Únete a más de 1000 kioscos que ya optimizaron su gestión con KioscoManager
+      <p
+        class="text-xl md:text-2xl text-amber-100 mb-12 max-w-3xl mx-auto leading-relaxed"
+      >
+        Únete a más de 1000 kioscos que ya optimizaron su gestión con
+        KioscoManager
       </p>
 
-      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+      <div class="flex flex-col sm:flex-row gap-6 justify-center mb-16">
         <button
-          class="bg-white text-amber-600 hover:bg-amber-50 px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
-          (click)="redirectTo('/login')">
-          <span class="flex items-center justify-center">
+          class="group relative bg-white text-amber-600 hover:bg-amber-50 px-10 py-5 text-xl rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-white/25"
+          (click)="redirectTo('/login')"
+        >
+          <span class="relative z-10 flex items-center justify-center">
+            <svg
+              class="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+              />
+            </svg>
             Iniciar Sesión
           </span>
         </button>
 
         <button
-          class="border-2 border-white text-white hover:bg-white hover:text-amber-600 px-8 py-4 text-lg rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
-          (click)="redirectTo('/register')">
-          <span class="flex items-center justify-center">
+          class="group relative border-2 border-white text-white hover:bg-white hover:text-amber-600 px-10 py-5 text-xl rounded-2xl font-bold transition-all duration-300 transform hover:scale-105 backdrop-blur-sm"
+          (click)="redirectTo('/register')"
+        >
+          <span class="relative z-10 flex items-center justify-center">
+            <svg
+              class="h-6 w-6 mr-3 group-hover:scale-110 transition-transform duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+              />
+            </svg>
             Registrarse
           </span>
         </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
-        <div class="text-center">
-          <div class="text-3xl font-bold text-white mb-2">
-            1000+
-          </div>
-          <div class="text-amber-100 text-sm">
-            Kioscos activos
-          </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div
+          class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300"
+        >
+          <div class="text-4xl font-bold text-white mb-2">1000+</div>
+          <div class="text-amber-100 font-medium">Kioscos activos</div>
         </div>
 
-        <div class="text-center">
-          <div class="text-3xl font-bold text-white mb-2">
-            99%
-          </div>
-          <div class="text-amber-100 text-sm">
-            Tasa de éxito
-          </div>
+        <div
+          class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300"
+        >
+          <div class="text-4xl font-bold text-white mb-2">99%</div>
+          <div class="text-amber-100 font-medium">Tasa de éxito</div>
         </div>
 
-        <div class="text-center">
-          <div class="text-3xl font-bold text-white mb-2">
-            24/7
-          </div>
-          <div class="text-amber-100 text-sm">
-            Soporte disponible
-          </div>
+        <div
+          class="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/20 transition-all duration-300"
+        >
+          <div class="text-4xl font-bold text-white mb-2">24/7</div>
+          <div class="text-amber-100 font-medium">Soporte disponible</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<footer class="bg-amber-900 text-amber-100">
-  <div class="max-w-7xl mx-auto px-4 py-12">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
+<footer
+  class="bg-gradient-to-br from-amber-900 via-amber-800 to-amber-900 text-amber-100 relative overflow-hidden"
+>
+  <div
+    class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"
+  ></div>
 
+  <div class="relative z-10 max-w-7xl mx-auto px-4 py-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
       <div class="lg:col-span-2">
-        <div class="flex items-center space-x-2 mb-6">
-          <svg class="h-8 w-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-          </svg>
+        <div class="flex items-center space-x-3 mb-6">
+          <div
+            class="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg"
+          >
+            <svg
+              class="h-6 w-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+          </div>
           <span class="text-2xl font-bold text-white">KioscoManager</span>
         </div>
 
-        <p class="text-amber-300 mb-6 leading-relaxed max-w-sm">
+        <p class="text-amber-300 mb-8 leading-relaxed max-w-sm">
           La solución completa para la gestión inteligente de tu kiosco.
           Optimiza inventario, ventas y reportes en una sola plataforma.
         </p>
@@ -334,11 +724,22 @@
           <a
             *ngFor="let social of socialLinks"
             [attr.aria-label]="social.name"
-            class="w-10 h-10 bg-amber-800 hover:bg-amber-700 rounded-lg flex items-center justify-center transition-colors cursor-pointer"
+            class="group w-12 h-12 bg-amber-800/50 hover:bg-amber-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-amber-700/50"
             tabindex="0"
-            role="button">
-            <svg class="h-5 w-5 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getSocialIconPath(social.icon)"/>
+            role="button"
+          >
+            <svg
+              class="h-5 w-5 text-amber-300 group-hover:text-white transition-colors duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                [attr.d]="getSocialIconPath(social.icon)"
+              />
             </svg>
           </a>
         </div>
@@ -346,26 +747,39 @@
 
       <div
         *ngFor="let section of footerSections; trackBy: trackBySection"
-        class="lg:col-span-1">
-        <h3 class="text-white font-semibold mb-4">{{ section.title }}</h3>
-        <ul class="space-y-3">
+        class="lg:col-span-1"
+      >
+        <h3 class="text-white font-bold mb-6 text-lg">{{ section.title }}</h3>
+        <ul class="space-y-4">
           <li *ngFor="let link of section.links; trackBy: trackByLink">
             <a
               (click)="onLinkClick(link)"
-              class="text-amber-300 hover:text-amber-200 transition-colors cursor-pointer text-sm"
+              class="text-amber-300 hover:text-amber-200 transition-all duration-300 cursor-pointer text-sm hover:translate-x-1 inline-block"
               [attr.aria-label]="link.text"
               tabindex="0"
-              role="link">
+              role="link"
+            >
               {{ link.text }}
               <svg
                 *ngIf="link.external"
-                class="inline h-3 w-3 ml-1"
+                class="inline h-3 w-3 ml-1 opacity-60"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
-                aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 13v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 3h6m0 0v6m0-6L10 14"/>
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M18 13v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 3h6m0 0v6m0-6L10 14"
+                />
               </svg>
             </a>
           </li>
@@ -373,11 +787,26 @@
       </div>
     </div>
   </div>
-  <div class="border-t border-amber-800">
+
+  <div class="border-t border-amber-800/50 bg-amber-900/50 backdrop-blur-sm">
     <div class="max-w-7xl mx-auto px-4 py-6">
-      <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+      <div
+        class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0"
+      >
         <div class="text-amber-300 text-sm">
           © {{ currentYear }} KioscoManager. Todos los derechos reservados.
+        </div>
+        <div class="flex items-center space-x-6 text-sm text-amber-300">
+          <a
+            href="#"
+            class="hover:text-amber-200 transition-colors duration-300"
+            >Política de Privacidad</a
+          >
+          <a
+            href="#"
+            class="hover:text-amber-200 transition-colors duration-300"
+            >Términos de Uso</a
+          >
         </div>
       </div>
     </div>

@@ -1,122 +1,586 @@
-<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 page-container">
-  <app-navbar>
-  </app-navbar>
+<div
+  class="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 relative"
+>
+  <app-navbar></app-navbar>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
     <div class="mb-8">
-      <h2 class="text-2xl font-bold text-amber-900 mb-2">Registrar Compra</h2>
-      <p class="text-sm text-amber-700">Ingrese los productos que desea registrar en el inventario</p>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6 mb-6 hover:shadow-xl transition-shadow">
-      <h2 class="text-xl font-bold text-amber-800 mb-4">Información de Productos</h2>
-
-      <app-product-search
-        (productSelected)="onProductSelected($event)"
-        placeholder="Ingrese nombre o SKU del producto"
-        label="Buscar Producto (por Nombre o SKU)"
-        [showPriceInfo]="true"
-        [showStockInfo]="true"
-        [showDescription]="true">
-      </app-product-search>
-
-      <div *ngIf="productoActual()">
-        <div class="bg-amber-50 p-4 rounded-md mb-4 border border-amber-100">
-          <p class="text-sm text-amber-800">
-            <span class="font-medium">SKU:</span> {{ productoActual()?.sku }}
-          </p>
-          <p class="text-sm text-amber-800">
-            <span class="font-medium">Nombre:</span> {{ productoActual()?.nombre }}
-          </p>
-          <p class="text-sm text-amber-800" *ngIf="productoActual()?.descripcion">
-            <span class="font-medium">Descripción:</span> {{ productoActual()?.descripcion }}
-          </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div class="form-group">
-            <label for="cantidad" class="block text-sm font-medium text-amber-700 mb-1">
-              Cantidad
-            </label>
-            <input type="number" id="cantidad" [ngModel]="cantidad()" (ngModelChange)="cantidad.set($event)"
-              class="px-3 py-2 w-full border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-              min="1" />
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div
+            class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
+          >
+            <svg
+              class="w-7 h-7 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+              />
+            </svg>
           </div>
-          <div class="form-group">
-            <label for="costoUnitario" class="block text-sm font-medium text-amber-700 mb-1">
-              Costo Unitario
-            </label>
-            <input type="number" id="costoUnitario" [ngModel]="costoUnitario()"
-              (ngModelChange)="costoUnitario.set($event)"
-              class="px-3 py-2 w-full border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-              min="0.01" step="0.01" />
+          <div>
+            <h1 class="text-3xl font-bold text-amber-900">Registrar Compra</h1>
+            <p class="text-amber-700">
+              Añade productos al inventario desde proveedores
+            </p>
           </div>
         </div>
 
-        <div class="flex justify-end">
-          <button type="button" (click)="agregarProducto()"
-            class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-            Agregar a la Compra
-          </button>
+        <div class="hidden lg:flex items-center space-x-4">
+          <div
+            class="bg-white/80 backdrop-blur-sm border-2 border-amber-200 rounded-xl px-4 py-2"
+          >
+            <div class="text-center">
+              <div class="text-lg font-bold text-amber-900">
+                {{ itemsCompra().length }}
+              </div>
+              <div class="text-xs text-amber-600">Productos</div>
+            </div>
+          </div>
+          <div
+            class="bg-white/80 backdrop-blur-sm border-2 border-purple-200 rounded-xl px-4 py-2"
+          >
+            <div class="text-center">
+              <div class="text-lg font-bold text-purple-600">
+                {{ calcularTotal() | currency : "ARS" : "symbol" : "1.0-0" }}
+              </div>
+              <div class="text-xs text-purple-500">Total</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <app-compra-detalle-list [items]="itemsCompra()" (eliminar)="eliminarProducto($event)"></app-compra-detalle-list>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2 space-y-6">
+        <div
+          class="mb-8 bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm"
+        >
+          <div class="flex items-center space-x-3 mb-6">
+            <div
+              class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-semibold text-amber-900">
+                Buscar Producto
+              </h2>
+              <p class="text-sm text-amber-600">
+                Busca por nombre o SKU para añadir al inventario
+              </p>
+            </div>
+          </div>
 
-    <div class="bg-white rounded-xl shadow-lg border border-amber-200 p-6 mb-6 hover:shadow-xl transition-shadow">
-      <h2 class="text-xl font-bold text-amber-800 mb-4">Información General</h2>
-
-      <div class="grid grid-cols-1 gap-4 mb-6">
-        <div class="form-group">
-          <label for="proveedor" class="block text-sm font-medium text-amber-700 mb-1">
-            Proveedor (opcional)
-          </label>
-          <input type="text" id="proveedor" [ngModel]="proveedor()" (ngModelChange)="proveedor.set($event)"
-            class="px-3 py-2 w-full border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-            placeholder="Nombre del proveedor" />
+          <app-product-search
+            (productSelected)="onProductSelected($event)"
+            placeholder="Ingrese nombre o SKU del producto"
+            label="Buscar Producto (por Nombre o SKU)"
+            [showPriceInfo]="true"
+            [showStockInfo]="true"
+            [showDescription]="true"
+          >
+          </app-product-search>
         </div>
 
-        <div class="form-group">
-          <label for="nota" class="block text-sm font-medium text-amber-700 mb-1">
-            Nota (opcional)
-          </label>
-          <textarea id="nota" [ngModel]="nota()" (ngModelChange)="nota.set($event)" rows="3"
-            class="px-3 py-2 w-full border border-amber-200 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-            placeholder="Notas adicionales sobre esta compra"></textarea>
+        <div
+          *ngIf="productoActual()"
+          class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm"
+        >
+          <div class="flex items-center space-x-3 mb-6">
+            <div
+              class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-amber-900">
+                Detalles del Producto
+              </h3>
+              <p class="text-sm text-amber-600">
+                Configura cantidad y costo de compra
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="bg-white/80 backdrop-blur-sm border border-amber-200 rounded-xl p-4 mb-6"
+          >
+            <div class="flex items-center space-x-4">
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-amber-100 to-orange-100 border-2 border-amber-200 rounded-xl flex items-center justify-center"
+              >
+                <svg
+                  class="w-6 h-6 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-sm font-semibold text-amber-900">
+                  {{ productoActual()?.nombre }}
+                </h4>
+                <div class="flex items-center space-x-4 mt-1">
+                  <span
+                    class="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded-full border border-amber-200"
+                  >
+                    SKU: {{ productoActual()?.sku }}
+                  </span>
+                  <span
+                    *ngIf="productoActual()?.categoriaNombre"
+                    class="text-xs text-amber-600 bg-amber-100 px-2 py-1 rounded-full border border-amber-200"
+                  >
+                    {{ productoActual()?.categoriaNombre }}
+                  </span>
+                </div>
+                <p
+                  *ngIf="productoActual()?.descripcion"
+                  class="text-xs text-amber-600 mt-2"
+                >
+                  {{ productoActual()?.descripcion }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="space-y-2">
+              <label
+                for="cantidad"
+                class="block text-sm font-semibold text-amber-800"
+              >
+                Cantidad a Comprar
+              </label>
+              <div class="relative">
+                <input
+                  type="number"
+                  id="cantidad"
+                  [ngModel]="cantidad()"
+                  (ngModelChange)="cantidad.set($event)"
+                  class="w-full bg-white/80 backdrop-blur-sm border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 rounded-xl py-3 px-4 text-amber-900 focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all duration-300"
+                  min="1"
+                  placeholder="Ej: 50"
+                />
+                <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                  <svg
+                    class="w-5 h-5 text-amber-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label
+                for="costoUnitario"
+                class="block text-sm font-semibold text-amber-800"
+              >
+                Costo Unitario
+              </label>
+              <div class="relative">
+                <input
+                  type="number"
+                  id="costoUnitario"
+                  [ngModel]="costoUnitario()"
+                  (ngModelChange)="costoUnitario.set($event)"
+                  class="w-full bg-white/80 backdrop-blur-sm border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 rounded-xl py-3 px-4 pl-12 text-amber-900 focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all duration-300"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+                <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                  <span class="text-amber-600 font-medium">$</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-medium text-green-700"
+                >Subtotal de este producto:</span
+              >
+              <span class="text-lg font-bold text-green-800">
+                {{
+                  cantidad() * costoUnitario()
+                    | currency : "ARS" : "symbol" : "1.2-2"
+                }}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="button"
+              (click)="agregarProducto()"
+              [disabled]="
+                !cantidad() ||
+                !costoUnitario() ||
+                cantidad() <= 0 ||
+                costoUnitario() <= 0
+              "
+              class="group bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              <span class="flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-200"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+                Agregar a la Compra
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <app-compra-detalle-list
+          [items]="itemsCompra()"
+          (eliminar)="eliminarProducto($event)"
+        ></app-compra-detalle-list>
+
+        <div
+          class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm"
+        >
+          <div class="flex items-center space-x-3 mb-6">
+            <div
+              class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-amber-900">
+                Información Adicional
+              </h3>
+              <p class="text-sm text-amber-600">
+                Datos opcionales sobre la compra
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div class="space-y-2">
+              <label
+                for="proveedor"
+                class="block text-sm font-semibold text-amber-800"
+              >
+                Proveedor
+                <span class="text-amber-600 font-normal">(opcional)</span>
+              </label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="proveedor"
+                  [ngModel]="proveedor()"
+                  (ngModelChange)="proveedor.set($event)"
+                  class="w-full bg-white/80 backdrop-blur-sm border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 rounded-xl py-3 px-4 pl-12 text-amber-900 focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all duration-300"
+                  placeholder="Nombre del proveedor"
+                />
+                <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                  <svg
+                    class="w-5 h-5 text-amber-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label
+                for="nota"
+                class="block text-sm font-semibold text-amber-800"
+              >
+                Notas
+                <span class="text-amber-600 font-normal">(opcional)</span>
+              </label>
+              <textarea
+                id="nota"
+                [ngModel]="nota()"
+                (ngModelChange)="nota.set($event)"
+                rows="4"
+                class="w-full bg-white/80 backdrop-blur-sm border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 rounded-xl py-3 px-4 text-amber-900 focus:outline-none focus:ring-4 focus:ring-amber-500/20 transition-all duration-300 resize-none"
+                placeholder="Notas adicionales sobre esta compra, condiciones especiales, etc."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-1">
+        <div
+          class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm sticky top-8"
+        >
+          <div class="flex items-center space-x-3 mb-6">
+            <div
+              class="w-8 h-8 bg-amber-500 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-amber-900">
+              Resumen de Compra
+            </h3>
+          </div>
+
+          <div class="space-y-4">
+            <div
+              class="bg-white/80 backdrop-blur-sm border border-amber-200 rounded-xl p-4"
+            >
+              <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm font-medium text-amber-700"
+                    >Total de Productos:</span
+                  >
+                  <span class="text-sm font-bold text-amber-900">{{
+                    itemsCompra().length
+                  }}</span>
+                </div>
+
+                <div class="border-t border-amber-200 pt-3">
+                  <div class="flex justify-between items-center">
+                    <span class="text-lg font-semibold text-amber-800"
+                      >Total a Pagar:</span
+                    >
+                    <span class="text-2xl font-bold text-purple-600">
+                      {{
+                        calcularTotal() | currency : "ARS" : "symbol" : "1.0-0"
+                      }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              *ngIf="proveedor()"
+              class="bg-blue-50 border border-blue-200 rounded-xl p-4"
+            >
+              <div class="flex items-center space-x-2 mb-2">
+                <svg
+                  class="w-4 h-4 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                  />
+                </svg>
+                <span class="text-sm font-semibold text-blue-800"
+                  >Proveedor</span
+                >
+              </div>
+              <p class="text-sm text-blue-700">{{ proveedor() }}</p>
+            </div>
+
+            <div
+              *ngIf="nota()"
+              class="bg-amber-100 border border-amber-200 rounded-xl p-4"
+            >
+              <div class="flex items-center space-x-2 mb-2">
+                <svg
+                  class="w-4 h-4 text-amber-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                <span class="text-sm font-semibold text-amber-800">Notas</span>
+              </div>
+              <p class="text-sm text-amber-700">{{ nota() }}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
   </main>
 
-  <div class="sticky-footer">
-    <div class="max-w-7xl mx-auto flex justify-between items-center sticky-footer-content">
-      <div class="flex items-center">
-        <span class="text-sm font-medium text-amber-700 mr-2">Total:</span>
-        <span class="text-lg font-bold text-amber-900">{{ calcularTotal() | currency:'ARS':'symbol':'1.2-2' }}</span>
-      </div>
+  <div
+    class="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-amber-100 to-orange-100 backdrop-blur-xl border-t-2 border-amber-200 shadow-2xl z-50"
+  >
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-medium text-amber-700"
+              >Total de la Compra:</span
+            >
+            <span class="text-2xl font-bold text-purple-600">
+              {{ calcularTotal() | currency : "ARS" : "symbol" : "1.0-0" }}
+            </span>
+          </div>
+          <div class="hidden sm:block w-px h-8 bg-amber-300"></div>
+          <div class="hidden sm:flex items-center space-x-2">
+            <span class="text-sm text-amber-600"
+              >{{ itemsCompra().length }} productos</span
+            >
+          </div>
+        </div>
 
-      <div class="flex space-x-3 sticky-footer-buttons">
-        <button type="button" (click)="cancelarCompra()"
-          class="inline-flex items-center px-4 py-2 border border-amber-300 rounded-md shadow-sm text-sm font-medium text-amber-700 bg-white hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors">
-          Cancelar
-        </button>
+        <div class="flex items-center space-x-3">
+          <button
+            type="button"
+            (click)="cancelarCompra()"
+            class="group bg-white hover:bg-amber-50 border-2 border-amber-300 hover:border-amber-400 text-amber-700 font-semibold py-3 px-6 rounded-2xl transition-all duration-300 transform hover:scale-105"
+          >
+            <span class="flex items-center">
+              <svg
+                class="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Cancelar
+            </span>
+          </button>
 
-        <button type="button" (click)="registrarCompra()" [disabled]="cargando() || itemsCompra().length === 0"
-          class="inline-flex items-center px-5 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:bg-amber-300 disabled:cursor-not-allowed transition-colors">
-          <span *ngIf="!cargando()">Registrar Compra</span>
-          <span *ngIf="cargando()">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
-              viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-              </path>
-            </svg>
-            Procesando...
-          </span>
-        </button>
+          <button
+            type="button"
+            (click)="registrarCompra()"
+            [disabled]="cargando() || itemsCompra().length === 0"
+            class="group bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold py-3 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            <span class="flex items-center">
+              <div
+                *ngIf="cargando()"
+                class="w-5 h-5 bg-white/20 rounded-lg flex items-center justify-center mr-3 animate-spin"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </div>
+              <svg
+                *ngIf="!cargando()"
+                class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+              <span>{{
+                cargando() ? "Procesando..." : "Registrar Compra"
+              }}</span>
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

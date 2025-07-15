@@ -1,3 +1,6 @@
+/* Estilos modernizados para el componente home */
+
+/* Variables CSS personalizadas */
 :root {
   --amber-50: #fffbeb;
   --amber-100: #fef3c7;
@@ -9,4 +12,441 @@
   --amber-700: #b45309;
   --amber-800: #92400e;
   --amber-900: #78350f;
+}
+
+/* Animaciones de elementos flotantes */
+.floating-circle {
+  animation: float 8s ease-in-out infinite;
+}
+
+.floating-circle-delayed {
+  animation: float 10s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+.floating-circle-slow {
+  animation: float 12s ease-in-out infinite;
+  animation-delay: -6s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-30px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(15px) rotate(240deg);
+  }
+}
+
+/* Patrón de puntos animado */
+.dots-pattern {
+  background-image: radial-gradient(circle, var(--amber-400) 1px, transparent 1px);
+  background-size: 25px 25px;
+  width: 100%;
+  height: 100%;
+  animation: dots-move 25s linear infinite;
+}
+
+@keyframes dots-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 25px 25px;
+  }
+}
+
+/* Animaciones de entrada */
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms;
+}
+
+.animation-delay-800 {
+  animation-delay: 800ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de entrada del menú móvil */
+.animate-fade-in-down {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animación de flotación para elementos */
+.animate-float {
+  animation: floatElement 3s ease-in-out infinite;
+}
+
+@keyframes floatElement {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Efectos de hover mejorados para el header */
+.header-nav-item {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--amber-600), var(--amber-500));
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+  }
+
+  &:hover::after {
+    width: 100%;
+  }
+}
+
+/* Efectos de glassmorphism mejorados */
+.glass-effect {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Botones con efectos avanzados */
+.btn-primary-modern {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  &:hover::before {
+    left: 100%;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(217, 119, 6, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+/* Efectos de tarjetas mejorados */
+.card-modern {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(217, 119, 6, 0.1), transparent);
+    transition: left 0.6s;
+  }
+
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+      0 25px 50px -12px rgba(0, 0, 0, 0.15),
+      0 0 0 1px rgba(217, 119, 6, 0.1);
+
+    &::before {
+      left: 100%;
+    }
+  }
+}
+
+/* Efectos de texto con gradiente */
+.text-gradient {
+  background: linear-gradient(135deg, var(--amber-600), var(--amber-800));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animaciones de scroll reveal */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Efectos de partículas en el fondo */
+.particles-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: var(--amber-400);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: particle-float 15s infinite linear;
+  }
+
+  &::before {
+    top: 20%;
+    left: 20%;
+    animation-delay: -5s;
+  }
+
+  &::after {
+    top: 60%;
+    right: 30%;
+    animation-delay: -10s;
+  }
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0;
+  }
+  10%, 90% {
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-100px) rotate(180deg);
+    opacity: 0.6;
+  }
+}
+
+/* Efectos de hover para iconos */
+.icon-hover-effect {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 8px 16px rgba(217, 119, 6, 0.3));
+  }
+}
+
+/* Animaciones de carga escalonada */
+.stagger-animation {
+  &:nth-child(1) { animation-delay: 0ms; }
+  &:nth-child(2) { animation-delay: 100ms; }
+  &:nth-child(3) { animation-delay: 200ms; }
+  &:nth-child(4) { animation-delay: 300ms; }
+  &:nth-child(5) { animation-delay: 400ms; }
+  &:nth-child(6) { animation-delay: 500ms; }
+}
+
+/* Efectos de scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Indicador de scroll */
+.scroll-indicator {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -30px, 0);
+  }
+  70% {
+    transform: translate3d(0, -15px, 0);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+/* Efectos de testimoniales */
+.testimonial-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Responsive mejorado */
+@media (max-width: 1024px) {
+  .floating-circle,
+  .floating-circle-delayed,
+  .floating-circle-slow {
+    display: none;
+  }
+
+  .card-modern:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+@media (max-width: 768px) {
+  .dots-pattern {
+    display: none;
+  }
+
+  .animate-fade-in-up {
+    animation-duration: 0.6s;
+  }
+
+  .btn-primary-modern:hover {
+    transform: translateY(-1px) scale(1.01);
+  }
+}
+
+@media (max-width: 640px) {
+  .particles-bg {
+    display: none;
+  }
+
+  .text-gradient {
+    font-size: 2.5rem;
+  }
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Modo oscuro (preparado para futuras implementaciones) */
+@media (prefers-color-scheme: dark) {
+  .glass-effect {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Efectos para pantallas táctiles */
+@media (hover: none) and (pointer: coarse) {
+  .card-modern:hover,
+  .btn-primary-modern:hover,
+  .icon-hover-effect:hover {
+    transform: none;
+  }
+}
+
+/* Optimizaciones de performance */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* Efectos de loading */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Efectos de focus mejorados para accesibilidad */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--amber-600);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Transiciones suaves para todos los elementos interactivos */
+button,
+a,
+input,
+select,
+textarea {
+  transition: all 0.2s ease;
 }

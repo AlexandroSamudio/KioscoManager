@@ -91,7 +91,7 @@
               <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
               <p class="text-sm font-medium text-amber-700">Valor Inventario</p>
             </div>
-            <p class="text-3xl font-bold text-amber-900 mb-1">$125,450</p>
+            <p class="text-3xl font-bold text-amber-900 mb-1">{{ capitalInvertido() | number}}</p>
             <p class="text-sm text-amber-600 font-medium">Capital invertido</p>
           </div>
           <div
@@ -123,7 +123,7 @@
               <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
               <p class="text-sm font-medium text-amber-700">Total Productos</p>
             </div>
-            <p class="text-3xl font-bold text-amber-900 mb-1">342</p>
+            <p class="text-3xl font-bold text-amber-900 mb-1">{{ totalProductos() | number }}</p>
             <p class="text-sm text-blue-600 font-medium">En catálogo</p>
           </div>
           <div

@@ -21,7 +21,7 @@ import { ProductoMasVendido } from '../../_models/producto-mas-vendido.model';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { CommonModule } from '@angular/common';
 import { VentaService } from '../../_services/venta.service';
-import { forkJoin, filter, Subscription } from 'rxjs';
+import { forkJoin, filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LineChartComponent } from '../line-chart/line-chart.component';
 
@@ -47,6 +47,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
   totalVentasDia: WritableSignal<number> = signal(0);
   ventasRecientes: WritableSignal<Venta[]> = signal([]);
   productosMasVendidosDelDia: WritableSignal<ProductoMasVendido[]> = signal([]);
+  capitalInvertido: WritableSignal<number> = signal(0);
+  totalProductos: WritableSignal<number> = signal(0);
 
   hayDatosDisponibles = computed(() => {
     return (
@@ -108,14 +110,18 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       totalVentas: this.ventaService.getTotalVentasDia(),
       recientes: this.ventaService.getVentasRecientes(),
       masVendidos: this.productoService.getProductosMasVendidosDelDia(),
+      capital: this.productoService.getCapitalInvertido(),
+      productosTotal: this.productoService.getTotalProductos(),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ lowStock, totalVentas, recientes, masVendidos }) => {
+        next: ({ lowStock, totalVentas, recientes, masVendidos, capital, productosTotal }) => {
           this.lowestStockProducts.set(lowStock);
           this.totalVentasDia.set(totalVentas);
           this.ventasRecientes.set(recientes);
           this.productosMasVendidosDelDia.set(masVendidos);
+          this.capitalInvertido.set(capital);
+          this.totalProductos.set(productosTotal);
           this.updateInProgress = false;
         },
         error: () => {
@@ -152,6 +158,20 @@ export class DashboardComponent implements OnInit, AfterViewInit {
       .subscribe((data: ProductoMasVendido[]) =>
         this.productosMasVendidosDelDia.set(data)
       );
+  }
+
+  getCapitalInvertido(): void {
+    this.productoService
+      .getCapitalInvertido()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data: number) => this.capitalInvertido.set(data));
+  }
+
+  getTotalProductos(): void {
+    this.productoService
+      .getTotalProductos()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((data: number) => this.totalProductos.set(data));
   }
 
   private updateCharts(): void {

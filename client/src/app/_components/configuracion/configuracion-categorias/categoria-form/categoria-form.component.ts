@@ -41,7 +41,6 @@ export class CategoriaFormComponent implements OnInit, OnChanges {
   isEditMode = signal<boolean>(false);
   categoriaForm: FormGroup;
   isSubmitting = signal<boolean>(false);
-  errorMessage = signal<string | null>(null);
 
   constructor() {
     this.categoriaForm = this.fb.group({
@@ -83,7 +82,6 @@ export class CategoriaFormComponent implements OnInit, OnChanges {
     }
 
     this.isSubmitting.set(true);
-    this.errorMessage.set(null);
 
     const formValue = this.categoriaForm.value;
 
@@ -98,17 +96,7 @@ export class CategoriaFormComponent implements OnInit, OnChanges {
           next: (categoria: Categoria) => {
             this.categoriaSaved.emit(categoria);
             this.resetForm();
-          },
-          error: (error) => {
-            console.error('Error al actualizar categoría:', error);
-            if (error.status === 409) {
-              this.errorMessage.set('Ya existe una categoría con este nombre.');
-            } else {
-              this.errorMessage.set(
-                'Ocurrió un error al actualizar la categoría. Por favor, inténtalo de nuevo.'
-              );
-            }
-          },
+          }
         });
     } else {
       this.categoriaService
@@ -121,24 +109,13 @@ export class CategoriaFormComponent implements OnInit, OnChanges {
           next: (categoria: Categoria) => {
             this.categoriaSaved.emit(categoria);
             this.resetForm();
-          },
-          error: (error) => {
-            console.error('Error al crear categoría:', error);
-            if (error.status === 409) {
-              this.errorMessage.set('Ya existe una categoría con este nombre.');
-            } else {
-              this.errorMessage.set(
-                'Ocurrió un error al crear la categoría. Por favor, inténtalo de nuevo.'
-              );
-            }
-          },
+          }
         });
     }
   }
 
   resetForm(): void {
     this.categoriaForm.reset();
-    this.errorMessage.set(null);
     if (this.isEditMode()) {
       this.isEditMode.set(false);
     }

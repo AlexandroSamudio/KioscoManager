@@ -1,76 +1,223 @@
-<app-navbar></app-navbar>
+<div
+  class="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100 relative"
+>
+  <app-navbar></app-navbar>
 
-<div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
-      <h2 class="text-2xl font-bold text-amber-900 mb-4">
-        Reportes y Estadísticas
-      </h2>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div
+            class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg"
+          >
+            <svg
+              class="w-7 h-7 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-amber-900">
+              Reportes y Estadísticas
+            </h1>
+            <p class="text-amber-700">
+              Análisis detallado del rendimiento de tu kiosco
+            </p>
+          </div>
+        </div>
 
-      <div class="bg-white p-4 rounded-lg shadow mb-4">
-        <h3 class="text-sm font-medium text-gray-700 mb-2">Filtros rápidos</h3>
+        <div class="hidden lg:flex items-center space-x-3">
+          <button
+            class="flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-300 rounded-xl text-blue-700 font-medium transition-all duration-200 hover:scale-105"
+          >
+            <svg
+              class="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Exportar PDF
+          </button>
+          <button
+            class="flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm border-2 border-green-200 hover:border-green-300 rounded-xl text-green-700 font-medium transition-all duration-200 hover:scale-105"
+          >
+            <svg
+              class="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Exportar Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div
+        class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm"
+      >
+        <div class="flex items-center space-x-3 mb-4">
+          <div
+            class="w-8 h-8 bg-amber-500 rounded-xl flex items-center justify-center"
+          >
+            <svg
+              class="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-amber-900">Filtros Rápidos</h3>
+        </div>
         <app-date-range-picker
           (rangeSelected)="onRangeSelected($event)"
         ></app-date-range-picker>
       </div>
 
-      <form
-        [formGroup]="fechasForm"
-        (ngSubmit)="aplicarFiltros()"
-        class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap items-end gap-4"
+      <div
+        class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm"
       >
-        <div class="flex-1 min-w-[200px]">
-          <label
-            for="fechaInicio"
-            class="block text-sm font-medium text-gray-700 mb-1"
-            >Fecha Inicio</label
+        <div class="flex items-center space-x-3 mb-4">
+          <div
+            class="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center"
           >
-          <input
-            type="date"
-            id="fechaInicio"
-            formControlName="fechaInicio"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
-          />
+            <svg
+              class="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-amber-900">
+            Rango Personalizado
+          </h3>
         </div>
-        <div class="flex-1 min-w-[200px]">
-          <label
-            for="fechaFin"
-            class="block text-sm font-medium text-gray-700 mb-1"
-            >Fecha Fin</label
-          >
-          <input
-            type="date"
-            id="fechaFin"
-            formControlName="fechaFin"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
-          />
-        </div>
-        <div>
-          <button
-            type="submit"
-            class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 px-4 rounded shadow-md transition duration-200"
-          >
-            Aplicar Filtros
-          </button>
-        </div>
-      </form>
 
-      <div *ngIf="isLoading()" class="flex justify-center py-10">
+        <form
+          [formGroup]="fechasForm"
+          (ngSubmit)="aplicarFiltros()"
+          class="space-y-4"
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label
+                for="fechaInicio"
+                class="block text-sm font-semibold text-amber-800"
+              >
+                Fecha Inicio
+              </label>
+              <input
+                type="date"
+                id="fechaInicio"
+                formControlName="fechaInicio"
+                class="w-full bg-white/80 backdrop-blur-sm border-2 border-amber-200 hover:border-amber-300 focus:border-blue-500 rounded-xl py-3 px-4 text-amber-900 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
+              />
+            </div>
+            <div class="space-y-2">
+              <label
+                for="fechaFin"
+                class="block text-sm font-semibold text-amber-800"
+              >
+                Fecha Fin
+              </label>
+              <input
+                type="date"
+                id="fechaFin"
+                formControlName="fechaFin"
+                class="w-full bg-white/80 backdrop-blur-sm border-2 border-amber-200 hover:border-amber-300 focus:border-blue-500 rounded-xl py-3 px-4 text-amber-900 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
+              />
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              class="group bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <span class="flex items-center">
+                <svg
+                  class="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-200"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"
+                  />
+                </svg>
+                Aplicar Filtros
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      *ngIf="isLoading()"
+      class="flex flex-col items-center justify-center py-16"
+    >
+      <div class="relative">
+        <div class="w-16 h-16 bg-blue-100 rounded-full animate-pulse"></div>
         <div
-          class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"
+          class="absolute inset-0 w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"
         ></div>
       </div>
+      <p class="mt-4 text-amber-700 font-medium">Cargando reportes...</p>
+    </div>
 
-      <div
-        *ngIf="hasErrors() && !isLoading()"
-        class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6"
-      >
-        <div class="flex items-center">
+    <div
+      *ngIf="hasErrors() && !isLoading()"
+      class="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-2xl p-6 mb-8 shadow-sm"
+    >
+      <div class="flex items-center space-x-3 mb-4">
+        <div
+          class="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center"
+        >
           <svg
-            class="w-5 h-5 mr-2 text-red-500"
+            class="w-5 h-5 text-white"
             fill="none"
-            viewBox="0 0 24 24"
             stroke="currentColor"
+            viewBox="0 0 24 24"
           >
             <path
               stroke-linecap="round"
@@ -79,179 +226,502 @@
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <h3 class="font-medium">
-            Se han producido errores al cargar los datos
-          </h3>
         </div>
+        <h3 class="text-lg font-semibold text-red-800">
+          Error al cargar los datos
+        </h3>
+      </div>
 
-        <ul class="list-disc list-inside mt-2 space-y-1 text-sm">
-          <li *ngIf="errores().resumen">
+      <div
+        class="bg-white/80 backdrop-blur-sm border border-red-200 rounded-xl p-4 mb-4"
+      >
+        <ul class="space-y-2 text-sm text-red-700">
+          <li *ngIf="errores().resumen" class="flex items-center">
+            <svg
+              class="w-4 h-4 mr-2 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
             Error en el resumen: {{ errores().resumen }}
           </li>
-          <li *ngIf="errores().productos">
+          <li *ngIf="errores().productos" class="flex items-center">
+            <svg
+              class="w-4 h-4 mr-2 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
             Error en productos más vendidos: {{ errores().productos }}
           </li>
-          <li *ngIf="errores().ventas">
+          <li *ngIf="errores().ventas" class="flex items-center">
+            <svg
+              class="w-4 h-4 mr-2 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
             Error en ventas por día: {{ errores().ventas }}
           </li>
-          <li *ngIf="errores().categorias">
+          <li *ngIf="errores().categorias" class="flex items-center">
+            <svg
+              class="w-4 h-4 mr-2 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
             Error en rentabilidad por categorías: {{ errores().categorias }}
           </li>
         </ul>
+      </div>
 
-        <button
-          (click)="recargarDatos()"
-          class="mt-3 text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-4 py-2"
-        >
+      <button
+        (click)="recargarDatos()"
+        class="group bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+      >
+        <span class="flex items-center">
+          <svg
+            class="w-5 h-5 mr-2 group-hover:rotate-180 transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
           Reintentar
-        </button>
+        </span>
+      </button>
+    </div>
+
+    <div
+      *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones !== 0"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+    >
+      <div
+        class="group bg-gradient-to-br from-green-50 to-emerald-50 backdrop-blur-sm border-2 border-green-200 hover:border-green-300 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2 mb-3">
+              <div
+                class="w-2 h-2 bg-green-500 rounded-full animate-pulse"
+              ></div>
+              <p class="text-sm font-medium text-green-700">Total de Ventas</p>
+            </div>
+            <p class="text-3xl font-bold text-green-900 mb-1">
+              {{ formatCurrency(reporteSummary()?.totalVentas || 0) }}
+            </p>
+            <p class="text-sm text-green-600 font-medium">Ingresos totales</p>
+          </div>
+          <div
+            class="w-12 h-12 bg-green-100 border border-green-200 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors duration-300"
+          >
+            <svg
+              class="w-6 h-6 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+              />
+            </svg>
+          </div>
+        </div>
       </div>
 
       <div
-        *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones !== 0"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+        class="group bg-gradient-to-br from-orange-50 to-amber-50 backdrop-blur-sm border-2 border-orange-200 hover:border-orange-300 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105"
       >
-        <app-kpi-card
-          title="Total de Ventas"
-          [value]="formatCurrency(reporteSummary()?.totalVentas || 0)"
-          subtitle="Monto total de ventas"
-          variant="default"
-          [isLoading]="isSummaryLoading()"
-        >
-        </app-kpi-card>
-
-        <app-kpi-card
-          title="Costo de Mercadería Vendida"
-          [value]="
-            formatCurrency(reporteSummary()?.costoMercaderiaVendida || 0)
-          "
-          subtitle="Costo de los productos vendidos"
-          variant="warning"
-          [isLoading]="isSummaryLoading()"
-        >
-        </app-kpi-card>
-
-        <app-kpi-card
-          title="Ganancia Bruta"
-          [value]="formatCurrency(reporteSummary()?.gananciaBruta || 0)"
-          subtitle="Total de ingresos menos CMV"
-          variant="success"
-          [isLoading]="isSummaryLoading()"
-        >
-        </app-kpi-card>
-
-        <app-kpi-card
-          title="Cantidad de Transacciones"
-          [value]="reporteSummary()?.numeroTransacciones || 0"
-          subtitle="Total de ventas realizadas"
-          variant="info"
-          [isLoading]="isSummaryLoading()"
-        >
-        </app-kpi-card>
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2 mb-3">
+              <div
+                class="w-2 h-2 bg-orange-500 rounded-full animate-pulse"
+              ></div>
+              <p class="text-sm font-medium text-orange-700">
+                Costo Mercadería
+              </p>
+            </div>
+            <p class="text-3xl font-bold text-orange-900 mb-1">
+              {{
+                formatCurrency(reporteSummary()?.costoMercaderiaVendida || 0)
+              }}
+            </p>
+            <p class="text-sm text-orange-600 font-medium">
+              Costo de productos
+            </p>
+          </div>
+          <div
+            class="w-12 h-12 bg-orange-100 border border-orange-200 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors duration-300"
+          >
+            <svg
+              class="w-6 h-6 text-orange-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+              />
+            </svg>
+          </div>
+        </div>
       </div>
 
       <div
-        *ngIf="!isLoading() && (productosPaginados?.result)!.length > 0"
-        class="bg-white rounded-lg shadow-md p-6 mb-8"
+        class="group bg-gradient-to-br from-blue-50 to-indigo-50 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-300 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105"
       >
-        <h3 class="text-lg font-bold text-amber-800 mb-4">
-          Top Productos Más Vendidos
-        </h3>
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-amber-200">
-            <thead>
-              <tr>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
-                >
-                  SKU
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
-                >
-                  Producto
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
-                >
-                  Categoría
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
-                >
-                  Cantidad
-                </th>
-                <th
-                  class="px-6 py-3 text-left text-xs font-medium text-amber-700 uppercase tracking-wider"
-                >
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-amber-100">
-              <tr
-                *ngFor="let producto of productosPaginados?.result"
-                class="hover:bg-amber-50"
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2 mb-3">
+              <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <p class="text-sm font-medium text-blue-700">Ganancia Bruta</p>
+            </div>
+            <p class="text-3xl font-bold text-blue-900 mb-1">
+              {{ formatCurrency(reporteSummary()?.gananciaBruta || 0) }}
+            </p>
+            <p class="text-sm text-blue-600 font-medium">Beneficio neto</p>
+          </div>
+          <div
+            class="w-12 h-12 bg-blue-100 border border-blue-200 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-300"
+          >
+            <svg
+              class="w-6 h-6 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="group bg-gradient-to-br from-purple-50 to-violet-50 backdrop-blur-sm border-2 border-purple-200 hover:border-purple-300 rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex-1">
+            <div class="flex items-center space-x-2 mb-3">
+              <div
+                class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"
+              ></div>
+              <p class="text-sm font-medium text-purple-700">Transacciones</p>
+            </div>
+            <p class="text-3xl font-bold text-purple-900 mb-1">
+              {{ reporteSummary()?.numeroTransacciones || 0 }}
+            </p>
+            <p class="text-sm text-purple-600 font-medium">Ventas realizadas</p>
+          </div>
+          <div
+            class="w-12 h-12 bg-purple-100 border border-purple-200 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors duration-300"
+          >
+            <svg
+              class="w-6 h-6 text-purple-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="!isLoading() && (productosPaginados?.result)!.length > 0"
+      class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl overflow-hidden shadow-sm mb-8"
+    >
+      <div
+        class="bg-gradient-to-r from-amber-100 to-orange-100 px-6 py-4 border-b-2 border-amber-200"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-8 h-8 bg-amber-500 rounded-xl flex items-center justify-center"
+            >
+              <svg
+                class="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-amber-900"
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                />
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-amber-900">
+              Top Productos Más Vendidos
+            </h3>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-amber-700 font-medium">
+              {{ (productosPaginados?.result)!.length }} productos
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-gradient-to-r from-amber-100/50 to-orange-100/50">
+            <tr>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-amber-800 uppercase tracking-wider"
+              >
+                <div class="flex items-center space-x-2">
+                  <span>SKU</span>
+                  <svg
+                    class="w-4 h-4 text-amber-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                    />
+                  </svg>
+                </div>
+              </th>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-amber-800 uppercase tracking-wider"
+              >
+                Producto
+              </th>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-amber-800 uppercase tracking-wider"
+              >
+                Categoría
+              </th>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-amber-800 uppercase tracking-wider"
+              >
+                Cantidad
+              </th>
+              <th
+                class="px-6 py-4 text-left text-sm font-semibold text-amber-800 uppercase tracking-wider"
+              >
+                Total Ventas
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            class="bg-white/50 backdrop-blur-sm divide-y divide-amber-200/50"
+          >
+            <tr
+              *ngFor="let producto of productosPaginados?.result; let i = index"
+              class="hover:bg-amber-100/30 transition-all duration-200 group"
+            >
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div
+                  class="text-sm font-medium text-amber-900 bg-amber-100 px-3 py-1 rounded-lg border border-amber-200"
                 >
                   {{ producto.sku }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ producto.nombreProducto }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center space-x-4">
+                  <div
+                    class="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 border-2 border-amber-200 rounded-xl flex items-center justify-center group-hover:border-amber-300 transition-colors duration-200"
+                  >
+                    <span class="text-lg font-bold text-amber-600">{{
+                      i + 1
+                    }}</span>
+                  </div>
+                  <div>
+                    <div class="text-sm font-semibold text-amber-900">
+                      {{ producto.nombreProducto }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                >
                   {{ producto.categoriaNombre }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {{ producto.cantidadVendida }}
-                </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600"
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="w-20 bg-amber-200 rounded-full h-2 mr-3">
+                    <div
+                      class="bg-gradient-to-r from-amber-400 to-amber-500 h-2 rounded-full transition-all duration-500"
+                      [style.width.%]="
+                        (productosPaginados?.result)!.length > 0
+                          ? (producto.cantidadVendida /
+                              (productosPaginados?.result)![0]
+                                .cantidadVendida) *
+                            100
+                          : 0
+                      "
+                    ></div>
+                  </div>
+                  <span class="text-sm font-semibold text-amber-900">{{
+                    producto.cantidadVendida
+                  }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span
+                  class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-semibold bg-green-100 text-green-800 border border-green-200"
                 >
                   {{ formatCurrency(producto.totalVentas) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="flex justify-center items-center mt-4 gap-2">
-          <button
-            class="px-3 py-1 rounded bg-amber-200 text-amber-900 font-semibold disabled:opacity-50"
-            [disabled]="productosPaginados?.pagination?.currentPage === 1"
-            (click)="
-              cambiarPagina(productosPaginados?.pagination?.currentPage! - 1)
-            "
-          >
-            Anterior
-          </button>
-          <span class="mx-2 text-sm text-amber-800">
-            Página {{ productosPaginados?.pagination?.currentPage }} de
-            {{ productosPaginados?.pagination?.totalPages }}
-          </span>
-          <button
-            class="px-3 py-1 rounded bg-amber-200 text-amber-900 font-semibold disabled:opacity-50"
-            [disabled]="
-              productosPaginados?.pagination?.currentPage ===
-              productosPaginados?.pagination?.totalPages
-            "
-            (click)="
-              cambiarPagina(productosPaginados?.pagination?.currentPage! + 1)
-            "
-          >
-            Siguiente
-          </button>
-        </div>
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <div
-        *ngIf="!isLoading() && ventasPorDia().length > 0"
-        class="bg-white rounded-lg shadow-md p-6 mb-8"
+        class="bg-gradient-to-r from-amber-100/50 to-orange-100/50 px-6 py-4 border-t-2 border-amber-200"
       >
-        <h3 class="text-lg font-bold text-amber-800 mb-4">
-          Gráfico de Ventas por Día
-        </h3>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <p class="text-sm text-amber-700">
+              <span class="font-medium text-amber-900">
+                Página {{ productosPaginados?.pagination?.currentPage }} de
+                {{ productosPaginados?.pagination?.totalPages }}
+              </span>
+            </p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button
+              [disabled]="productosPaginados?.pagination?.currentPage === 1"
+              (click)="
+                cambiarPagina(productosPaginados?.pagination?.currentPage! - 1)
+              "
+              class="group flex items-center px-4 py-2 border-2 border-amber-200 hover:border-amber-300 text-sm font-medium rounded-xl text-amber-700 bg-white/80 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              <svg
+                class="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Anterior
+            </button>
+            <button
+              [disabled]="
+                productosPaginados?.pagination?.currentPage ===
+                productosPaginados?.pagination?.totalPages
+              "
+              (click)="
+                cambiarPagina(productosPaginados?.pagination?.currentPage! + 1)
+              "
+              class="group flex items-center px-4 py-2 border-2 border-amber-200 hover:border-amber-300 text-sm font-medium rounded-xl text-amber-700 bg-white/80 hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              Siguiente
+              <svg
+                class="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <div
+        *ngIf="!isLoading() && ventasPorDia().length > 0"
+        class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm"
+      >
+        <div class="flex items-center space-x-3 mb-6">
+          <div
+            class="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center"
+          >
+            <svg
+              class="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-amber-900">Ventas por día</h3>
+        </div>
         <app-ventas-chart
           [ventas]="ventasPorDia()"
           [isLoading]="isVentasLoading()"
@@ -260,41 +730,93 @@
 
       <div
         *ngIf="!isLoading() && categoriasRentabilidad().length > 0"
-        class="bg-white rounded-lg shadow-md p-6 mb-8"
+        class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm"
       >
-        <h3 class="text-lg font-bold text-amber-800 mb-4">
-          Rentabilidad por Categorías
-        </h3>
+        <div class="flex items-center space-x-3 mb-6">
+          <div
+            class="w-8 h-8 bg-purple-500 rounded-xl flex items-center justify-center"
+          >
+            <svg
+              class="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
+              />
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-amber-900">
+            Rentabilidad por Categorías
+          </h3>
+        </div>
         <app-categorias-chart
           [categorias]="categoriasRentabilidad()"
           [isLoading]="isCategoriasLoading()"
         ></app-categorias-chart>
       </div>
+    </div>
 
-      <div
-        *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones === 0"
-        class="bg-white rounded-lg shadow-md p-8 text-center"
-      >
-        <svg
-          class="mx-auto h-12 w-12 text-amber-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+    <div
+      *ngIf="!isLoading() && reporteSummary()?.numeroTransacciones === 0"
+      class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-12 text-center shadow-sm"
+    >
+      <div class="flex flex-col items-center">
+        <div
+          class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-6"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
-        <h3 class="mt-2 text-lg font-medium text-gray-900">
+          <svg
+            class="w-8 h-8 text-amber-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-amber-900 mb-2">
           No hay datos disponibles
         </h3>
-        <p class="mt-1 text-sm text-gray-500">
+        <p class="text-amber-600 mb-6 max-w-md">
           No se encontraron datos para el período seleccionado. Intenta con un
-          rango de fechas diferente.
+          rango de fechas diferente o verifica que haya ventas registradas.
         </p>
+        <button
+          (click)="recargarDatos()"
+          class="group bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+        >
+          <span class="flex items-center">
+            <svg
+              class="w-5 h-5 mr-2 group-hover:rotate-180 transition-transform duration-300"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            Actualizar Datos
+          </span>
+        </button>
       </div>
     </div>
   </main>

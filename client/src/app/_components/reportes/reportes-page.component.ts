@@ -15,13 +15,15 @@ import { VentaPorDia } from '../../_models/venta-por-dia.model';
 import { CategoriaRentabilidad } from '../../_models/categoria-rentabilidad.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import {DateRangePickerComponent,DateRange,} from './date-range-picker/date-range-picker.component';
-import { KpiCardComponent } from './kpi-card/kpi-card.component';
+import {
+  DateRangePickerComponent,
+  DateRange,
+} from './date-range-picker/date-range-picker.component';
 import { VentasChartComponent } from './ventas-chart/ventas-chart.component';
 import { CategoriasChartComponent } from './categorias-chart/categorias-chart.component';
 import { Observable } from 'rxjs';
 import { NotificationService } from '../../_services/notification.service';
-import { setPaginatedResponse, setPaginatedResponseSignal } from '../../_services/pagination.helper';
+import { setPaginatedResponseSignal } from '../../_services/pagination.helper';
 
 export interface ReportesErrores {
   resumen: string | null;
@@ -39,7 +41,6 @@ export interface ReportesErrores {
     FormsModule,
     ReactiveFormsModule,
     DateRangePickerComponent,
-    KpiCardComponent,
     VentasChartComponent,
     CategoriasChartComponent,
   ],
@@ -135,7 +136,10 @@ export class ReportesPageComponent implements OnInit {
     observable.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data: T | any) => {
         if (setPaginated) {
-          setPaginatedResponseSignal(data, this.reporteService.productosPaginados);
+          setPaginatedResponseSignal(
+            data,
+            this.reporteService.productosPaginados
+          );
         }
         if (setData) {
           setData(data);
@@ -150,7 +154,6 @@ export class ReportesPageComponent implements OnInit {
         }));
         setLoading(false);
         this.checkLoadingComplete();
-        console.error(defaultErrorMsg, error);
       },
     });
   }
@@ -293,21 +296,24 @@ export class ReportesPageComponent implements OnInit {
     const value = this.fechasForm.get(controlName)?.value;
     if (!value) return undefined;
 
+    let date: Date;
+
     if (value instanceof Date) {
-      if (isEndDate) {
-        value.setHours(23, 59, 59, 999);
-      } else {
-        value.setHours(0, 0, 0, 0);
-      }
-      return value;
+      date = new Date(value);
     } else if (typeof value === 'string') {
       const [year, month, day] = value.split('-').map(Number);
-      if (isEndDate) {
-        return new Date(year, month - 1, day, 23, 59, 59, 999);
-      }
-      return new Date(year, month - 1, day, 0, 0, 0, 0);
+      date = new Date(year, month - 1, day);
+    } else {
+      return undefined;
     }
-    return undefined;
+
+    if (isEndDate) {
+      date.setHours(23, 59, 59, 999);
+    } else {
+      date.setHours(0, 0, 0, 0);
+    }
+
+    return date;
   }
 
   private formatDateForInput(date: Date): string {

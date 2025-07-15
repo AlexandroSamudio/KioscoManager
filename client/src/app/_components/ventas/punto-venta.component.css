@@ -1,63 +1,125 @@
-/* Animación para aparecer gradualmente */
-@keyframes fadeIn {
+@keyframes slideInFromLeft {
   from {
     opacity: 0;
+    transform: translateX(-20px);
   }
   to {
     opacity: 1;
+    transform: translateX(0);
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-in-out forwards;
+/* Animación de carga */
+.loading-spinner {
+  animation: spin 1s linear infinite;
 }
 
-/* Animación para escalar hacia arriba */
-@keyframes scaleIn {
+@keyframes spin {
   from {
-    transform: scale(0.8);
-    opacity: 0;
+    transform: rotate(0deg);
   }
   to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Efectos de pulso para totales */
+.total-amount {
+  transition: all 0.3s ease;
+
+  &.updating {
+    animation: pulse-green 0.5s ease-in-out;
+  }
+}
+
+@keyframes pulse-green {
+  0%,
+  100% {
     transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-scaleIn {
-  animation: scaleIn 0.4s ease-out forwards;
-}
-
-/* Animación de rebote para elementos */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-.animate-bounce {
-  animation: bounce 1s ease infinite;
-}
-
-/* Animación para pulse */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
   }
   50% {
     transform: scale(1.05);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
+    color: #16a34a;
   }
 }
 
-.animate-pulse {
-  animation: pulse 1.5s ease-in-out infinite;
+/* Responsive design */
+@media (max-width: 1024px) {
+  .order-summary {
+    position: static;
+  }
+
+  .quick-stats {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .cart-item {
+    .product-info {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .quantity-controls {
+      margin-top: 0.75rem;
+    }
+  }
+
+  .action-buttons {
+    .quick-actions {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .header-section {
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-item {
+    padding: 1rem;
+
+    .item-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  }
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.z-search {
+  z-index: 30;
+  position: relative;
 }
