@@ -32,7 +32,7 @@ import { LineChartComponent } from '../line-chart/line-chart.component';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
-export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DashboardComponent implements OnInit, AfterViewInit {
   @ViewChild(LineChartComponent) lineChartComponent?: LineChartComponent;
 
   private platformId = inject(PLATFORM_ID);
@@ -41,7 +41,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   destroyRef = inject(DestroyRef);
   router = inject(Router);
 
-  private routerSubscription?: Subscription;
   private updateInProgress = false;
 
   lowestStockProducts: WritableSignal<Producto[]> = signal([]);
@@ -68,7 +67,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       this.loadDashboardData();
 
-      this.routerSubscription = this.router.events
+      this.router.events
         .pipe(
           filter((event) => event instanceof NavigationEnd),
           filter(
@@ -90,12 +89,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (this.lineChartComponent) {
       this.updateCharts();
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.routerSubscription) {
-      this.routerSubscription.unsubscribe();
     }
   }
 
@@ -135,29 +128,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.ventaService
       .getTotalVentasDia()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((data) => this.totalVentasDia.set(data as number));
+      .subscribe((data: number) => this.totalVentasDia.set(data));
   }
 
   getProductosByLowestStock(): void {
     this.productoService
       .getProductosByLowestStock()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((data) => this.lowestStockProducts.set(data as Producto[]));
+      .subscribe((data: Producto[]) => this.lowestStockProducts.set(data));
   }
 
   getVentasRecientes(): void {
     this.ventaService
       .getVentasRecientes()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((data) => this.ventasRecientes.set(data as Venta[]));
+      .subscribe((data: Venta[]) => this.ventasRecientes.set(data));
   }
 
   getProductosMasVendidosDelDia(): void {
     this.productoService
       .getProductosMasVendidosDelDia()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((data) =>
-        this.productosMasVendidosDelDia.set(data as ProductoMasVendido[])
+      .subscribe((data: ProductoMasVendido[]) =>
+        this.productosMasVendidosDelDia.set(data)
       );
   }
 
@@ -170,6 +163,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   getProgressPercentage(producto: ProductoMasVendido): number {
     const topProductos = this.productosMasVendidosDelDia();
     if (topProductos.length === 0) return 0;
+    if (topProductos.length === 0 || topProductos[0].cantidadVendida === 0)
+      return 0;
     return (producto.cantidadVendida / topProductos[0].cantidadVendida) * 100;
   }
 }

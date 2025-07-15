@@ -4,6 +4,7 @@ import { Observable, catchError, throwError, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { UserManagement, UserRoleAssignment, UserRoleResponse, PasswordChangeRequest, PasswordChangeResponse, ProfileUpdateRequest } from '../_models/user.model';
 import { PaginatedResult, setPaginatedResponse } from './pagination.helper';
+import { NotificationService } from './notification.service';
 
 
 
@@ -12,26 +13,20 @@ import { PaginatedResult, setPaginatedResponse } from './pagination.helper';
 })
 export class UserService {
   private http = inject(HttpClient);
+  private notificationService = inject(NotificationService);
   private baseUrl = environment.apiUrl + 'users';
 
-  private handleError(operation: string, errorMessage?: string) {
-    return (error: HttpErrorResponse) => {
-      console.error(`${operation} failed:`, error);
-
-      const message = errorMessage ||
-        (error.error?.message || 'Ha ocurrido un error. Por favor, inténtalo de nuevo.');
-
-      return throwError(() => ({
-        error,
-        message
-      }));
+  private handleError<T>(message: string) {
+    return (error: any) => {
+      this.notificationService.error(message, error?.message ?? 'Inténtelo de nuevo');
+      return throwError(() => error);
     };
   }
 
   getUsers(): Observable<UserManagement[]> {
     return this.http.get<UserManagement[]>(this.baseUrl)
       .pipe(
-        catchError(this.handleError('Obtener usuarios', 'No se pudieron cargar los usuarios.'))
+        catchError(this.handleError('No se pudieron cargar los usuarios.'))
       );
   }
 
@@ -45,21 +40,21 @@ export class UserService {
         map(response => {
           return setPaginatedResponse<UserManagement[]>(response);
         }),
-        catchError(this.handleError('Obtener usuarios paginados', 'No se pudieron cargar los usuarios.'))
+        catchError(this.handleError('No se pudieron cargar los usuarios.'))
       );
   }
 
   getUser(id: number): Observable<UserManagement> {
     return this.http.get<UserManagement>(`${this.baseUrl}/${id}`)
       .pipe(
-        catchError(this.handleError('Obtener usuario', `No se pudo cargar la información del usuario ID ${id}.`))
+        catchError(this.handleError(`No se pudo cargar la información del usuario ID ${id}.`))
       );
   }
 
   getUsersByKiosco(kioscoId: number): Observable<UserManagement[]> {
     return this.http.get<UserManagement[]>(`${this.baseUrl}/kiosco/${kioscoId}`)
       .pipe(
-        catchError(this.handleError('Obtener usuarios por kiosco', 'No se pudieron cargar los usuarios de este kiosco.'))
+        catchError(this.handleError('No se pudieron cargar los usuarios de este kiosco.'))
       );
   }
 
@@ -73,7 +68,7 @@ export class UserService {
         map(response => {
           return setPaginatedResponse<UserManagement[]>(response);
         }),
-        catchError(this.handleError('Obtener usuarios del kiosco paginados', 'No se pudieron cargar los usuarios de este kiosco.'))
+        catchError(this.handleError('No se pudieron cargar los usuarios de este kiosco.'))
       );
   }
 
@@ -95,7 +90,7 @@ export class UserService {
             errorMessage = 'Error de conexión. Compruebe su conexión e inténtelo de nuevo.';
           }
 
-          return this.handleError('Asignar rol', errorMessage)(error);
+          return this.handleError('Error al asignar rol')(error);
         })
       );
   }
@@ -103,28 +98,28 @@ export class UserService {
   getUserRoles(userId: number): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/${userId}/roles`)
       .pipe(
-        catchError(this.handleError('Obtener roles de usuario', 'No se pudieron cargar los roles del usuario.'))
+        catchError(this.handleError('No se pudieron cargar los roles del usuario.'))
       );
   }
 
   isUserAdmin(userId: number): Observable<boolean> {
     return this.http.get<boolean>(`${this.baseUrl}/${userId}/is-admin`)
       .pipe(
-        catchError(this.handleError('Verificar permisos de administrador', 'No se pudo verificar si el usuario es administrador.'))
+        catchError(this.handleError('No se pudo verificar si el usuario es administrador.'))
       );
   }
 
   updateProfile(userId: number, profileData: ProfileUpdateRequest): Observable<UserManagement> {
     return this.http.put<UserManagement>(`${this.baseUrl}/${userId}/perfil`, profileData)
       .pipe(
-        catchError(this.handleError('Actualizar perfil', 'No se pudo actualizar la información del perfil.'))
+        catchError(this.handleError('No se pudo actualizar la información del perfil.'))
       );
   }
 
   changePassword(userId: number, passwordData: PasswordChangeRequest): Observable<PasswordChangeResponse> {
     return this.http.put<PasswordChangeResponse>(`${this.baseUrl}/${userId}/password`, passwordData)
       .pipe(
-        catchError(this.handleError('Cambiar contraseña', 'No se pudo cambiar la contraseña. Verifica que los datos sean correctos.'))
+        catchError(this.handleError('No se pudo cambiar la contraseña. Verifica que los datos sean correctos.'))
       );
   }
 }
