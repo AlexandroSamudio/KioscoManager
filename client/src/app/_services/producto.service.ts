@@ -6,7 +6,7 @@ import { catchError, Observable, throwError } from 'rxjs';
 import { ProductoMasVendido } from '../_models/producto-mas-vendido.model';
 import { NotificationService } from './notification.service';
 import { setPaginationHeaders, PaginatedResult } from './pagination.helper';
-import { ProductoCreate } from '../_models/producto.model';
+import { ProductoCreate} from '../_models/producto.model';
 
 @Injectable({
   providedIn: 'root',
@@ -92,6 +92,18 @@ export class ProductoService {
   deleteProducto(id: number): Observable<object> {
     return this.http.delete(`${this.baseUrl}productos/${id}`).pipe(
       catchError(this.handleError<object>(`Error al eliminar el producto con ID ${id}`))
+    );
+  }
+
+  getCapitalInvertido(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}productos/capital-invertido`).pipe(
+      catchError(this.handleError<number>('Error al obtener el capital invertido'))
+    );
+  }
+
+  getTotalProductos(): Observable<number> {
+    return this.http.get<number>(`${this.baseUrl}productos/total`).pipe(
+      catchError(this.handleError<number>('Error al obtener el total de productos'))
     );
   }
 }

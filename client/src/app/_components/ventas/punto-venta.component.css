@@ -1,63 +1,63 @@
-/* Animación para aparecer gradualmente */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+/* Responsive design */
+@media (max-width: 1024px) {
+  .order-summary {
+    position: static;
   }
-  to {
-    opacity: 1;
+
+  .quick-stats {
+    display: none;
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-in-out forwards;
-}
-
-/* Animación para escalar hacia arriba */
-@keyframes scaleIn {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
+@media (max-width: 768px) {
+  .cart-item .product-info {
+    flex-direction: column;
+    align-items: flex-start;
   }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
 
-.animate-scaleIn {
-  animation: scaleIn 0.4s ease-out forwards;
-}
-
-/* Animación de rebote para elementos */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
+  .cart-item .quantity-controls {
+    margin-top: 0.75rem;
   }
-  50% {
-    transform: translateY(-5px);
+
+  .action-buttons .quick-actions {
+    grid-template-columns: 1fr;
   }
 }
 
-.animate-bounce {
-  animation: bounce 1s ease infinite;
+@media (max-width: 640px) {
+  .header-section .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-item {
+    padding: 1rem;
+  }
+
+  .cart-item .item-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
 }
 
-/* Animación para pulse */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-.animate-pulse {
-  animation: pulse 1.5s ease-in-out infinite;
+.z-search {
+  z-index: 30;
+  position: relative;
 }

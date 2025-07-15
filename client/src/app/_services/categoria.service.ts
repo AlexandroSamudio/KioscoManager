@@ -21,7 +21,10 @@ export class CategoriaService {
 
   private handleError<T>(message: string) {
     return (error: any) => {
-      this.notificationService.error(message, error?.message ?? 'Inténtelo de nuevo');
+      this.notificationService.error(
+        message,
+        error?.message ?? 'Inténtelo de nuevo'
+      );
       return throwError(() => error);
     };
   }

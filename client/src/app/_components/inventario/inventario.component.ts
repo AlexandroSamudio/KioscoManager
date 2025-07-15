@@ -1,12 +1,14 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { CategoriaService } from '../../_services/categoria.service';
+import { Categoria } from '../../_models/categoria.model';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { ProductoService } from '../../_services/producto.service';
 import { Producto } from '../../_models/producto.model';
 import { FormsModule } from '@angular/forms';
-import { Subject} from 'rxjs';
+import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
-import { setPaginatedResponse, setPaginatedResponseSignal } from '../../_services/pagination.helper';
+import { setPaginatedResponseSignal } from '../../_services/pagination.helper';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductoFormComponent } from '../producto-form/producto-form.component';
 import { NotificationService } from '../../_services/notification.service';
@@ -14,23 +16,25 @@ import { NotificationService } from '../../_services/notification.service';
 export enum StockStatusEnum {
   LOW = 'low',
   OUT = 'out',
-  IN = 'in'
+  IN = 'in',
 }
 
 @Component({
   selector: 'app-inventario',
-  standalone:true,
+  standalone: true,
   imports: [NavbarComponent, CommonModule, FormsModule, ProductoFormComponent],
   templateUrl: './inventario.component.html',
-  styleUrl: './inventario.component.css'
+  styleUrl: './inventario.component.css',
 })
 export class InventarioComponent implements OnInit {
+  categorias: Categoria[] = [];
   private productoService = inject(ProductoService);
   private destroyRef = inject(DestroyRef);
+  private categoriaService = inject(CategoriaService);
   private notificationService = inject(NotificationService);
 
   currentPage = signal<number>(1);
-  pageSize = signal<number>(6);
+  pageSize = signal<number>(5);
   isLoading = signal<boolean>(false);
   selectedCategoriaId = signal<number | undefined>(undefined);
   stockStatus = signal<string>('');
@@ -46,14 +50,18 @@ export class InventarioComponent implements OnInit {
   sortDirection: 'asc' | 'desc' = 'asc';
 
   constructor() {
-    this.searchTermSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(() => {
-      this.onSearch();
-    });
+    this.searchTermSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(() => {
+        this.onSearch();
+      });
   }
+
+
 
   onSearch(): void {
     this.currentPage.set(1);
@@ -66,25 +74,39 @@ export class InventarioComponent implements OnInit {
 
   loadProductos(): void {
     this.isLoading.set(true);
-    this.productoService.getProductos(
-      this.currentPage(),
-      this.pageSize(),
-      this.selectedCategoriaId(),
-      this.stockStatus(),
-      this.searchTerm,
-      this.sortColumn,
-      this.sortDirection
-    ).pipe(
-      finalize(() => this.isLoading.set(false)),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (response) => {
-        setPaginatedResponseSignal(response, this.productoService.productosPaginados);
-      }
-    });
+    this.productoService
+      .getProductos(
+        this.currentPage(),
+        this.pageSize(),
+        this.selectedCategoriaId(),
+        this.stockStatus(),
+        this.searchTerm,
+        this.sortColumn,
+        this.sortDirection
+      )
+      .pipe(
+        finalize(() => this.isLoading.set(false)),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe({
+        next: (response) => {
+          setPaginatedResponseSignal(
+            response,
+            this.productoService.productosPaginados
+          );
+        },
+      });
   }
 
   ngOnInit(): void {
+    this.categoriaService.getCategorias().subscribe({
+      next: (data) => {
+        this.categorias = data;
+      },
+      error: () => {
+        this.categorias = [];
+      }
+    });
     this.loadProductos();
   }
 
@@ -130,7 +152,10 @@ export class InventarioComponent implements OnInit {
     }
   }
 
-  getVisiblePages(currentPage: number, totalPages: number): (number | string)[] {
+  getVisiblePages(
+    currentPage: number,
+    totalPages: number
+  ): (number | string)[] {
     const visiblePages: (number | string)[] = [];
     const maxVisiblePages = 5;
 
@@ -205,11 +230,15 @@ export class InventarioComponent implements OnInit {
       'Esta acción no se puede deshacer.'
     );
     if (confirmed) {
-      this.productoService.deleteProducto(id)
+      this.productoService
+        .deleteProducto(id)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
           this.loadProductos();
-          this.notificationService.warning('Producto eliminado', 'El producto fue eliminado correctamente.');
+          this.notificationService.warning(
+            'Producto eliminado',
+            'El producto fue eliminado correctamente.'
+          );
         });
     }
   }

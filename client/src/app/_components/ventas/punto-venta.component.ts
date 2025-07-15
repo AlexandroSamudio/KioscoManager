@@ -88,14 +88,7 @@ export class PuntoVentaComponent {
 
           this.cartService.clear();
           this.finalizingSale = false;
-        },
-        error: () => {
-          this.finalizingSale = false;
-          this.notificationService.error(
-            'Error al procesar la venta',
-            'Ocurrió un error al procesar la venta. Por favor, intente nuevamente.'
-          );
-        },
+        }
       });
   }
 

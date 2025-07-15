@@ -1,216 +1,37 @@
-/* Animaciones para las tarjetas de estadísticas */
-.stats-card {
-  transition: all 0.3s ease;
-}
-.stats-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Efectos hover para filas de la tabla */
-.table-row {
-  transition: all 0.2s ease;
-}
-.table-row:hover {
-  background-color: rgba(251, 191, 36, 0.05);
-  transform: translateX(2px);
-}
-
-/* Estilos para botones de acción */
-.action-button {
-  transition: all 0.2s ease;
-}
-.action-button:hover {
-  transform: scale(1.1);
-}
-.action-button:active {
-  transform: scale(0.95);
-}
-
-/* Efectos para campos de búsqueda y filtros */
-.search-input, .filter-select {
-  transition: all 0.3s ease;
-}
-.search-input:focus, .filter-select:focus {
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
-  transform: translateY(-1px);
-}
-
-/* Animación para indicadores de stock */
-.stock-indicator.low-stock {
-  animation: pulse-warning 2s infinite;
-}
-.stock-indicator.out-of-stock {
-  animation: pulse-danger 2s infinite;
-}
-
-@keyframes pulse-warning {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+/* Responsive improvements */
+@media (max-width: 1024px) {
+  .stats-quick-view {
+    display: none;
   }
-  50% {
-    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-  }
-}
 
-@keyframes pulse-danger {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
-  }
-}
-
-/* Efectos para checkboxes */
-.checkbox-custom {
-  transition: all 0.2s ease;
-}
-.checkbox-custom:checked {
-  background-color: #d97706;
-  border-color: #d97706;
-}
-.checkbox-custom:focus {
-  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
-}
-
-/* Estilos para ordenamiento de columnas */
-.sortable-header {
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.sortable-header:hover {
-  background-color: rgba(217, 119, 6, 0.1);
-  color: #92400e;
-}
-.sortable-header .sort-icon {
-  transition: transform 0.2s ease;
-}
-.sortable-header.sort-asc .sort-icon {
-  transform: rotate(180deg);
-}
-
-/* Efectos para botones de paginación */
-.pagination-button {
-  transition: all 0.2s ease;
-}
-.pagination-button:hover:not(:disabled) {
-  background-color: #fef3c7;
-  border-color: #d97706;
-  transform: translateY(-1px);
-}
-.pagination-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.pagination-button.active {
-  background-color: #d97706;
-  border-color: #d97706;
-  color: white;
-}
-
-/* Efectos para badges de categoría */
-.category-badge {
-  transition: all 0.2s ease;
-}
-.category-badge:hover {
-  transform: scale(1.05);
-}
-
-/* Animación de carga para la tabla */
-.loading-row {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-}
-@keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Efectos para el botón principal */
-.primary-button {
-  transition: all 0.3s ease;
-}
-.primary-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4);
-}
-.primary-button:active {
-  transform: translateY(0);
-}
-
-/* Estilos para tooltips */
-.tooltip {
-  position: relative;
-}
-.tooltip:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  z-index: 10;
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
-.tooltip::after {
-  opacity: 0;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-  .search-filters {
+  .filter-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
   .table-container {
     overflow-x: auto;
   }
+
   .pagination-numbers {
     display: none;
   }
 }
-@media (max-width: 640px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  .action-buttons {
-    flex-direction: column;
-    margin-bottom: 0.5rem;
-  }
-}
-
-/* Efectos de selección múltiple */
-.selected-row {
-  background-color: rgba(217, 119, 6, 0.1);
-  border-left: 4px solid #d97706;
-}
-
-/* Animación para acciones masivas */
-.bulk-actions {
-  transform: translateY(-100%);
-  opacity: 0;
-  transition: all 0.3s ease;
-}
-.bulk-actions.show {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-/* Oculta la scrollbar */
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
 }
