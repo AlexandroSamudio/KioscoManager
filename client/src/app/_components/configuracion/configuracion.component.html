@@ -17,6 +17,7 @@
           <ul class="space-y-2 px-4 pb-6">
             <li *ngFor="let section of configSections">
               <button
+                type="button"
                 *ngIf="canAccessSection(section)"
                 (click)="selectSection(section.id, section.route)"
                 [class]="

@@ -38,7 +38,7 @@
           >
             <div class="text-center">
               <div class="text-lg font-bold text-amber-900">
-                {{ itemsCompra().length }}
+                {{ itemsCompraList().length }}
               </div>
               <div class="text-xs text-amber-600">Productos</div>
             </div>
@@ -48,7 +48,7 @@
           >
             <div class="text-center">
               <div class="text-lg font-bold text-purple-600">
-                {{ calcularTotal() | currency : "ARS" : "symbol" : "1.0-0" }}
+                {{ totalCompra() | currency : "ARS" : "symbol" : "1.0-0" }}
               </div>
               <div class="text-xs text-purple-500">Total</div>
             </div>
@@ -418,7 +418,7 @@
                     >Total de Productos:</span
                   >
                   <span class="text-sm font-bold text-amber-900">{{
-                    itemsCompra().length
+                    itemsCompraList().length
                   }}</span>
                 </div>
 
@@ -429,7 +429,7 @@
                     >
                     <span class="text-2xl font-bold text-purple-600">
                       {{
-                        calcularTotal() | currency : "ARS" : "symbol" : "1.0-0"
+                        totalCompra() | currency : "ARS" : "symbol" : "1.0-0"
                       }}
                     </span>
                   </div>
@@ -501,13 +501,13 @@
               >Total de la Compra:</span
             >
             <span class="text-2xl font-bold text-purple-600">
-              {{ calcularTotal() | currency : "ARS" : "symbol" : "1.0-0" }}
+              {{ totalCompra() | currency : "ARS" : "symbol" : "1.0-0" }}
             </span>
           </div>
           <div class="hidden sm:block w-px h-8 bg-amber-300"></div>
           <div class="hidden sm:flex items-center space-x-2">
             <span class="text-sm text-amber-600"
-              >{{ itemsCompra().length }} productos</span
+              >{{ itemsCompraList().length }} productos</span
             >
           </div>
         </div>

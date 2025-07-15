@@ -148,13 +148,9 @@
             (change)="onCategoriaChange(categorySelect.value)"
           >
             <option value="">Todas las categorías</option>
-            <option value="1">Golosinas</option>
-            <option value="2">Snacks</option>
-            <option value="3">Bebidas sin alcohol</option>
-            <option value="4">Bebidas alcohólicas</option>
-            <option value="5">Cigarrillos</option>
-            <option value="6">Lácteos</option>
-            <option value="7">Higiene personal</option>
+            <option *ngFor="let c of categorias" [value]="c.id">
+              {{ c.nombre }}
+            </option>
           </select>
         </div>
 

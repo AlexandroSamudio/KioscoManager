@@ -21,6 +21,8 @@ export class RegistrarCompraComponent {
   private compraService = inject(CompraService);
   private notificationService = inject(NotificationService);
   private destroyRef = inject(DestroyRef);
+  itemsCompraList = signal<CompraDetalleCreate[]>([]);
+  totalCompra = signal<number>(0);
 
   productoActual = signal<Producto | null>(null);
   cantidad = signal<number>(1);
@@ -78,12 +80,15 @@ export class RegistrarCompraComponent {
     this.cantidad.set(1);
     this.costoUnitario.set(0);
     this.productoActual.set(null);
+
+    this.updateCompraValues();
   }
 
   eliminarProducto(index: number): void {
     const itemsActualizados = this.itemsCompra().filter((_, i) => i !== index);
     this.itemsCompra.set(itemsActualizados);
     this.notificationService.showInfo('Producto eliminado de la lista');
+    this.updateCompraValues();
   }
 
   calcularTotal(): number {
@@ -139,5 +144,15 @@ export class RegistrarCompraComponent {
     this.proveedor.set('');
     this.nota.set('');
     this.itemsCompra.set([]);
+    this.updateCompraValues();
+  }
+
+  private updateCompraValues(): void {
+    this.itemsCompraList.set(this.itemsCompra());
+    this.totalCompra.set(this.calcularTotal());
+  }
+
+  ngOnInit(): void {
+    this.updateCompraValues();
   }
 }

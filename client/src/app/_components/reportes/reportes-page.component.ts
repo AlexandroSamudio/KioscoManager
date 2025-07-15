@@ -48,6 +48,7 @@ export interface ReportesErrores {
   styleUrl: './reportes-page.component.css',
 })
 export class ReportesPageComponent implements OnInit {
+  productosWidthPercentages: WritableSignal<number[]> = signal([]);
   private reporteService = inject(ReporteService);
   private destroyRef = inject(DestroyRef);
   private fb = inject(FormBuilder);
@@ -71,7 +72,7 @@ export class ReportesPageComponent implements OnInit {
   });
 
   currentPage = signal<number>(1);
-  pageSize = signal<number>(6);
+  pageSize = signal<number>(5);
 
   fechasForm: FormGroup = this.fb.group(
     {
@@ -183,6 +184,16 @@ export class ReportesPageComponent implements OnInit {
       undefined,
       true
     );
+    // Calcular los porcentajes de ancho para la barra de productos
+    setTimeout(() => {
+      const productos = this.productosPaginados?.result ?? [];
+      const topCantidad = productos.length > 0 && productos[0].cantidadVendida > 0 ? productos[0].cantidadVendida : 0;
+      const percentages = productos.map(producto => {
+        if (topCantidad === 0) return 0;
+        return (producto.cantidadVendida / topCantidad) * 100;
+      });
+      this.productosWidthPercentages.set(percentages);
+    }, 0);
   }
 
   private cargarVentasPorDiaConRango(fechaInicio: Date, fechaFin: Date): void {
@@ -341,6 +352,11 @@ export class ReportesPageComponent implements OnInit {
 
   get productosPaginados() {
     return this.reporteService.productosPaginados();
+  }
+
+  getProductoWidthPercentage(index: number): number {
+    const percentages = this.productosWidthPercentages();
+    return percentages[index] ?? 0;
   }
 
   cambiarPagina(page: number) {

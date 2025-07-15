@@ -605,14 +605,7 @@
                   <div class="w-20 bg-amber-200 rounded-full h-2 mr-3">
                     <div
                       class="bg-gradient-to-r from-amber-400 to-amber-500 h-2 rounded-full transition-all duration-500"
-                      [style.width.%]="
-                        (productosPaginados?.result)!.length > 0
-                          ? (producto.cantidadVendida /
-                              (productosPaginados?.result)![0]
-                                .cantidadVendida) *
-                            100
-                          : 0
-                      "
+                      [style.width.%]="getProductoWidthPercentage(i)"
                     ></div>
                   </div>
                   <span class="text-sm font-semibold text-amber-900">{{

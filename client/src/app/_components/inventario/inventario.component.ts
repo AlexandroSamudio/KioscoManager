@@ -1,4 +1,6 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { CategoriaService } from '../../_services/categoria.service';
+import { Categoria } from '../../_models/categoria.model';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
 import { ProductoService } from '../../_services/producto.service';
@@ -25,8 +27,10 @@ export enum StockStatusEnum {
   styleUrl: './inventario.component.css',
 })
 export class InventarioComponent implements OnInit {
+  categorias: Categoria[] = [];
   private productoService = inject(ProductoService);
   private destroyRef = inject(DestroyRef);
+  private categoriaService = inject(CategoriaService);
   private notificationService = inject(NotificationService);
 
   currentPage = signal<number>(1);
@@ -56,6 +60,8 @@ export class InventarioComponent implements OnInit {
         this.onSearch();
       });
   }
+
+
 
   onSearch(): void {
     this.currentPage.set(1);
@@ -93,6 +99,14 @@ export class InventarioComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.categoriaService.getCategorias().subscribe({
+      next: (data) => {
+        this.categorias = data;
+      },
+      error: () => {
+        this.categorias = [];
+      }
+    });
     this.loadProductos();
   }
 
