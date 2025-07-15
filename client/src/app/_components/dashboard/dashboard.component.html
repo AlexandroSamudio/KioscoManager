@@ -551,13 +551,7 @@
                   <div class="w-20 bg-slate-200 rounded-full h-2">
                     <div
                       class="bg-gradient-to-r from-amber-400 to-amber-500 h-2 rounded-full transition-all duration-500"
-                      [style.width.%]="
-                        productosMasVendidosDelDia().length > 0
-                          ? (producto.cantidadVendida /
-                              productosMasVendidosDelDia()[0].cantidadVendida) *
-                            100
-                          : 0
-                      "
+                      [style.width.%]="getProgressPercentage(producto)"
                     ></div>
                   </div>
                 </div>

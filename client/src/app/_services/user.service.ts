@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, catchError, throwError, map } from 'rxjs';
-import { environment } from '../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { UserManagement, UserRoleAssignment, UserRoleResponse, PasswordChangeRequest, PasswordChangeResponse, ProfileUpdateRequest } from '../_models/user.model';
 import { PaginatedResult, setPaginatedResponse } from './pagination.helper';
 

@@ -88,8 +88,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => this.updateCharts(), 100);
+    if (this.lineChartComponent) {
+      this.updateCharts();
     }
   }
 
@@ -165,5 +165,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (isPlatformBrowser(this.platformId) && this.lineChartComponent) {
       this.lineChartComponent.refreshChart();
     }
+  }
+
+  getProgressPercentage(producto: ProductoMasVendido): number {
+    const topProductos = this.productosMasVendidosDelDia();
+    if (topProductos.length === 0) return 0;
+    return (producto.cantidadVendida / topProductos[0].cantidadVendida) * 100;
   }
 }

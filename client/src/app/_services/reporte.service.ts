@@ -4,7 +4,7 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { Reporte } from '../_models/reporte.model';
 import { ProductoMasVendido } from '../_models/producto-mas-vendido.model';
 import { Observable, catchError, throwError } from 'rxjs';
@@ -116,18 +116,6 @@ export class ReporteService {
   }
 
   private formatDateToISO(date: Date): string {
-    const isoString = new Date(
-      Date.UTC(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        date.getHours(),
-        date.getMinutes(),
-        date.getSeconds(),
-        date.getMilliseconds()
-      )
-    ).toISOString();
-
-    return isoString;
+    return date.toISOString();
   }
 }

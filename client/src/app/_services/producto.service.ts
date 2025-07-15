@@ -1,6 +1,6 @@
 import { HttpClient} from '@angular/common/http';
 import { inject, Injectable, signal, WritableSignal } from '@angular/core';
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { Producto } from '../_models/producto.model';
 import { catchError, Observable, throwError } from 'rxjs';
 import { ProductoMasVendido } from '../_models/producto-mas-vendido.model';

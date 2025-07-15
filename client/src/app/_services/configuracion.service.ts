@@ -7,7 +7,7 @@ import {
   UserPreferences,
   KioscoBasicInfo,
 } from '../_models/configuracion.model';
-import { environment } from '../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { NotificationService } from './notification.service';
 
 @Injectable({

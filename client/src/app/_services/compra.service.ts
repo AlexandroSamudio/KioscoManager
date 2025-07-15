@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { environment } from '../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { CompraCreate } from '../_models/compra-create.model';
 import { Compra } from '../_models/compra.model';
 import { PaginatedResult, setPaginationHeaders } from './pagination.helper';
