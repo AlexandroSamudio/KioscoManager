@@ -377,6 +377,7 @@ export class ReportesPageComponent implements OnInit {
     this.setFechasFormFromRange(range);
     var fechaInicio = range.startDate;
     var fechaFin = range.endDate;
+    console.log('Rango seleccionado:', fechaInicio, fechaFin);
     this.cargarReportesConRango(fechaInicio, fechaFin);
   }
 

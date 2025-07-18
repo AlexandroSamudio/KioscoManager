@@ -74,9 +74,8 @@ export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
-          const datosVentas = this.procesarDatosVentas(data);
-          this.ventasPorDia.set(datosVentas);
-          console.log('Datos de ventas cargados:', datosVentas);
+          this.ventasPorDia.set(data);
+          console.log('Datos de ventas por día cargados:', data);
         }
       });
   }
@@ -262,9 +261,4 @@ export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private procesarDatosVentas(ventas: VentaPorDia[]): VentaPorDia[] {
-    return [...ventas].sort(
-      (a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
-    );
-  }
 }

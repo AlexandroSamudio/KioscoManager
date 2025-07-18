@@ -2,8 +2,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface DateRange {
-  startDate: any;
-  endDate: any;
+  startDate: string;
+  endDate: string;
   label: string;
 }
 
@@ -20,7 +20,6 @@ export class DateRangePickerComponent {
   activeRange: string | null = null;
   ranges: Record<string, DateRange>;
   readonly rangeOrder: string[] = [
-    'lastMonth',
     'thisMonth',
     'last7Days',
     'yesterday',
@@ -30,11 +29,6 @@ export class DateRangePickerComponent {
   constructor() {
     const now = DateRangePickerComponent.getNow();
     this.ranges = {
-      lastMonth: {
-        label: 'Mes Pasado',
-        startDate: DateRangePickerComponent.getFirstDayOfLastMonth(),
-        endDate: DateRangePickerComponent.getLastDayOfLastMonth(),
-      },
       thisMonth: {
         label: 'Este Mes',
         startDate:
@@ -50,12 +44,8 @@ export class DateRangePickerComponent {
       },
       yesterday: {
         label: 'Ayer',
-        startDate: DateRangePickerComponent.getStartOfDay(
-          DateRangePickerComponent.addDays(now, -1)
-        ).toISOString(),
-        endDate: DateRangePickerComponent.getEndOfDay(
-          DateRangePickerComponent.addDays(now, -1)
-        ).toISOString(),
+        startDate: DateRangePickerComponent.getStartOfYesterday().toISOString(),
+        endDate: DateRangePickerComponent.getEndOfYesterday().toISOString(),
       },
       today: {
         label: 'Hoy',
@@ -114,6 +104,20 @@ export class DateRangePickerComponent {
     return d;
   }
 
+  private static getStartOfYesterday(): Date {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private static getEndOfYesterday(): Date {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }
+
   private static addDays(date: Date, days: number): Date {
     const d = new Date(date);
     d.setDate(d.getDate() + days);
@@ -125,20 +129,5 @@ export class DateRangePickerComponent {
     d.setDate(1);
     d.setHours(0, 0, 0, 0);
     return d;
-  }
-
-  private static getFirstDayOfLastMonth(): any {
-    const d = new Date();
-    d.setMonth(d.getMonth() - 1);
-    d.setDate(1);
-    d.setHours(0, 0, 0, 0);
-    return d.toISOString();
-  }
-
-  private static getLastDayOfLastMonth(): any {
-    const now = new Date();
-    const d = new Date(now.getFullYear(), now.getMonth(), 1);
-    d.setDate(0);
-    return d.toISOString();
   }
 }
