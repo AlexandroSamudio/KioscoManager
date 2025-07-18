@@ -6,71 +6,13 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
       <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-4">
-          <div
-            class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg"
-          >
-            <svg
-              class="w-7 h-7 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-          </div>
-          <div>
-            <h1 class="text-3xl font-bold text-amber-900">
-              Reportes y Estadísticas
-            </h1>
-            <p class="text-amber-700">
-              Análisis detallado del rendimiento de tu kiosco
-            </p>
-          </div>
-        </div>
-
-        <div class="hidden lg:flex items-center space-x-3">
-          <button
-            class="flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm border-2 border-blue-200 hover:border-blue-300 rounded-xl text-blue-700 font-medium transition-all duration-200 hover:scale-105"
-          >
-            <svg
-              class="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            Exportar PDF
-          </button>
-          <button
-            class="flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm border-2 border-green-200 hover:border-green-300 rounded-xl text-green-700 font-medium transition-all duration-200 hover:scale-105"
-          >
-            <svg
-              class="w-4 h-4 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            Exportar Excel
-          </button>
+        <div>
+          <h1 class="text-3xl font-bold text-amber-900">
+            Reportes y Estadísticas
+          </h1>
+          <p class="text-amber-700">
+            Análisis detallado del rendimiento de tu kiosco
+          </p>
         </div>
       </div>
     </div>
@@ -97,7 +39,17 @@
               />
             </svg>
           </div>
-          <h3 class="text-lg font-semibold text-amber-900">Filtros Rápidos</h3>
+          <div class="flex items-center space-x-3">
+            <h3 class="text-lg font-semibold text-amber-900">
+              Filtros Rápidos
+            </h3>
+            <span
+              *ngIf="isUsingCustomFilter()"
+              class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full border border-blue-200"
+            >
+              Filtro personalizado
+            </span>
+          </div>
         </div>
         <app-date-range-picker
           (rangeSelected)="onRangeSelected($event)"
@@ -143,12 +95,27 @@
               >
                 Fecha Inicio
               </label>
-              <input
-                type="date"
-                id="fechaInicio"
-                formControlName="fechaInicio"
-                class="w-full bg-white/80 backdrop-blur-sm border-2 border-amber-200 hover:border-amber-300 focus:border-blue-500 rounded-xl py-3 px-4 text-amber-900 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
-              />
+              <mat-form-field appearance="fill" class="w-full">
+                <input
+                  style="
+                    color: #92400e;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont,
+                      'Segoe UI', Roboto, sans-serif;
+                  "
+                  matInput
+                  [matDatepicker]="pickerInicio"
+                  id="fechaInicio"
+                  formControlName="fechaInicio"
+                  placeholder="Selecciona fecha de inicio"
+                  [min]="minDate"
+                  [max]="maxDate"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="pickerInicio"
+                ></mat-datepicker-toggle>
+                <mat-datepicker #pickerInicio></mat-datepicker>
+              </mat-form-field>
             </div>
             <div class="space-y-2">
               <label
@@ -157,12 +124,27 @@
               >
                 Fecha Fin
               </label>
-              <input
-                type="date"
-                id="fechaFin"
-                formControlName="fechaFin"
-                class="w-full bg-white/80 backdrop-blur-sm border-2 border-amber-200 hover:border-amber-300 focus:border-blue-500 rounded-xl py-3 px-4 text-amber-900 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
-              />
+              <mat-form-field appearance="fill" class="w-full">
+                <input
+                  style="
+                    color: #92400e;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont,
+                      'Segoe UI', Roboto, sans-serif;
+                  "
+                  matInput
+                  [matDatepicker]="pickerFin"
+                  id="fechaFin"
+                  formControlName="fechaFin"
+                  placeholder="Selecciona fecha de fin"
+                  [min]="minDate"
+                  [max]="maxDate"
+                />
+                <mat-datepicker-toggle
+                  matSuffix
+                  [for]="pickerFin"
+                ></mat-datepicker-toggle>
+                <mat-datepicker #pickerFin></mat-datepicker>
+              </mat-form-field>
             </div>
           </div>
           <div class="flex justify-end">
@@ -509,11 +491,6 @@
               Top Productos Más Vendidos
             </h3>
           </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-sm text-amber-700 font-medium">
-              {{ (productosPaginados?.result)!.length }} productos
-            </span>
-          </div>
         </div>
       </div>
 
@@ -695,25 +672,38 @@
         *ngIf="!isLoading() && ventasPorDia().length > 0"
         class="bg-gradient-to-br from-amber-50 to-orange-50 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 shadow-sm"
       >
-        <div class="flex items-center space-x-3 mb-6">
-          <div
-            class="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center"
-          >
-            <svg
-              class="w-4 h-4 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
+              <svg
+                class="w-4 h-4 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-amber-900">
+                Monto Total de Ventas por Período
+              </h3>
+            </div>
           </div>
-          <h3 class="text-lg font-semibold text-amber-900">Ventas por día</h3>
+          @if (tipoAgrupacionInfo().tipo !== 'daily') {
+          <div
+            class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full"
+          >
+            Agrupación {{ tipoAgrupacionInfo().descripcion }}
+          </div>
+          }
         </div>
         <app-ventas-chart
           [ventas]="ventasPorDia()"

@@ -5,6 +5,8 @@ import {
   WritableSignal,
   inject,
   signal,
+  computed,
+  ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from '../navbar/navbar.component';
@@ -14,6 +16,21 @@ import { Reporte } from '../../_models/reporte.model';
 import { VentaPorDia } from '../../_models/venta-por-dia.model';
 import { CategoriaRentabilidad } from '../../_models/categoria-rentabilidad.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import {
+  MatMomentDateModule,
+  MAT_MOMENT_DATE_ADAPTER_OPTIONS,
+  MomentDateAdapter,
+} from '@angular/material-moment-adapter';
+import * as _moment from 'moment';
+import 'moment/locale/es';
+import {
+  MAT_DATE_LOCALE,
+  DateAdapter,
+  MAT_DATE_FORMATS,
+} from '@angular/material/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import {
   DateRangePickerComponent,
@@ -24,6 +41,7 @@ import { CategoriasChartComponent } from './categorias-chart/categorias-chart.co
 import { Observable } from 'rxjs';
 import { NotificationService } from '../../_services/notification.service';
 import { setPaginatedResponseSignal } from '../../_services/pagination.helper';
+import { TipoAgrupacion } from '../../_models/venta-por-dia.model';
 
 export interface ReportesErrores {
   resumen: string | null;
@@ -40,14 +58,44 @@ export interface ReportesErrores {
     NavbarComponent,
     FormsModule,
     ReactiveFormsModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatMomentDateModule,
     DateRangePickerComponent,
     VentasChartComponent,
     CategoriasChartComponent,
   ],
   templateUrl: './reportes-page.component.html',
   styleUrl: './reportes-page.component.css',
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'es' },
+    { provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: { useUtc: false } },
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+    },
+    {
+      provide: MAT_DATE_FORMATS,
+      useValue: {
+        parse: {
+          dateInput: 'L',
+        },
+        display: {
+          dateInput: 'L',
+          monthYearLabel: 'MMMM YYYY',
+          dateA11yLabel: 'LL',
+          monthYearA11yLabel: 'MMMM YYYY',
+        },
+      },
+    },
+  ],
 })
 export class ReportesPageComponent implements OnInit {
+  @ViewChild(DateRangePickerComponent)
+  dateRangePicker!: DateRangePickerComponent;
+
   productosWidthPercentages: WritableSignal<number[]> = signal([]);
   private reporteService = inject(ReporteService);
   private destroyRef = inject(DestroyRef);
@@ -74,6 +122,61 @@ export class ReportesPageComponent implements OnInit {
   currentPage = signal<number>(1);
   pageSize = signal<number>(5);
 
+  tipoAgrupacionInfo = computed(() => {
+    const ventas = this.ventasPorDia();
+    if (ventas.length === 0) {
+      return {
+        tipo: 'daily' as TipoAgrupacion,
+        descripcion: 'Diario',
+        titulo: 'Monto total de Ventas por Período',
+      };
+    }
+
+    const tipo = ventas[0]?.tipoAgrupacion ?? 'daily';
+    switch (tipo) {
+      case 'weekly':
+        return { tipo, descripcion: 'Semanal', titulo: 'Ventas por Semana' };
+      case 'monthly':
+        return { tipo, descripcion: 'Mensual', titulo: 'Ventas por Mes' };
+      default:
+        return {
+          tipo: 'daily' as TipoAgrupacion,
+          descripcion: 'Diario',
+          titulo: 'Monto total de Ventas por Período',
+        };
+    }
+  });
+
+  rangoFechasInfo = computed(() => {
+    const fechaInicio = this.getFechaFromFormControl('fechaInicio');
+    const fechaFin = this.getFechaFromFormControl('fechaFin', true);
+
+    if (!fechaInicio || !fechaFin) return '';
+
+    const fechaInicioDate =
+      typeof fechaInicio === 'string' ? new Date(fechaInicio) : fechaInicio;
+    const fechaFinDate =
+      typeof fechaFin === 'string' ? new Date(fechaFin) : fechaFin;
+
+    const dias =
+      Math.ceil(
+        (fechaFinDate.getTime() - fechaInicioDate.getTime()) /
+          (1000 * 60 * 60 * 24)
+      ) + 1;
+
+    if (dias <= 31) {
+      return `${dias} días seleccionados - Vista diaria`;
+    } else if (dias <= 90) {
+      return `${dias} días seleccionados - Vista semanal para mejor visualización`;
+    } else {
+      return `${dias} días seleccionados - Vista mensual para mejor visualización`;
+    }
+  });
+
+  isUsingCustomFilter = computed(() => {
+    return this.dateRangePicker && !this.dateRangePicker.hasActiveRange();
+  });
+
   fechasForm: FormGroup = this.fb.group(
     {
       fechaInicio: [this.formatDateForInput(this.getStartOfDay(this.getNow()))],
@@ -83,6 +186,7 @@ export class ReportesPageComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    _moment.locale('es');
     const fechaInicio = this.getFechaFromFormControl('fechaInicio');
     const fechaFin = this.getFechaFromFormControl('fechaFin', true);
     this.cargarReportesConRango(fechaInicio!, fechaFin!);
@@ -110,8 +214,8 @@ export class ReportesPageComponent implements OnInit {
   }
 
   private validarFechasSeleccionadas(
-    fechaInicio?: Date,
-    fechaFin?: Date
+    fechaInicio?: string,
+    fechaFin?: string
   ): boolean {
     if (!fechaInicio || !fechaFin) {
       this.errores.set({
@@ -159,7 +263,7 @@ export class ReportesPageComponent implements OnInit {
     });
   }
 
-  private cargarResumenConRango(fechaInicio: Date, fechaFin: Date): void {
+  private cargarResumenConRango(fechaInicio: string, fechaFin: string): void {
     this.cargarDato(
       this.reporteService.getReporteSummary(fechaInicio, fechaFin),
       this.isSummaryLoading.set,
@@ -169,7 +273,10 @@ export class ReportesPageComponent implements OnInit {
     );
   }
 
-  private cargarTopProductosConRango(fechaInicio: Date, fechaFin: Date): void {
+  private cargarTopProductosConRango(
+    fechaInicio: string,
+    fechaFin: string
+  ): void {
     this.cargarDato(
       this.reporteService.getTopProductos(
         10,
@@ -184,11 +291,14 @@ export class ReportesPageComponent implements OnInit {
       undefined,
       true
     );
-    // Calcular los porcentajes de ancho para la barra de productos
+
     setTimeout(() => {
       const productos = this.productosPaginados?.result ?? [];
-      const topCantidad = productos.length > 0 && productos[0].cantidadVendida > 0 ? productos[0].cantidadVendida : 0;
-      const percentages = productos.map(producto => {
+      const topCantidad =
+        productos.length > 0 && productos[0].cantidadVendida > 0
+          ? productos[0].cantidadVendida
+          : 0;
+      const percentages = productos.map((producto) => {
         if (topCantidad === 0) return 0;
         return (producto.cantidadVendida / topCantidad) * 100;
       });
@@ -196,7 +306,10 @@ export class ReportesPageComponent implements OnInit {
     }, 0);
   }
 
-  private cargarVentasPorDiaConRango(fechaInicio: Date, fechaFin: Date): void {
+  private cargarVentasPorDiaConRango(
+    fechaInicio: string,
+    fechaFin: string
+  ): void {
     this.cargarDato(
       this.reporteService.getVentasPorDia(fechaInicio, fechaFin),
       this.isVentasLoading.set,
@@ -207,8 +320,8 @@ export class ReportesPageComponent implements OnInit {
   }
 
   private cargarCategoriasRentabilidadConRango(
-    fechaInicio: Date,
-    fechaFin: Date
+    fechaInicio: string,
+    fechaFin: string
   ): void {
     this.cargarDato(
       this.reporteService.getCategoriasRentabilidad(fechaInicio, fechaFin),
@@ -219,7 +332,7 @@ export class ReportesPageComponent implements OnInit {
     );
   }
 
-  cargarReportesConRango(fechaInicio: Date, fechaFin: Date): void {
+  cargarReportesConRango(fechaInicio: string, fechaFin: string): void {
     this.isLoading.set(true);
     this.errores.set({
       resumen: null,
@@ -252,12 +365,19 @@ export class ReportesPageComponent implements OnInit {
       );
       return;
     }
+
+    if (this.dateRangePicker) {
+      this.dateRangePicker.clearActiveRange();
+    }
+
     this.cargarReportesConRango(fechaInicio!, fechaFin!);
   }
 
   onRangeSelected(range: DateRange): void {
     this.setFechasFormFromRange(range);
-    this.cargarReportesConRango(range.startDate, range.endDate);
+    var fechaInicio = range.startDate;
+    var fechaFin = range.endDate;
+    this.cargarReportesConRango(fechaInicio, fechaFin);
   }
 
   private setFechasFormFromRange(range: DateRange): void {
@@ -303,34 +423,61 @@ export class ReportesPageComponent implements OnInit {
   private getFechaFromFormControl(
     controlName: string,
     isEndDate = false
-  ): Date | undefined {
-    const value = this.fechasForm.get(controlName)?.value;
-    if (!value) return undefined;
+  ): string | undefined {
+    const control = this.fechasForm.get(controlName);
+    if (!control?.value) {
+      return undefined;
+    }
 
     let date: Date;
+    const value = control.value;
 
     if (value instanceof Date) {
-      date = new Date(value);
+      date = value;
     } else if (typeof value === 'string') {
-      const [year, month, day] = value.split('-').map(Number);
-      date = new Date(year, month - 1, day);
+      const parts = value.split('-').map(Number);
+      if (parts.length === 3) {
+        date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+      } else {
+        const parsedDate = new Date(value);
+        if (!isNaN(parsedDate.getTime())) {
+          date = parsedDate;
+        } else {
+          return undefined;
+        }
+      }
+    } else if (
+      typeof value === 'object' &&
+      value !== null &&
+      typeof value.toDate === 'function'
+    ) {
+      date = value.toDate();
     } else {
       return undefined;
     }
 
-    if (isEndDate) {
-      date.setHours(23, 59, 59, 999);
-    } else {
-      date.setHours(0, 0, 0, 0);
+    if (isNaN(date.getTime())) {
+      return undefined;
     }
 
-    return date;
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth();
+    const day = date.getUTCDate();
+
+    if (isEndDate) {
+      return new Date(
+        Date.UTC(year, month, day, 23, 59, 59, 999)
+      ).toISOString();
+    } else {
+      return new Date(Date.UTC(year, month, day, 0, 0, 0, 0)).toISOString();
+    }
   }
 
-  private formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+  private formatDateForInput(date: any): string {
+    const d: Date = typeof date === 'string' ? new Date(date) : date;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
@@ -348,6 +495,22 @@ export class ReportesPageComponent implements OnInit {
     const d = new Date(date);
     d.setHours(23, 59, 59, 999);
     return d;
+  }
+
+  private getFirstDayOfYear(year: number = new Date().getFullYear()): Date {
+    return new Date(year, 0, 1, 0, 0, 0, 0);
+  }
+
+  private getLastDayOfYear(year: number = new Date().getFullYear()): Date {
+    return new Date(year, 11, 31, 23, 59, 59, 999);
+  }
+
+  get minDate(): Date {
+    return this.getFirstDayOfYear();
+  }
+
+  get maxDate(): Date {
+    return this.getLastDayOfYear();
   }
 
   get productosPaginados() {

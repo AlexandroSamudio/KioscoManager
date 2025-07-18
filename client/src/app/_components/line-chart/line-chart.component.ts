@@ -62,18 +62,21 @@ export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadVentasPorDia(): void {
     const fechaFin = new Date();
-    fechaFin.setUTCHours(23, 59, 59, 999);
+    fechaFin.setHours(23, 59, 59, 999);
+    const fechaFinISO = fechaFin.toISOString();
 
     const fechaInicio = new Date();
-    fechaInicio.setUTCHours(0, 0, 0, 0);
+    fechaInicio.setHours(0, 0, 0, 0);
+    const fechaInicioISO = fechaInicio.toISOString();
 
     this.reporteService
-      .getVentasPorDia(fechaInicio, fechaFin)
+      .getVentasPorDia(fechaInicioISO, fechaFinISO)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           const datosVentas = this.procesarDatosVentas(data);
           this.ventasPorDia.set(datosVentas);
+          console.log('Datos de ventas cargados:', datosVentas);
         }
       });
   }
