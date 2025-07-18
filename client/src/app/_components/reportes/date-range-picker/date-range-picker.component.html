@@ -1,11 +1,10 @@
-<div class="date-range-buttons">
+<div class="flex flex-wrap gap-2">
   <button
     type="button"
-    *ngFor="let range of ranges | keyvalue"
-    (click)="selectRange(range.key)"
-    [class.active]="activeRange === range.key"
-    class="date-range-button"
+    *ngFor="let key of rangeOrder"
+    (click)="selectRange(key)"
+    [class]="getButtonClasses(key)"
   >
-    {{ range.value.label }}
+    {{ ranges[key].label }}
   </button>
 </div>

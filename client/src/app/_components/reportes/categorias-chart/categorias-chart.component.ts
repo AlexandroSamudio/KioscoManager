@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChanges,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CategoriaRentabilidad } from '../../../_models/categoria-rentabilidad.model';
 import { BaseChartDirective } from 'ng2-charts';
@@ -12,7 +18,7 @@ Chart.register(...registerables);
   standalone: true,
   imports: [CommonModule, BaseChartDirective],
   templateUrl: './categorias-chart.component.html',
-  styleUrl: './categorias-chart.component.css'
+  styleUrl: './categorias-chart.component.css',
 })
 export class CategoriasChartComponent implements OnChanges {
   @Input() categorias: CategoriaRentabilidad[] = [];
@@ -50,35 +56,63 @@ export class CategoriasChartComponent implements OnChanges {
           'rgb(194, 65, 12)',
           'rgb(154, 52, 18)',
         ],
-        borderWidth: 1
-      }
-    ]
+        borderWidth: 1,
+      },
+    ],
   };
 
   public pieChartOptions: ChartConfiguration['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    font: {
+      family:
+        "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+    },
     plugins: {
+      title: {
+        display: true,
+        font: {
+          family: "'Inter', sans-serif",
+          size: 18,
+          weight: 'bold',
+        },
+        color: '#78350f',
+      },
       legend: {
         display: true,
         position: 'top',
+        labels: {
+          color: '#78350f',
+          font: {
+            size: 14,
+            family: "'Inter', sans-serif",
+          },
+        },
       },
       tooltip: {
-        backgroundColor: 'rgba(0,0,0,0.7)',
-        bodyFont: {
-          size: 13
-        },
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        titleColor: '#78350f',
+        bodyColor: '#78350f',
+        borderColor: '#fbbf24',
+        borderWidth: 2,
+        padding: 12,
+        displayColors: false,
         titleFont: {
-          size: 13,
-          weight: 'bold'
+          family: "'Inter', sans-serif",
+          size: 14,
+          weight: 'bold',
+        },
+        bodyFont: {
+          family: "'Inter', sans-serif",
+          size: 14,
         },
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return `${context.label}: ${context.parsed}%`;
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   };
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -88,12 +122,14 @@ export class CategoriasChartComponent implements OnChanges {
   }
 
   private updateChartData(): void {
-    const categoriasOrdenadas = [...this.categorias].sort((a, b) => b.porcentajeVentas - a.porcentajeVentas);
+    const categoriasOrdenadas = [...this.categorias].sort(
+      (a, b) => b.porcentajeVentas - a.porcentajeVentas
+    );
 
     const topCategorias = categoriasOrdenadas.slice(0, 10);
 
-    const labels = topCategorias.map(cat => cat.nombre);
-    const data = topCategorias.map(cat => cat.porcentajeVentas);
+    const labels = topCategorias.map((cat) => cat.nombre);
+    const data = topCategorias.map((cat) => cat.porcentajeVentas);
 
     this.pieChartData = {
       labels: labels,
@@ -102,9 +138,9 @@ export class CategoriasChartComponent implements OnChanges {
           data: data,
           backgroundColor: this.pieChartData.datasets[0].backgroundColor,
           borderColor: this.pieChartData.datasets[0].borderColor,
-          borderWidth: 1
-        }
-      ]
+          borderWidth: 1,
+        },
+      ],
     };
 
     if (this.chart) {
