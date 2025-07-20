@@ -70,6 +70,10 @@ export const routes: Routes = [
       {
         path: 'categorias',
         loadComponent: () => import('./_components/configuracion/configuracion-categorias/configuracion-categorias.component').then(m => m.ConfiguracionCategoriasComponent)
+      },
+      {
+        path: 'reportes',
+        loadComponent: () => import('./_components/configuracion/configuracion-reportes/configuracion-reportes.component').then(m => m.ConfiguracionReportesComponent)
       }
     ]
   },

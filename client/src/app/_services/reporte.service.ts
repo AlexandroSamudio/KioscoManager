@@ -11,6 +11,9 @@ import {
 import { CategoriaRentabilidad } from '../_models/categoria-rentabilidad.model';
 import { setPaginationHeaders, PaginatedResult } from './pagination.helper';
 import { NotificationService } from './notification.service';
+import { Venta } from '../_models/venta.model';
+import { Producto } from '../_models/producto.model';
+import { Compra } from '../_models/compra.model';
 
 @Injectable({
   providedIn: 'root',
@@ -151,4 +154,62 @@ export class ReporteService {
         )
       );
   }
+
+  getVentasParaExportar(
+    fechaInicio?: string,
+    fechaFin?: string
+  ): Observable<Venta[]> {
+    let params = new HttpParams();
+    if (fechaInicio) {
+      params = params.append('fechaInicio', fechaInicio);
+    }
+    if (fechaFin) {
+      params = params.append('fechaFin', fechaFin);
+    }
+    return this.http
+      .get<Venta[]>(`${this.baseUrl}ventas`, { params })
+      .pipe(
+        catchError(
+          this.handleError<Venta[]>('Error al obtener ventas para exportar')
+        )
+      );
+  }
+
+  getProductosParaExportar(): Observable<Producto[]> {
+    const params = new HttpParams()
+      .set('pageSize', '1000')
+      .set('pageNumber', '1');
+
+    return this.http
+      .get<Producto[]>(`${this.baseUrl}productos`, { params })
+      .pipe(
+        catchError(
+          this.handleError<Producto[]>('Error al obtener productos para exportar')
+        )
+      );
+  }
+
+  getComprasParaExportar(
+    fechaInicio?: string,
+    fechaFin?: string
+  ): Observable<Compra[]> {
+    let params = new HttpParams();
+
+    if (fechaInicio) {
+      params = params.append('fechaInicio', fechaInicio);
+    }
+
+    if (fechaFin) {
+      params = params.append('fechaFin', fechaFin);
+    }
+
+    return this.http
+      .get<Compra[]>(`${this.baseUrl}compras`, { params })
+      .pipe(
+        catchError(
+          this.handleError<Compra[]>('Error al obtener compras para exportar')
+        )
+      );
+  }
+
 }
