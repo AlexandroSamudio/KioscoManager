@@ -5,10 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    public class VentasController(IVentaRepository ventaRepository) : BaseApiController
+    public class VentasController(IVentaRepository _ventaRepository) : BaseApiController
     {
-        private readonly IVentaRepository _ventaRepository = ventaRepository;
-
         protected int KioscoId => User.GetKioscoId();
         protected int UserId => User.GetUserId();
 
@@ -82,6 +80,32 @@ namespace API.Controllers
             var result = await _ventaRepository.CreateVentaAsync(ventaDto, KioscoId, UserId, cancellationToken);
             
             return result.ToActionResult(venta => CreatedAtAction(nameof(GetVentasDelDia), new { fecha = venta.Fecha.Date }, venta));
+        }
+
+        [HttpGet("export")]
+        public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasForExport(
+            CancellationToken cancellationToken,
+            [FromQuery] DateTime? fechaInicio = null,
+            [FromQuery] DateTime? fechaFin = null,
+            [FromQuery] int? limite = null)
+        {
+            if (fechaInicio.HasValue && fechaFin.HasValue && fechaInicio > fechaFin)
+            {
+                return BadRequest("La fecha desde no puede ser mayor que la fecha hasta");
+            }
+
+            if (limite.HasValue && limite <= 0)
+            {
+                return BadRequest("El límite debe ser mayor que cero");
+            }
+
+            if (limite.HasValue && limite > 10000)
+            {
+                return BadRequest("El límite no puede ser mayor a 10,000 registros");
+            }
+
+            var ventas = await _ventaRepository.GetVentasForExportAsync(KioscoId, cancellationToken, fechaInicio, fechaFin, limite);
+            return Ok(ventas);
         }
     }
 }

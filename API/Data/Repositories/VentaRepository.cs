@@ -5,18 +5,16 @@ using AutoMapper.QueryableExtensions;
 using API.Entities;
 using Microsoft.EntityFrameworkCore;
 using API.Constants;
+using API.Helpers;
 
 namespace API.Data.Repositories
 {
     public class VentaRepository(DataContext context, IMapper mapper) : IVentaRepository
     {
-        private readonly DataContext _context = context;
-        private readonly IMapper _mapper = mapper;
-
         public async Task<Result<VentaDto>> CreateVentaAsync(VentaCreateDto ventaCreateDto, int kioscoId, int usuarioId, CancellationToken cancellationToken = default)
         {
             var productosIds = ventaCreateDto.Productos.Select(p => p.ProductoId).Distinct().ToList();
-            var productos = await _context.Productos!
+            var productos = await context.Productos!
                 .Where(p => p.KioscoId == kioscoId && productosIds.Contains(p.Id))
                 .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
 
@@ -27,11 +25,11 @@ namespace API.Data.Repositories
                 return Result<VentaDto>.Failure(VentaErrorCodes.ProductosNoEncontrados, errorMessage);
             }
 
-            using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
-            
+            using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
             try
             {
-                var venta = _mapper.Map<Venta>(ventaCreateDto);
+                var venta = mapper.Map<Venta>(ventaCreateDto);
                 venta.KioscoId = kioscoId;
                 venta.UsuarioId = usuarioId;
                 venta.Fecha = DateTime.UtcNow;
@@ -44,19 +42,19 @@ namespace API.Data.Repositories
                         var errorMessage = $"Stock insuficiente para '{producto.Nombre}'. Solicitado: {detalle.Cantidad}, Disponible: {producto.Stock}.";
                         return Result<VentaDto>.Failure(VentaErrorCodes.StockInsuficiente, errorMessage);
                     }
-                    
+
                     detalle.PrecioUnitario = producto.PrecioVenta;
                     producto.Stock -= detalle.Cantidad;
                 }
 
                 venta.Total = venta.Detalles.Sum(d => d.PrecioUnitario * d.Cantidad);
 
-                _context.Ventas!.Add(venta);
-                await _context.SaveChangesAsync(cancellationToken);
-                
+                context.Ventas!.Add(venta);
+                await context.SaveChangesAsync(cancellationToken);
+
                 await transaction.CommitAsync(cancellationToken);
-                
-                var ventaDto = _mapper.Map<VentaDto>(venta);
+
+                var ventaDto = mapper.Map<VentaDto>(venta);
                 return Result<VentaDto>.Success(ventaDto);
             }
             catch (Exception)
@@ -66,28 +64,27 @@ namespace API.Data.Repositories
             }
         }
 
-        public async Task<IReadOnlyList<VentaDto>> GetVentasDelDiaAsync(int kioscoId,CancellationToken cancellationToken, DateTime? fecha = null)
+        public async Task<IReadOnlyList<VentaDto>> GetVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
-            var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
-            var fechaFin = fechaUtc.AddDays(1);
+            var fechaInicio = fecha?.Date ?? DateTime.UtcNow.Date;
+            var fechaFin = fechaInicio.AddDays(1);
 
-            return await _context.Ventas!
-                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaUtc && v.Fecha < fechaFin)
+            return await context.Ventas!
+                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < fechaFin)
                 .OrderByDescending(v => v.Fecha)
                 .AsNoTracking()
-                .ProjectTo<VentaDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<VentaDto>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<IReadOnlyList<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken)
         {
-            return await _context.Ventas!
+            return await context.Ventas!
                 .Where(v => v.KioscoId == kioscoId)
                 .OrderByDescending(v => v.Fecha)
                 .Take(cantidad)
                 .AsNoTracking()
-                .ProjectTo<VentaDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<VentaDto>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
         }
 
@@ -97,7 +94,7 @@ namespace API.Data.Repositories
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
             var fechaFin = fechaUtc.AddDays(1);
 
-            return await _context.Ventas!
+            return await context.Ventas!
                 .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaUtc && v.Fecha < fechaFin)
                 .AsNoTracking()
                 .SumAsync(v => v.Total, cancellationToken);
@@ -109,7 +106,7 @@ namespace API.Data.Repositories
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
             var fechaFin = fechaUtc.AddDays(1);
 
-            return await _context.DetalleVentas!
+            return await context.DetalleVentas!
                 .AsNoTracking()
                 .Where(dv => dv.Venta!.KioscoId == kioscoId && dv.Venta!.Fecha >= fechaUtc && dv.Venta.Fecha < fechaFin)
                 .GroupBy(dv => new { dv.ProductoId, dv.Producto!.Nombre})
@@ -121,6 +118,39 @@ namespace API.Data.Repositories
                 })
                 .OrderByDescending(p => p.CantidadVendida)
                 .Take(cantidad)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<VentaDto>> GetVentasForExportAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? limite = null)
+        {
+            const int DEFAULT_EXPORT_LIMIT = 5000;
+            var limiteAplicar = limite ?? DEFAULT_EXPORT_LIMIT;
+
+            var query = context.Ventas!
+                .Where(v => v.KioscoId == kioscoId)
+                .AsQueryable();
+
+            if (fechaInicio.HasValue)
+            {
+                var fechaInicioUtc = fechaInicio.Value.Kind == DateTimeKind.Utc
+                    ? fechaInicio.Value
+                    : fechaInicio.Value.ToUniversalTime();
+                query = query.Where(v => v.Fecha >= fechaInicioUtc);
+            }
+
+            if (fechaFin.HasValue)
+            {
+                var fechaFinUtc = fechaFin.Value.Kind == DateTimeKind.Utc
+                    ? fechaFin.Value
+                    : fechaFin.Value.ToUniversalTime();
+                query = query.Where(v => v.Fecha <= fechaFinUtc);
+            }
+
+            return await query
+                .OrderByDescending(v => v.Fecha)
+                .Take(limiteAplicar)
+                .AsNoTracking()
+                .ProjectTo<VentaDto>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
         }
     }

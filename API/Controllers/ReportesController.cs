@@ -5,15 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    public class ReportesController : BaseApiController
+    public class ReportesController(IReporteRepository reportRepository) : BaseApiController
     {
-        private readonly IReporteRepository _reportRepository;
-
-        public ReportesController(IReporteRepository reportRepository)
-        {
-            _reportRepository = reportRepository;
-        }
-
         protected int KioscoId => User.GetKioscoId();
 
         [HttpGet]
@@ -22,13 +15,9 @@ namespace API.Controllers
             [FromQuery] DateTime? fechaInicio = null,
             [FromQuery] DateTime? fechaFin = null)
         {
-            var (isValid, errorMessage) = ConfigurarFechasReporte(fechaInicio, fechaFin, out var start, out var end);
-            if (!isValid)
-            {
-                return BadRequest(errorMessage);
-            }
+            var (fechaInicioFinal, fechaFinFinal) = NormalizarFechas(fechaInicio, fechaFin, 30);
 
-            var summary = await _reportRepository.CalculateKpiReporteAsync(KioscoId, start, end, cancellationToken);
+            var summary = await reportRepository.CalculateKpiReporteAsync(KioscoId, fechaInicioFinal, fechaFinFinal, cancellationToken);
             return Ok(summary);
         }
 
@@ -41,22 +30,18 @@ namespace API.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] int limit = 5)
         {
-            var (isValid, errorMessage) = ConfigurarFechasReporte(fechaInicio, fechaFin, out var start, out var end);
-            if (!isValid)
-            {
-                return BadRequest(errorMessage);
-            }
+            var (fechaInicioFinal, fechaFinFinal) = NormalizarFechas(fechaInicio, fechaFin, 90);
 
             limit = Math.Clamp(limit, 1, 50);
             pageSize = Math.Clamp(pageSize, 1, 10);
             pageNumber = Math.Max(pageNumber, 1);
 
-            var topProducts = await _reportRepository.GetTopProductsByVentasAsync(
+            var topProducts = await reportRepository.GetTopProductsByVentasAsync(
                 KioscoId,
                 pageNumber,
                 pageSize,
-                start,
-                end,
+                fechaInicioFinal,
+                fechaFinFinal,
                 cancellationToken,
                 limit);
 
@@ -75,16 +60,12 @@ namespace API.Controllers
             [FromQuery] DateTime? fechaInicio = null,
             [FromQuery] DateTime? fechaFin = null)
         {
-            var (isValid, errorMessage) = ConfigurarFechasReporte(fechaInicio, fechaFin, out var start, out var end);
-            if (!isValid)
-            {
-                return BadRequest(errorMessage);
-            }
+            var (fechaInicioFinal, fechaFinFinal) = NormalizarFechas(fechaInicio, fechaFin, 60);
 
-            var salesOverTime = await _reportRepository.GetVentasPorDiaAsync(
+            var salesOverTime = await reportRepository.GetVentasPorDiaAsync(
                 KioscoId,
-                start,
-                end,
+                fechaInicioFinal,
+                fechaFinFinal,
                 cancellationToken);
 
             if (salesOverTime.Count == 0)
@@ -101,13 +82,9 @@ namespace API.Controllers
             [FromQuery] DateTime? fechaInicio = null,
             [FromQuery] DateTime? fechaFin = null)
         {
-            var (isValid, errorMessage) = ConfigurarFechasReporte(fechaInicio, fechaFin, out var start, out var end);
-            if (!isValid)
-            {
-                return BadRequest(errorMessage);
-            }
+            var (fechaInicioFinal, fechaFinFinal) = NormalizarFechas(fechaInicio, fechaFin, 90);
 
-            var categorias = await _reportRepository.GetCategoriasRentabilidadAsync(KioscoId, start, end, cancellationToken);
+            var categorias = await reportRepository.GetCategoriasRentabilidadAsync(KioscoId, fechaInicioFinal, fechaFinFinal, cancellationToken);
 
             if (categorias.Count == 0)
             {
@@ -117,33 +94,15 @@ namespace API.Controllers
             return Ok(categorias);
         }
 
-        private static (bool isValid, string? errorMessage) ConfigurarFechasReporte(
+        private static (DateTime fechaInicio, DateTime fechaFin) NormalizarFechas(
             DateTime? fechaInicio,
             DateTime? fechaFin,
-            out DateTime start,
-            out DateTime end)
+            int defaultDaysBack = 30)
         {
-            // Aseguramos que las fechas tengan el Kind UTC para PostgreSQL
-            start = fechaInicio.HasValue
-                ? DateTime.SpecifyKind(fechaInicio.Value, DateTimeKind.Utc)
-                : DateTime.SpecifyKind(new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1), DateTimeKind.Utc);
+            var fechaInicioFinal = fechaInicio ?? DateTime.UtcNow.AddDays(-defaultDaysBack);
+            var fechaFinFinal = fechaFin ?? DateTime.UtcNow;
 
-            end = fechaFin.HasValue
-                ? DateTime.SpecifyKind(fechaFin.Value, DateTimeKind.Utc)
-                : DateTime.UtcNow;
-
-            if (start > end)
-            {
-                return (false, "La fecha de inicio debe ser anterior o igual a la fecha final");
-            }
-
-            var maxRange = TimeSpan.FromDays(366);
-            if (end - start > maxRange)
-            {
-                return (false, $"El rango de fechas no puede superar {maxRange.Days} días");
-            }
-
-            return (true, null);
+            return (fechaInicioFinal, fechaFinFinal);
         }
     }
 }

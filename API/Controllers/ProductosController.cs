@@ -11,7 +11,7 @@ namespace API.Controllers
         protected int KioscoId => User.GetKioscoId();
 
         [HttpGet]
-        public async Task<ActionResult<PagedList<ProductoDto>>> GetProductos(
+        public async Task<ActionResult<PagedList<ProductoDto>>> GetProductosPaginated(
             CancellationToken cancellationToken,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
@@ -25,7 +25,7 @@ namespace API.Controllers
             pageSize = Math.Clamp(pageSize, 1, 10);
             pageNumber = Math.Max(pageNumber, 1);
 
-            var productos = await productoRepository.GetProductosAsync(
+            var productos = await productoRepository.GetProductosPaginatedAsync(
                 cancellationToken,
                 KioscoId,
                 pageNumber,
@@ -70,7 +70,7 @@ namespace API.Controllers
         public async Task<ActionResult<ProductoDto>> CreateProducto(ProductoCreateDto dto, CancellationToken cancellationToken)
         {
             var result = await productoRepository.CreateProductoAsync(KioscoId, dto, cancellationToken);
-            
+
             return result.ToActionResult(producto => CreatedAtAction(nameof(GetProducto), new { id = producto.Id }, producto));
         }
 
@@ -95,7 +95,7 @@ namespace API.Controllers
         }
 
         [HttpGet("capital-invertido")]
-        public async Task<ActionResult<ProductoInfoDto>> GetCapitalInvertido(CancellationToken cancellationToken)
+        public async Task<ActionResult<decimal>> GetCapitalInvertido(CancellationToken cancellationToken)
         {
             var resultado = await productoRepository.GetCapitalInvertidoTotalAsync(KioscoId, cancellationToken);
             return Ok(resultado);
@@ -105,7 +105,27 @@ namespace API.Controllers
         public async Task<ActionResult<int>> GetTotalProductos(CancellationToken cancellationToken)
         {
             var total = await productoRepository.GetTotalProductosUnicosAsync(KioscoId, cancellationToken);
-            return Ok(new { totalProductos = total });
+            return Ok(total);
+        }
+        
+        [HttpGet("export")]
+        public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductosForExport(
+            CancellationToken cancellationToken,
+            [FromQuery] int? limite = null)
+        {
+
+            if (limite.HasValue && limite <= 0)
+            {
+                return BadRequest("El límite debe ser mayor que cero");
+            }
+
+            if (limite.HasValue && limite > 50000)
+            {
+                return BadRequest("El límite no puede ser mayor a 50,000 registros");
+            }
+
+            var productos = await productoRepository.GetProductosForExportAsync(KioscoId, cancellationToken, limite);
+            return Ok(productos);
         }
     }
 }

@@ -86,12 +86,6 @@ namespace API.DTOs
         public required string Sku { get; set; }
     }
 
-    public class ProductoInfoDto
-    {
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal TotalCapitalInvertido { get; set; }
-    }
-
     public class ProductoMasVendidoDto
     {
         [Required]

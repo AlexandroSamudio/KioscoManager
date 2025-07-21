@@ -78,6 +78,10 @@ namespace API.Data
                 
             builder.Entity<Venta>()
                 .HasIndex(v => v.Fecha);
+
+            builder.Entity<Venta>()
+                .Property(v => v.Fecha)
+                .HasColumnType("timestamptz");
                 
             builder.Entity<Venta>()
                 .HasIndex(v => new { v.KioscoId, v.Fecha });
