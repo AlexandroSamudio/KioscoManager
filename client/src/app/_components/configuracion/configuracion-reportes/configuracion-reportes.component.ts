@@ -1,13 +1,17 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormControl,
+  FormGroup,
+} from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule } from '@angular/material/core';
-import { ReporteService } from '../../../_services/reporte.service';
-import { TipoReporte} from '../../../_models/exportacion-reporte.model';
+import { TipoReporte } from '../../../_models/exportacion-reporte.model';
 import { ExcelPdfService } from '../../../_services/excel-pdf.service';
 import {
   MAT_MOMENT_DATE_ADAPTER_OPTIONS,
@@ -36,7 +40,7 @@ import { ProductoService } from '../../../_services/producto.service';
     MatDatepickerModule,
     MatInputModule,
     MatFormFieldModule,
-    MatNativeDateModule
+    MatNativeDateModule,
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'es' },
@@ -62,7 +66,7 @@ import { ProductoService } from '../../../_services/producto.service';
     },
   ],
   templateUrl: './configuracion-reportes.component.html',
-  styleUrls: ['./configuracion-reportes.component.css']
+  styleUrls: ['./configuracion-reportes.component.css'],
 })
 export class ConfiguracionReportesComponent implements OnInit {
   private notificacionService = inject(NotificationService);
@@ -81,7 +85,7 @@ export class ConfiguracionReportesComponent implements OnInit {
   filtrosFechaForm = new FormGroup({
     fechaInicio: this.fechaInicioControl,
     fechaFin: this.fechaFinControl,
-    limiteExportacion: this.limiteExportacionControl
+    limiteExportacion: this.limiteExportacionControl,
   });
 
   readonly tiposReporte: TipoReporte[] = [
@@ -89,20 +93,20 @@ export class ConfiguracionReportesComponent implements OnInit {
       id: 'ventas',
       nombre: 'Lista de Ventas',
       descripcion: 'Exportar historial completo de ventas realizadas',
-      icono: 'fas fa-shopping-cart'
+      icono: 'fas fa-shopping-cart',
     },
     {
       id: 'productos',
       nombre: 'Lista de Productos',
       descripcion: 'Exportar inventario actual con precios y stock',
-      icono: 'fas fa-box'
+      icono: 'fas fa-box',
     },
     {
       id: 'compras',
       nombre: 'Lista de Compras',
       descripcion: 'Exportar historial de compras a proveedores',
-      icono: 'fas fa-truck'
-    }
+      icono: 'fas fa-truck',
+    },
   ];
 
   ngOnInit(): void {
@@ -113,13 +117,20 @@ export class ConfiguracionReportesComponent implements OnInit {
     this.tipoReporteSeleccionado.set(tipo);
   }
 
-  private obtenerFechasComoISOString(): { fechaInicio?: string; fechaFin?: string } {
+  private obtenerFechasComoISOString(): {
+    fechaInicio?: string;
+    fechaFin?: string;
+  } {
     const fechaInicio = this.fechaInicioControl.value;
     const fechaFin = this.fechaFinControl.value;
 
     return {
-      fechaInicio: fechaInicio ? moment(fechaInicio).startOf('day').toISOString() : undefined,
-      fechaFin: fechaFin ? moment(fechaFin).endOf('day').toISOString() : undefined
+      fechaInicio: fechaInicio
+        ? moment(fechaInicio).startOf('day').toISOString()
+        : undefined,
+      fechaFin: fechaFin
+        ? moment(fechaFin).endOf('day').toISOString()
+        : undefined,
     };
   }
 
@@ -128,11 +139,15 @@ export class ConfiguracionReportesComponent implements OnInit {
 
     if (limite !== null && limite !== undefined) {
       if (limite <= 0) {
-        this.notificacionService.showError('El límite debe ser mayor que cero.');
+        this.notificacionService.showError(
+          'El límite debe ser mayor que cero.'
+        );
         return false;
       }
       if (limite > 50000) {
-        this.notificacionService.showError('El límite no puede ser mayor a 50,000 registros.');
+        this.notificacionService.showError(
+          'El límite no puede ser mayor a 50,000 registros.'
+        );
         return false;
       }
     }
@@ -147,11 +162,13 @@ export class ConfiguracionReportesComponent implements OnInit {
     const { fechaInicio, fechaFin } = this.obtenerFechasComoISOString();
 
     if (fechaFin && fechaInicio && moment(fechaFin).isBefore(fechaInicio)) {
-      this.notificacionService.showError('La fecha de fin no puede ser anterior a la fecha de inicio.');
+      this.notificacionService.showError(
+        'La fecha de fin no puede ser anterior a la fecha de inicio.'
+      );
       return null;
     }
 
-    if (tipoSeleccionado.id === 'ventas' && !this.validarLimiteExportacion()) {
+    if (!this.validarLimiteExportacion()) {
       return null;
     }
 
@@ -160,21 +177,30 @@ export class ConfiguracionReportesComponent implements OnInit {
       const limite = this.limiteExportacionControl.value;
       switch (tipoSeleccionado.id) {
         case 'ventas':
-          data = await firstValueFrom(this.ventaService.getVentasParaExportar(
-            fechaInicio,
-            fechaFin,
-            limite || undefined
-          )) || [];
+          data =
+            (await firstValueFrom(
+              this.ventaService.getVentasParaExportar(
+                fechaInicio,
+                fechaFin,
+                limite || undefined
+              )
+            )) || [];
           break;
         case 'productos':
-          data = await firstValueFrom(this.productoService.getProductosParaExportar(limite || undefined)) || [];
+          data =
+            (await firstValueFrom(
+              this.productoService.getProductosParaExportar(limite || undefined)
+            )) || [];
           break;
         case 'compras':
-          data = await firstValueFrom(this.compraService.getComprasParaExportar(
-            fechaInicio,
-            fechaFin,
-            limite || undefined
-          )) || [];
+          data =
+            (await firstValueFrom(
+              this.compraService.getComprasParaExportar(
+                fechaInicio,
+                fechaFin,
+                limite || undefined
+              )
+            )) || [];
           break;
         default:
           console.error(`Tipo de reporte no soportado: ${tipoSeleccionado.id}`);
@@ -188,7 +214,13 @@ export class ConfiguracionReportesComponent implements OnInit {
     }
   }
 
-  async exportarExcel(): Promise<void> {
+  private async ejecutarExportacion(
+    tipoExportacion: 'csv' | 'pdf',
+    funcionExportacion: (
+      tipoReporte: 'ventas' | 'productos' | 'compras',
+      data: any[]
+    ) => void
+  ): Promise<void> {
     const tipoSeleccionado = this.tipoReporteSeleccionado();
     if (!tipoSeleccionado) return;
 
@@ -200,34 +232,31 @@ export class ConfiguracionReportesComponent implements OnInit {
         return;
       }
 
-      this.excelPdfService.exportarCsv(tipoSeleccionado.id, data);
+      funcionExportacion(
+        tipoSeleccionado.id as 'ventas' | 'productos' | 'compras',
+        data
+      );
     } catch (error) {
-      console.error('Error en exportarExcel:', error);
-      this.notificacionService.showError('Error al exportar el reporte a CSV.');
+      const tipoTexto = tipoExportacion === 'csv' ? 'CSV' : 'PDF';
+      console.error(`Error en exportar${tipoTexto}:`, error);
+      this.notificacionService.showError(
+        `Error al exportar el reporte a ${tipoTexto}.`
+      );
     } finally {
       this.isLoading.set(false);
     }
   }
 
+  async exportarExcel(): Promise<void> {
+    await this.ejecutarExportacion('csv', (tipoReporte, data) => {
+      this.excelPdfService.exportarCsv(tipoReporte, data);
+    });
+  }
+
   async exportarPDF(): Promise<void> {
-    const tipoSeleccionado = this.tipoReporteSeleccionado();
-    if (!tipoSeleccionado) return;
-
-    this.isLoading.set(true);
-
-    try {
-      const data = await this.obtenerDatosReporte();
-      if (data === null) {
-        return;
-      }
-
-      this.excelPdfService.exportarPDF(tipoSeleccionado.id, data);
-    } catch (error) {
-      console.error('Error en exportarPDF:', error);
-      this.notificacionService.showError('Error al exportar el reporte a PDF.');
-    } finally {
-      this.isLoading.set(false);
-    }
+    await this.ejecutarExportacion('pdf', (tipoReporte, data) => {
+      this.excelPdfService.exportarPDF(tipoReporte, data);
+    });
   }
 
   limpiarSeleccion(): void {
@@ -246,7 +275,9 @@ export class ConfiguracionReportesComponent implements OnInit {
     const fechaFin = this.fechaFinControl.value;
 
     if (fechaInicio && fechaFin) {
-      return `Del ${moment(fechaInicio).format('L')} al ${moment(fechaFin).format('L')}`;
+      return `Del ${moment(fechaInicio).format('L')} al ${moment(
+        fechaFin
+      ).format('L')}`;
     }
     if (fechaInicio) {
       return `Desde ${moment(fechaInicio).format('L')}`;
@@ -262,11 +293,11 @@ export class ConfiguracionReportesComponent implements OnInit {
 
     let texto = this.textoFiltroFechas;
 
-      if (limite && limite > 0) {
-        texto += ` • Límite: ${limite.toLocaleString()} registros`;
-      } else {
-        texto += ' • Límite: 5,000 registros (por defecto)';
-      }
+    if (limite && limite > 0) {
+      texto += ` • Límite: ${limite.toLocaleString()} registros`;
+    } else {
+      texto += ' • Límite: 5,000 registros (por defecto)';
+    }
 
     return texto;
   }
