@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { catchError, Observable, throwError } from 'rxjs';
@@ -8,7 +8,7 @@ import { Producto } from '../_models/producto.model';
 import { VentaCreate } from '../_models/venta-create.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class VentaService {
   private http = inject(HttpClient);
@@ -17,34 +17,77 @@ export class VentaService {
 
   private handleError<T>(message: string) {
     return (error: any) => {
-      this.notificationService.error(message, error?.message ?? 'Inténtelo de nuevo');
+      this.notificationService.error(
+        message,
+        error?.message ?? 'Inténtelo de nuevo'
+      );
       return throwError(() => error);
     };
   }
 
   getProductoBySku(sku: string): Observable<Producto> {
-    return this.http.get<Producto>(`${this.baseUrl}productos/by-sku/${sku}`).pipe(
-      catchError((error) => {
-        return throwError(() => error);
-      })
-    );
+    return this.http
+      .get<Producto>(`${this.baseUrl}productos/by-sku/${sku}`)
+      .pipe(
+        catchError((error) => {
+          return throwError(() => error);
+        })
+      );
   }
 
   finalizarVenta(venta: VentaCreate): Observable<Venta> {
-    return this.http.post<Venta>(`${this.baseUrl}ventas/finalizar`, venta).pipe(
-      catchError(this.handleError<Venta>('Error al finalizar la venta'))
-    );
+    return this.http
+      .post<Venta>(`${this.baseUrl}ventas/finalizar`, venta)
+      .pipe(catchError(this.handleError<Venta>('Error al finalizar la venta')));
   }
 
   getTotalVentasDia(): Observable<number> {
-    return this.http.get<number>(`${this.baseUrl}ventas/total-dia`).pipe(
-      catchError(this.handleError<number>('Error al obtener el total de ventas del día'))
-    );
+    return this.http
+      .get<number>(`${this.baseUrl}ventas/total-dia`)
+      .pipe(
+        catchError(
+          this.handleError<number>(
+            'Error al obtener el total de ventas del día'
+          )
+        )
+      );
   }
 
   getVentasRecientes(): Observable<Venta[]> {
-    return this.http.get<Venta[]>(`${this.baseUrl}ventas/recientes`).pipe(
-      catchError(this.handleError<Venta[]>('Error al obtener las ventas recientes'))
-    );
+    return this.http
+      .get<Venta[]>(`${this.baseUrl}ventas/recientes`)
+      .pipe(
+        catchError(
+          this.handleError<Venta[]>('Error al obtener las ventas recientes')
+        )
+      );
+  }
+
+  getVentasParaExportar(
+    fechaInicio?: string,
+    fechaFin?: string,
+    limite?: number
+  ): Observable<Venta[]> {
+    let params = new HttpParams();
+
+    if (fechaInicio) {
+      params = params.append('fechaInicio', fechaInicio);
+    }
+
+    if (fechaFin) {
+      params = params.append('fechaFin', fechaFin);
+    }
+
+    if (limite !== undefined && limite > 0) {
+      params = params.append('limite', limite.toString());
+    }
+
+    return this.http
+      .get<Venta[]>(`${this.baseUrl}ventas/export`, { params })
+      .pipe(
+        catchError(
+          this.handleError<Venta[]>('Error al obtener ventas para exportar')
+        )
+      );
   }
 }
