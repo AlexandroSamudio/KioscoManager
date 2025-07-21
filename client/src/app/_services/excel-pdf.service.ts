@@ -8,7 +8,24 @@ export class ExcelPdfService {
 
   private notificationService = inject(NotificationService);
 
-  exportarExcel(tipoReporte: 'ventas' | 'productos' | 'compras', data: any[]): void {
+  private escapeHtml(text: string | number | undefined | null): string {
+    if (text === null || text === undefined) {
+      return '';
+    }
+
+    const str = String(text);
+    const entityMap: { [key: string]: string } = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;'
+    };
+
+    return str.replace(/[&<>"']/g, (char) => entityMap[char]);
+  }
+
+  exportarCsv(tipoReporte: 'ventas' | 'productos' | 'compras', data: any[]): void {
     this.notificationService.info('Preparando exportación...', 'Por favor espere');
 
     try {
@@ -88,7 +105,9 @@ export class ExcelPdfService {
       link.click();
       document.body.removeChild(link);
 
-      this.notificationService.success('Archivo exportado exitosamente', 'Excel/CSV');
+      URL.revokeObjectURL(url);
+
+      this.notificationService.showSuccess('Archivo exportado exitosamente');
     } catch (error) {
       this.notificationService.error('Error al exportar archivo', 'Inténtelo de nuevo');
       console.error('Error en exportación:', error);
@@ -109,7 +128,7 @@ export class ExcelPdfService {
         <html>
         <head>
           <meta charset="utf-8">
-          <title>Reporte de ${tipoReporte.charAt(0).toUpperCase() + tipoReporte.slice(1)}</title>
+          <title>Reporte de ${this.escapeHtml(tipoReporte.charAt(0).toUpperCase() + tipoReporte.slice(1))}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { color: #d97706; text-align: center; }
@@ -122,8 +141,8 @@ export class ExcelPdfService {
         </head>
         <body>
           <div class="header">
-            <h1>Reporte de ${tipoReporte.charAt(0).toUpperCase() + tipoReporte.slice(1)}</h1>
-            <p class="date">Generado el: ${new Date().toLocaleDateString()}</p>
+            <h1>Reporte de ${this.escapeHtml(tipoReporte.charAt(0).toUpperCase() + tipoReporte.slice(1))}</h1>
+            <p class="date">Generado el: ${this.escapeHtml(new Date().toLocaleDateString())}</p>
           </div>
           <table>
             <thead>
@@ -135,7 +154,7 @@ export class ExcelPdfService {
           htmlContent += '<th>Fecha</th><th>Total</th><th>Cantidad Productos</th>';
           break;
         case 'productos':
-          htmlContent += '<th>SKU</th><th>Nombre</th><th>Precio Compra</th><th>Precio Venta</th><th>Stock</th><th>Categoría</th>';
+          htmlContent += '<th>SKU</th><th>Nombre</th><th>Descripción</th><th>Precio Compra</th><th>Precio Venta</th><th>Stock</th><th>Categoría</th>';
           break;
         case 'compras':
           htmlContent += '<th>Fecha</th><th>Total</th><th>Proveedor</th><th>Cantidad Items</th>';
@@ -150,27 +169,28 @@ export class ExcelPdfService {
         switch (tipoReporte) {
           case 'ventas':
             htmlContent += `
-              <td>${item.fecha ? new Date(item.fecha).toLocaleDateString() : ''}</td>
-              <td>$${item.total || 0}</td>
-              <td>${item.cantidadProductos || 0}</td>
+              <td>${this.escapeHtml(item.fecha ? new Date(item.fecha).toLocaleDateString() : '')}</td>
+              <td>$${this.escapeHtml(item.total || 0)}</td>
+              <td>${this.escapeHtml(item.cantidadProductos || 0)}</td>
             `;
             break;
           case 'productos':
             htmlContent += `
-              <td>${item.sku || ''}</td>
-              <td>${item.nombre || ''}</td>
-              <td>$${item.precioCompra || 0}</td>
-              <td>$${item.precioVenta || 0}</td>
-              <td>${item.stock || 0}</td>
-              <td>${item.categoriaNombre || ''}</td>
+              <td>${this.escapeHtml(item.sku || '')}</td>
+              <td>${this.escapeHtml(item.nombre || '')}</td>
+              <td>${this.escapeHtml(item.descripcion || '')}</td>
+              <td>$${this.escapeHtml(item.precioCompra || 0)}</td>
+              <td>$${this.escapeHtml(item.precioVenta || 0)}</td>
+              <td>${this.escapeHtml(item.stock || 0)}</td>
+              <td>${this.escapeHtml(item.categoriaNombre || '')}</td>
             `;
             break;
           case 'compras':
             htmlContent += `
-              <td>${item.fecha ? new Date(item.fecha).toLocaleDateString() : ''}</td>
-              <td>$${item.costoTotal || 0}</td>
-              <td>${item.proveedor || ''}</td>
-              <td>${item.detalles?.length || 0}</td>
+              <td>${this.escapeHtml(item.fecha ? new Date(item.fecha).toLocaleDateString() : '')}</td>
+              <td>$${this.escapeHtml(item.costoTotal || 0)}</td>
+              <td>${this.escapeHtml(item.proveedor || '')}</td>
+              <td>${this.escapeHtml(item.detalles?.length || 0)}</td>
             `;
             break;
         }
