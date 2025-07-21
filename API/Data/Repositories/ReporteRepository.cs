@@ -20,10 +20,10 @@ namespace API.Data.Repositories
             DateTime fechaFin,
             CancellationToken cancellationToken)
         {
-            var endOfDay = DateTime.SpecifyKind(fechaFin.Date.AddHours(23).AddMinutes(59).AddSeconds(59), DateTimeKind.Utc);
+            var endOfDay = fechaFin.Date.AddDays(1);
 
             var ventasQuery = context.Ventas!
-                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha <= endOfDay);
+                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < endOfDay);
 
             var numeroTransacciones = await ventasQuery.CountAsync(cancellationToken);
 
@@ -33,7 +33,7 @@ namespace API.Data.Repositories
             var detallesVenta = await context.DetalleVentas!
                 .Include(d => d.Producto)
                 .Include(d => d.Venta)
-                .Where(d => d.Venta!.KioscoId == kioscoId && d.Venta.Fecha >= fechaInicio && d.Venta.Fecha <= endOfDay)
+                .Where(d => d.Venta!.KioscoId == kioscoId && d.Venta.Fecha >= fechaInicio && d.Venta.Fecha < endOfDay)
                 .ToListAsync(cancellationToken);
 
             var productosYFechas = detallesVenta
@@ -88,8 +88,8 @@ namespace API.Data.Repositories
                 .GroupBy(d => new
                 {
                     d.ProductoId,
-                    Nombre = d.Producto!.Nombre,
-                    Sku = d.Producto.Sku,
+                    d.Producto!.Nombre,
+                    d.Producto.Sku,
                     Categoria = d.Producto.Categoria!.Nombre
                 })
                 .Select(g => new ProductoMasVendidoDto
@@ -138,15 +138,17 @@ namespace API.Data.Repositories
                     .Where(d => d.Venta!.KioscoId == kioscoId &&
                                 d.Venta.Fecha >= fechaInicio &&
                                 d.Venta.Fecha < fechaFin)
-                    .AsEnumerable()
-                    .GroupBy(d => GetStartOfWeek(d.Venta!.Fecha))
+                    .GroupBy(d => new
+                    {
+                        Year = d.Venta!.Fecha.Year,
+                        WeekStart = d.Venta.Fecha.Date.AddDays(-(int)d.Venta.Fecha.DayOfWeek + (d.Venta.Fecha.DayOfWeek == DayOfWeek.Sunday ? -6 : 1))
+                    })
                     .Select(g => new VentasPorDiaDto
                     {
-                        Fecha = g.Key,
+                        Fecha = g.Key.WeekStart,
                         TotalVentas = g.Sum(d => d.Cantidad * d.PrecioUnitario),
                         TipoAgrupacion = tipoAgrupacionString
-                    })
-                    .AsQueryable(),
+                    }),
 
                 GroupingType.Monthly => context.DetalleVentas!
                     .Include(d => d.Venta)
@@ -268,24 +270,6 @@ namespace API.Data.Repositories
                 <= 90 => GroupingType.Weekly,
                 _ => GroupingType.Monthly
             };
-        }
-
-        private static DateTime GetPeriodKey(DateTime fecha, GroupingType groupingType)
-        {
-            return groupingType switch
-            {
-                GroupingType.Daily => fecha,
-                GroupingType.Weekly => GetStartOfWeek(fecha),
-                GroupingType.Monthly => new DateTime(fecha.Year, fecha.Month, 1),
-                _ => fecha
-            };
-        }
-
-        private static DateTime GetStartOfWeek(DateTime fecha)
-        {
-            var dayOfWeek = (int)fecha.DayOfWeek;
-            var diff = dayOfWeek == 0 ? 6 : dayOfWeek - 1;
-            return fecha.Date.AddDays(-diff);
         }
 
         private static string GetGroupingTypeString(GroupingType groupingType)

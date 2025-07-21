@@ -128,6 +128,7 @@ namespace API.Data.Repositories
 
             var query = context.Ventas!
                 .Where(v => v.KioscoId == kioscoId)
+                .AsNoTracking()
                 .AsQueryable();
 
             if (fechaInicio.HasValue)
@@ -149,7 +150,6 @@ namespace API.Data.Repositories
             return await query
                 .OrderByDescending(v => v.Fecha)
                 .Take(limiteAplicar)
-                .AsNoTracking()
                 .ProjectTo<VentaDto>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
         }

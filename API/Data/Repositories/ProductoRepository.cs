@@ -180,11 +180,12 @@ namespace API.Data.Repositories
 
             var query = context.Productos!
                 .Where(v => v.KioscoId == kioscoId)
+                .OrderBy(v => v.Id)
+                .AsNoTracking()
                 .AsQueryable();
 
             return await query
                 .Take(limiteAplicar)
-                .AsNoTracking()
                 .ProjectTo<ProductoDto>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
         }
