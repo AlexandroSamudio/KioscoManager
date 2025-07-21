@@ -13,7 +13,7 @@ import { NotificationService } from './notification.service';
 export class CompraService {
   private http = inject(HttpClient);
   private notificationService = inject(NotificationService);
-  private baseUrl = environment.apiUrl;
+  private baseUrl = environment.apiUrl + 'compras';
 
   private handleError<T>(message: string) {
     return (error: any) => {
@@ -51,7 +51,7 @@ export class CompraService {
     }
 
     return this.http
-      .get<Compra[]>(`${this.baseUrl}compras/export`, { params })
+      .get<Compra[]>(`${this.baseUrl}/export`, { params })
       .pipe(
         catchError(
           this.handleError<Compra[]>('Error al obtener compras para exportar')

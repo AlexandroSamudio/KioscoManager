@@ -65,7 +65,6 @@ import { ProductoService } from '../../../_services/producto.service';
   styleUrls: ['./configuracion-reportes.component.css']
 })
 export class ConfiguracionReportesComponent implements OnInit {
-  private reporteService = inject(ReporteService);
   private notificacionService = inject(NotificationService);
   private excelPdfService = inject(ExcelPdfService);
   private ventaService = inject(VentaService);
