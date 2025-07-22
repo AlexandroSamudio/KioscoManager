@@ -24,13 +24,35 @@
     </div>
   </div>
 
-  @if(ventasPorDia().length > 0) {
   <div class="h-72">
-    <canvas #chartCanvas></canvas>
+    <canvas #chartCanvas *ngIf="hasVentasData()" class="w-full h-full">
+    </canvas>
+
+    <div
+      *ngIf="!hasVentasData()"
+      class="flex flex-col items-center justify-center h-full text-amber-700"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-16 w-16 text-amber-400 mb-4"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.5"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+        />
+      </svg>
+      <h4 class="text-lg font-medium text-amber-800 mb-2">
+        Sin datos de ventas
+      </h4>
+      <p class="text-amber-600 text-center">
+        No hay datos de ventas para el día actual.<br />
+        Las ventas aparecerán aquí cuando se realicen.
+      </p>
+    </div>
   </div>
-  } @else {
-  <div class="flex items-center justify-center h-40">
-    <p class="text-gray-500">No hay datos de ventas para el día actual.</p>
-  </div>
-  }
 </div>
