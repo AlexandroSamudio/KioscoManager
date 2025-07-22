@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Authorize(Policy = "RequireAdminRole")]
+    [Authorize]
     public class CategoriasController : BaseApiController
     {
         private readonly ICategoriaRepository _categoriaRepository;
@@ -43,6 +43,7 @@ namespace API.Controllers
             return Ok(categoria);
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPost]
         public async Task<ActionResult<CategoriaDto>> CreateCategoria(CategoriaCreateDto createDto, CancellationToken cancellationToken)
         {
@@ -51,6 +52,7 @@ namespace API.Controllers
             return result.ToActionResult(categoria => CreatedAtAction(nameof(GetCategoria), new { id = categoria.Id }, categoria));
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategoria(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken)
         {
@@ -58,6 +60,7 @@ namespace API.Controllers
             return result.ToActionResult();
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategoria(int id, CancellationToken cancellationToken)
         {

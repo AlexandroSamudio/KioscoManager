@@ -50,9 +50,8 @@ namespace API.Authorization
 
             if (isMiembro)
             {
-                var errorMessage = "Los usuarios con rol 'miembro' no pueden realizar acciones hasta ser asignados a un kiosco por un administrador.";
-                StoreErrorMessage(context, errorMessage);
-                context.Fail(new AuthorizationFailureReason(this, errorMessage));
+                FailWithErrorMessage(context, requirement, 
+                    "Los usuarios con rol 'miembro' no pueden realizar acciones hasta ser asignados a un kiosco por un administrador.");
                 return;
             }
 
@@ -67,13 +66,21 @@ namespace API.Authorization
 
             if (!isAdmin)
             {
-                var errorMessage = "Esta acción requiere permisos de administrador. Solo los administradores pueden acceder a esta funcionalidad.";
-                StoreErrorMessage(context, errorMessage);
-                context.Fail(new AuthorizationFailureReason(this, errorMessage));
+                FailWithErrorMessage(context, requirement,
+                    "Esta acción requiere permisos de administrador. Solo los administradores pueden acceder a esta funcionalidad.");
                 return;
             }
 
             context.Succeed(requirement);
+        }
+
+        private void FailWithErrorMessage(
+            AuthorizationHandlerContext context, 
+            IAuthorizationRequirement requirement, 
+            string errorMessage)
+        {
+            StoreErrorMessage(context, errorMessage);
+            context.Fail(new AuthorizationFailureReason(this, errorMessage));
         }
 
         private static void StoreErrorMessage(AuthorizationHandlerContext context, string message)
@@ -86,9 +93,12 @@ namespace API.Authorization
 
         private static bool IsUserInRole(ClaimsPrincipal user, string role)
         {
-            return user.IsInRole(role) || 
-                   user.HasClaim("role", role) ||
-                   user.HasClaim(ClaimTypes.Role, role);
+            if (user.IsInRole(role))
+                return true;
+
+            return user.Claims.Any(c => 
+                       (c.Type == "role" || c.Type == ClaimTypes.Role) && 
+                       string.Equals(c.Value, role, StringComparison.OrdinalIgnoreCase));
         }
     }
 }
