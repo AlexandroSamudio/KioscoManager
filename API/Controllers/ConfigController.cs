@@ -13,6 +13,7 @@ namespace API.Controllers
         protected int KioscoId => User.GetKioscoId();
         protected int UserId => User.GetUserId();
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpGet("kiosko/info-basico")]
         public async Task<ActionResult<KioscoBasicInfoDto>> GetKioscoBasicInfo(CancellationToken cancellationToken)
         {
@@ -22,10 +23,11 @@ namespace API.Controllers
             {
                 return NotFound("Información básica del kiosco no encontrada.");
             }
-            
+
             return Ok(basicInfoDto);
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpGet("kiosco")]
         public async Task<ActionResult<KioscoConfigDto>> GetKioscoConfig(CancellationToken cancellationToken)
         {
@@ -33,6 +35,7 @@ namespace API.Controllers
             return Ok(configDto);
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("kiosco")]
         public async Task<IActionResult> UpdateKioscoConfig(KioscoConfigUpdateDto configUpdateDto, CancellationToken cancellationToken)
         {
@@ -40,14 +43,15 @@ namespace API.Controllers
             return result.ToActionResult();
         }
 
+        [Authorize(Policy = "RequireAdminRole")]
         [HttpPut("kiosko/info-basico")]
-        [Authorize(Roles = "administrador")]
         public async Task<IActionResult> UpdateKioscoBasicInfo(KioscoBasicInfoUpdateDto updateDto, CancellationToken cancellationToken)
         {
             var result = await _configRepository.UpdateKioscoBasicInfoAsync(KioscoId, updateDto, cancellationToken);
             return result.ToActionResult();
         }
 
+        [Authorize]
         [HttpGet("user/preferencias")]
         public async Task<ActionResult<UserPreferencesDto>> GetUserPreferences(CancellationToken cancellationToken)
         {
@@ -55,6 +59,7 @@ namespace API.Controllers
             return Ok(preferencesDto);
         }
 
+        [Authorize]
         [HttpPut("user/preferencias")]
         public async Task<IActionResult> UpdateUserPreferences(UserPreferencesUpdateDto updateDto, CancellationToken cancellationToken)
         {

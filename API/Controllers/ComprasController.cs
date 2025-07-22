@@ -1,10 +1,12 @@
 using API.DTOs;
 using API.Extensions;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    [Authorize]
     public class ComprasController(ICompraRepository _compraRepository) : BaseApiController
     {
         protected int KioscoId => User.GetKioscoId();
@@ -35,6 +37,7 @@ namespace API.Controllers
         }
 
         [HttpGet("export")]
+        [Authorize(Policy = "RequireAdminRole")]
         public async Task<ActionResult<IReadOnlyList<CompraDto>>> GetComprasForExport(
             CancellationToken cancellationToken,
             [FromQuery] DateTime? fechaInicio = null,

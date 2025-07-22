@@ -19,6 +19,14 @@ namespace API.Middleware
             try
             {
                 await _next(context);
+                if (context.Response.StatusCode == 401 && !context.Response.HasStarted)
+                {
+                    await HandleUnauthorizedResponseAsync(context);
+                }
+                else if (context.Response.StatusCode == 403 && !context.Response.HasStarted)
+                {
+                    await HandleForbiddenResponseAsync(context);
+                }
             }
             catch (Exception ex)
             {
@@ -51,18 +59,58 @@ namespace API.Middleware
                     response.Message = "Recurso no encontrado";
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     break;
-
-                case UnauthorizedAccessException:
-                    response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    response.Message = "No autorizado";
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    break;
-
                 default:
                     response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     response.Message = "Ha ocurrido un error interno del servidor";
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     break;
+            }
+
+            var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            await context.Response.WriteAsync(jsonResponse);
+        }
+
+        private static async Task HandleUnauthorizedResponseAsync(HttpContext context)
+        {
+            context.Response.ContentType = "application/json";
+
+            var response = new ErrorResponse
+            {
+                StatusCode = 401,
+                Message = "Acceso no autorizado.",
+                Details = "Debe proporcionar un token de autenticación válido para acceder a este recurso."
+            };
+
+            var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            await context.Response.WriteAsync(jsonResponse);
+        }
+
+        private static async Task HandleForbiddenResponseAsync(HttpContext context)
+        {
+            context.Response.ContentType = "application/json";
+
+            var response = new ErrorResponse
+            {
+                StatusCode = 403,
+                Message = "Acceso denegado."
+            };
+
+            var customMessage = context.Items["AuthorizationErrorMessage"] as string;
+            if (!string.IsNullOrEmpty(customMessage))
+            {
+                response.Details = customMessage;
+            }
+            else
+            {
+                response.Details = "No tiene permisos suficientes para realizar esta acción.";
             }
 
             var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions

@@ -4,6 +4,7 @@ using API.Entities;
 using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -64,11 +65,6 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
 
         if (user == null) return Unauthorized("Usuario no encontrado.");
 
-        if (await userManager.IsInRoleAsync(user, "administrador") || user.KioscoId.HasValue)
-        {
-            return BadRequest("El usuario ya es un administrador o ya está asignado a un kiosco.");
-        }
-
         await using var transaction = await context.Database.BeginTransactionAsync();
 
         try
@@ -121,6 +117,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         }
     }
 
+        
     [HttpGet("kiosco-invitation-codes")]
     public async Task<ActionResult<IEnumerable<object>>> GetKioscoInvitationCodes()
     {
@@ -129,13 +126,8 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
 
         if (user == null) return Unauthorized("Usuario no encontrado.");
 
-        if (!await userManager.IsInRoleAsync(user, "administrador") || !user.KioscoId.HasValue)
-        {
-            return BadRequest("Solo los administradores pueden ver los códigos de invitación de su kiosco.");
-        }
-
         var invitationCodes = await context.CodigosInvitacion
-            .Where(c => c.KioscoId == user.KioscoId.Value)
+            .Where(c => c.KioscoId == user.KioscoId!.Value)
             .OrderByDescending(c => c.Id)
             .Select(c => new
             {
@@ -221,6 +213,8 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         }
     }
 
+
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("generate-invitation-code")]
     public async Task<ActionResult<GeneratedInvitationCodeDto>> GenerateInvitationCode()
     {
@@ -228,12 +222,8 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         var user = await userManager.FindByIdAsync(userId.ToString());
 
         if (user == null) return Unauthorized("Usuario no encontrado.");
-        if (!await userManager.IsInRoleAsync(user, "administrador") || !user.KioscoId.HasValue)
-        {
-            return BadRequest("Solo los administradores pueden generar códigos de invitación para su kiosco.");
-        }
 
-        var newCodigoInvitacion = await GenerateAndSaveInvitationCodeAsync(user.KioscoId.Value);
+        var newCodigoInvitacion = await GenerateAndSaveInvitationCodeAsync(user.KioscoId!.Value);
 
         logger.LogInformation("Nuevo código de invitación '{Code}' generado por el administrador '{AdminUserName}' (ID: {AdminUserId}) para el kiosco ID: {KioscoId}",
             newCodigoInvitacion.Code, user.UserName, user.Id, user.KioscoId.Value);

@@ -6,14 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Authorize]
 public class UsersController(IUserRepository _userRepository) : BaseApiController
 {
     protected int KioscoId => User.GetKioscoId();
     protected int UserId => User.GetUserId();
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("{id}")]
-    [Authorize(Roles = "administrador")]
     public async Task<ActionResult<UserManagementDto>> GetUser(int id, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetUserByIdAsync(id, cancellationToken);
@@ -26,8 +25,8 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
         return Ok(user);
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("kiosco/{kioscoId}")]
-    [Authorize(Roles = "administrador")]
     public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersByKiosco(
         int kioscoId, 
         [FromQuery] int pageNumber = 1, 
@@ -48,8 +47,8 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
         return Ok(users);
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("{userId}/role")]
-    [Authorize(Roles = "administrador")]
     public async Task<ActionResult<UserRoleResponseDto>> AssignRole(int userId, UserRoleAssignmentDto roleAssignment, CancellationToken cancellationToken)
     {
         var result = await _userRepository.AssignRoleAsync(userId, roleAssignment.Role, UserId, cancellationToken);
@@ -57,16 +56,16 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
         return result.ToActionResult();
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("{userId}/is-admin")]
-    [Authorize(Roles = "administrador")]
     public async Task<ActionResult<bool>> IsUserAdmin(int userId, CancellationToken cancellationToken)
     {
         var isAdmin = await _userRepository.IsUserAdminAsync(userId, cancellationToken);
         return Ok(isAdmin);
     }
 
-    [HttpPut("{userId}/perfil")]
     [Authorize]
+    [HttpPut("{userId}/perfil")]
     public async Task<IActionResult> UpdateProfile(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
     {
         if (UserId != userId)
@@ -80,8 +79,8 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
 
     }
 
-    [HttpPut("{userId}/password")]
     [Authorize]
+    [HttpPut("{userId}/password")]
     public async Task<IActionResult> ChangePassword(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken)
     {
         if (UserId != userId)
