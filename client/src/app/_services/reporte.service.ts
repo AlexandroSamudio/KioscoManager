@@ -9,6 +9,7 @@ import {
   VentaPorDiaResponse,
 } from '../_models/venta-por-dia.model';
 import { CategoriaRentabilidad } from '../_models/categoria-rentabilidad.model';
+import { VentaChart } from '../_models/venta-chart.model';
 import { setPaginationHeaders, PaginatedResult } from './pagination.helper';
 import { NotificationService } from './notification.service';
 
@@ -148,6 +149,22 @@ export class ReporteService {
           this.handleError<CategoriaRentabilidad[]>(
             'Error al obtener categorías de rentabilidad'
           )
+        )
+      );
+  }
+
+  getVentasParaChart(fecha?: Date): Observable<VentaChart[]> {
+    let params = new HttpParams();
+
+    if (fecha) {
+      params = params.append('fecha', fecha.toISOString());
+    }
+
+    return this.http
+      .get<VentaChart[]>(`${this.baseUrl}reportes/ventas-chart`, { params })
+      .pipe(
+        catchError(
+          this.handleError<VentaChart[]>('Error al obtener ventas para gráfico')
         )
       );
   }

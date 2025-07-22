@@ -1,6 +1,5 @@
 import {
   Component,
-  OnInit,
   DestroyRef,
   inject,
   ViewChild,
@@ -8,14 +7,14 @@ import {
   AfterViewInit,
   WritableSignal,
   signal,
-  effect,
+  computed,
   OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReporteService } from '../../_services/reporte.service';
-import { VentaPorDia } from '../../_models/venta-por-dia.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import Chart from 'chart.js/auto';
+import { VentaChart } from '../../_models/venta-chart.model';
 
 @Component({
   selector: 'app-line-chart',
@@ -24,29 +23,20 @@ import Chart from 'chart.js/auto';
   templateUrl: './line-chart.component.html',
   styleUrls: ['./line-chart.component.css'],
 })
-export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
+export class LineChartComponent implements AfterViewInit, OnDestroy {
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
 
   private reporteService = inject(ReporteService);
   private destroyRef = inject(DestroyRef);
   private chart: Chart | null = null;
-  private chartEffect = effect(() => {
-    const data = this.ventasPorDia();
-    if (data.length > 0 && this.chartCanvas) {
-      this.createChart();
-    }
-  });
 
-  ventasPorDia: WritableSignal<VentaPorDia[]> = signal([]);
+  ventasPorDia: WritableSignal<VentaChart[]> = signal([]);
 
-  ngOnInit(): void {
-    this.loadVentasPorDia();
-  }
+  readonly hasVentasData = computed(() => this.ventasPorDia().length > 0);
+  readonly ventasDataArray = computed(() => this.ventasPorDia());
 
   ngAfterViewInit(): void {
-    if (this.ventasPorDia().length > 0) {
-      this.createChart();
-    }
+    this.loadVentasPorDia();
   }
 
   ngOnDestroy(): void {
@@ -61,32 +51,37 @@ export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadVentasPorDia(): void {
-    const fechaFin = new Date();
-    fechaFin.setHours(23, 59, 59, 999);
-    const fechaFinISO = fechaFin.toISOString();
-
-    const fechaInicio = new Date();
-    fechaInicio.setHours(0, 0, 0, 0);
-    const fechaInicioISO = fechaInicio.toISOString();
+    const fechaActual = new Date();
 
     this.reporteService
-      .getVentasPorDia(fechaInicioISO, fechaFinISO)
+      .getVentasParaChart(fechaActual)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (data) => {
+        next: (data: VentaChart[]) => {
           this.ventasPorDia.set(data);
-          console.log('Datos de ventas por día cargados:', data);
-        }
+          if (data.length > 0) {
+            setTimeout(() => this.createChart(), 100);
+          }
+        },
+        error: (error) => {
+          console.error(
+            'Error al cargar datos de ventas para el gráfico:',
+            error
+          );
+          this.ventasPorDia.set([]);
+        },
       });
   }
 
   createChart(): void {
-    if (!this.chartCanvas) {
+    if (!this.chartCanvas?.nativeElement) {
+      console.warn('Canvas no disponible para crear el gráfico');
       return;
     }
 
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
     if (!ctx) {
+      console.error('No se pudo obtener el contexto 2D del canvas');
       return;
     }
 
@@ -95,13 +90,17 @@ export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
       this.chart = null;
     }
 
-    const sortedData = this.ventasPorDia();
+    const sortedData = this.ventasDataArray();
 
     if (sortedData.length === 0) {
       return;
     }
 
-    const fullDates = sortedData.map((item) => new Date(item.fecha));
+    const dataOrdenada = [...sortedData].sort(
+      (a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
+    );
+
+    const fullDates = dataOrdenada.map((item) => new Date(item.fecha));
 
     const labels = fullDates.map((date) => {
       const options: Intl.DateTimeFormatOptions = {
@@ -113,7 +112,7 @@ export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
       return date.toLocaleString('es-AR', options);
     });
 
-    const data = sortedData.map((item) => item.totalVentas);
+    const data = dataOrdenada.map((item) => item.total);
 
     const primaryColor = '#d97706';
     const fillColor = 'rgba(217, 119, 6, 0.2)';
@@ -185,7 +184,7 @@ export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
             callbacks: {
               title: (tooltipItems) => {
                 const dataIndex = tooltipItems[0].dataIndex;
-                const fecha = sortedData[dataIndex].fecha;
+                const fecha = dataOrdenada[dataIndex].fecha;
 
                 const date = new Date(fecha);
                 const options: Intl.DateTimeFormatOptions = {
@@ -253,12 +252,11 @@ export class LineChartComponent implements OnInit, AfterViewInit, OnDestroy {
               minRotation: 0,
               autoSkip: true,
               autoSkipPadding: 30,
-              maxTicksLimit: sortedData.length > 10 ? 6 : 10,
+              maxTicksLimit: dataOrdenada.length > 10 ? 6 : 10,
             },
           },
         },
       },
     });
   }
-
 }
