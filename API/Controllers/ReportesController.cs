@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    public class ReportesController(IReporteRepository reportRepository) : BaseApiController
+    public class ReportesController(IReporteRepository reportRepository, IVentaRepository ventaRepository) : BaseApiController
     {
         protected int KioscoId => User.GetKioscoId();
 
@@ -92,6 +92,15 @@ namespace API.Controllers
             }
 
             return Ok(categorias);
+        }
+
+        [HttpGet("ventas-chart")]
+        public async Task<ActionResult<IReadOnlyList<VentaChartDto>>> GetVentasParaChart(
+            CancellationToken cancellationToken,
+            [FromQuery] DateTime? fecha = null)
+        {
+            var ventasChart = await ventaRepository.GetVentasIndividualesDelDiaAsync(KioscoId, cancellationToken, fecha);
+            return Ok(ventasChart);
         }
 
         private static (DateTime fechaInicio, DateTime fechaFin) NormalizarFechas(

@@ -42,4 +42,11 @@ namespace API.DTOs
         /// Tipo de agrupación utilizada: "daily", "weekly", "monthly"
         public string? TipoAgrupacion { get; set; }
     }
+
+    public class VentaChartDto
+    {
+        public int Id { get; set; }
+        public DateTime Fecha { get; set; }
+        public decimal Total { get; set; }
+    }
 }

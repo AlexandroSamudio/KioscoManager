@@ -5,7 +5,6 @@ using AutoMapper.QueryableExtensions;
 using API.Entities;
 using Microsoft.EntityFrameworkCore;
 using API.Constants;
-using API.Helpers;
 
 namespace API.Data.Repositories
 {
@@ -151,6 +150,25 @@ namespace API.Data.Repositories
                 .OrderByDescending(v => v.Fecha)
                 .Take(limiteAplicar)
                 .ProjectTo<VentaDto>(mapper.ConfigurationProvider)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<IReadOnlyList<VentaChartDto>> GetVentasIndividualesDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
+        {
+            var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
+            var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
+            var fechaFin = fechaUtc.AddDays(1);
+
+            return await context.Ventas!
+                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaUtc && v.Fecha < fechaFin)
+                .OrderBy(v => v.Fecha)
+                .AsNoTracking()
+                .Select(v => new VentaChartDto
+                {
+                    Id = v.Id,
+                    Fecha = v.Fecha,
+                    Total = v.Total
+                })
                 .ToListAsync(cancellationToken);
         }
     }

@@ -20,10 +20,8 @@ namespace API.Data.Repositories
             DateTime fechaFin,
             CancellationToken cancellationToken)
         {
-            var endOfDay = fechaFin.Date.AddDays(1);
-
             var ventasQuery = context.Ventas!
-                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < endOfDay);
+                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < fechaFin);
 
             var numeroTransacciones = await ventasQuery.CountAsync(cancellationToken);
 
@@ -33,7 +31,7 @@ namespace API.Data.Repositories
             var detallesVenta = await context.DetalleVentas!
                 .Include(d => d.Producto)
                 .Include(d => d.Venta)
-                .Where(d => d.Venta!.KioscoId == kioscoId && d.Venta.Fecha >= fechaInicio && d.Venta.Fecha < endOfDay)
+                .Where(d => d.Venta!.KioscoId == kioscoId && d.Venta.Fecha >= fechaInicio && d.Venta.Fecha < fechaFin)
                 .ToListAsync(cancellationToken);
 
             var productosYFechas = detallesVenta
@@ -41,7 +39,7 @@ namespace API.Data.Repositories
                 .Distinct()
                 .ToList();
 
-            var costosHistoricos = await ObtenerCostosHistoricosBulkAsync(productosYFechas, cancellationToken);
+            var costosHistoricos = await ObtenerCostosHistoricosAsync(productosYFechas, cancellationToken);
 
             decimal costoMercaderia = 0;
 
@@ -76,15 +74,13 @@ namespace API.Data.Repositories
         {
             limit = Math.Clamp(limit, 1, 50);
 
-            var fechaFinEndOfDay = fechaFin.Date.AddDays(1);
-
             var query = context.DetalleVentas!
                 .Include(d => d.Producto)
                 .Include(d => d.Producto!.Categoria)
                 .Include(d => d.Venta)
                 .Where(d => d.Venta!.KioscoId == kioscoId &&
                            d.Venta.Fecha >= fechaInicio &&
-                           d.Venta.Fecha <= fechaFinEndOfDay)
+                           d.Venta.Fecha <= fechaFin)
                 .GroupBy(d => new
                 {
                     d.ProductoId,
@@ -124,11 +120,16 @@ namespace API.Data.Repositories
                     .Include(d => d.Venta)
                     .Where(d => d.Venta!.KioscoId == kioscoId &&
                                 d.Venta.Fecha >= fechaInicio &&
-                                d.Venta.Fecha < fechaFin)
-                    .GroupBy(d => d.Venta!.Fecha.Date)
+                                d.Venta.Fecha <= fechaFin)
+                    .GroupBy(d => new
+                    {
+                        d.Venta!.Fecha.Year,
+                        d.Venta.Fecha.Month,
+                        d.Venta.Fecha.Day
+                    })
                     .Select(g => new VentasPorDiaDto
                     {
-                        Fecha = g.Key,
+                        Fecha = new DateTime(g.Key.Year, g.Key.Month, g.Key.Day),
                         TotalVentas = g.Sum(d => d.Cantidad * d.PrecioUnitario),
                         TipoAgrupacion = tipoAgrupacionString
                     }),
@@ -137,11 +138,12 @@ namespace API.Data.Repositories
                     .Include(d => d.Venta)
                     .Where(d => d.Venta!.KioscoId == kioscoId &&
                                 d.Venta.Fecha >= fechaInicio &&
-                                d.Venta.Fecha < fechaFin)
+                                d.Venta.Fecha <= fechaFin)
                     .GroupBy(d => new
                     {
-                        Year = d.Venta!.Fecha.Year,
-                        WeekStart = d.Venta.Fecha.Date.AddDays(-(int)d.Venta.Fecha.DayOfWeek + (d.Venta.Fecha.DayOfWeek == DayOfWeek.Sunday ? -6 : 1))
+                        d.Venta!.Fecha.Year,
+                        WeekStart = new DateTime(d.Venta.Fecha.Year, d.Venta.Fecha.Month, d.Venta.Fecha.Day)
+                            .AddDays(-(int)d.Venta.Fecha.DayOfWeek + (d.Venta.Fecha.DayOfWeek == DayOfWeek.Sunday ? -6 : 1))
                     })
                     .Select(g => new VentasPorDiaDto
                     {
@@ -154,7 +156,7 @@ namespace API.Data.Repositories
                     .Include(d => d.Venta)
                     .Where(d => d.Venta!.KioscoId == kioscoId &&
                                 d.Venta.Fecha >= fechaInicio &&
-                                d.Venta.Fecha < fechaFin)
+                                d.Venta.Fecha <= fechaFin)
                     .GroupBy(d => new
                     {
                         d.Venta!.Fecha.Year,
@@ -184,15 +186,13 @@ namespace API.Data.Repositories
             DateTime fechaFin,
             CancellationToken cancellationToken)
         {
-            var endOfDay = DateTime.SpecifyKind(new DateTime(fechaFin.Year, fechaFin.Month, fechaFin.Day, 23, 59, 59), DateTimeKind.Utc);
-
             var detallesVentaPorCategoria = await context.DetalleVentas!
                 .Include(d => d.Producto)
                     .ThenInclude(p => p!.Categoria)
                 .Include(d => d.Venta)
                 .Where(d => d.Venta!.KioscoId == kioscoId &&
                            d.Venta.Fecha >= fechaInicio &&
-                           d.Venta.Fecha <= endOfDay &&
+                           d.Venta.Fecha <= fechaFin &&
                            d.Producto!.Categoria != null)
                 .ToListAsync(cancellationToken);
 
@@ -200,8 +200,8 @@ namespace API.Data.Repositories
                 .GroupBy(d => new { d.Producto!.CategoriaId, d.Producto.Categoria!.Nombre })
                 .Select(g => new
                 {
-                    CategoriaId = g.Key.CategoriaId,
-                    Nombre = g.Key.Nombre,
+                    g.Key.CategoriaId,
+                    g.Key.Nombre,
                     Detalles = g.ToList(),
                     TotalVentas = g.Sum(d => d.Cantidad * d.PrecioUnitario),
                 })
@@ -226,7 +226,7 @@ namespace API.Data.Repositories
         }
 
 
-        private async Task<Dictionary<int, decimal?>> ObtenerCostosHistoricosBulkAsync(
+        private async Task<Dictionary<int, decimal?>> ObtenerCostosHistoricosAsync(
             IEnumerable<(int ProductoId, DateTime Fecha)> productosYFechas,
             CancellationToken cancellationToken)
         {
