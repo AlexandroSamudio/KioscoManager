@@ -1,6 +1,5 @@
 using API.DTOs;
 using API.Extensions;
-using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,28 +9,6 @@ namespace API.Controllers
     {
         protected int KioscoId => User.GetKioscoId();
 
-        [HttpGet]
-        public async Task<ActionResult<PagedList<CompraDto>>> GetCompras(
-            CancellationToken cancellationToken,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] DateTime? fechaDesde = null,
-            [FromQuery] DateTime? fechaHasta = null,
-            [FromQuery] string? sortColumn = null,
-            [FromQuery] string? sortDirection = null)
-        {
-            pageSize = Math.Clamp(pageSize, 1, 10);
-            pageNumber = Math.Max(pageNumber, 1);
-
-            var compras = await _compraRepository.GetComprasAsync(
-                KioscoId, pageNumber, pageSize, cancellationToken,
-                fechaDesde, fechaHasta, sortColumn, sortDirection);
-
-            Response.AddPaginationHeader(compras);
-
-            return Ok(compras);
-        }
-
         [HttpGet("{id}")]
         public async Task<ActionResult<CompraDto>> GetCompra(int id, CancellationToken cancellationToken)
         {
@@ -40,31 +17,6 @@ namespace API.Controllers
             if (compra == null) return NotFound("Compra no encontrada");
 
             return compra;
-        }
-
-        [HttpGet("recientes")]
-        public async Task<ActionResult<IReadOnlyList<CompraDto>>> GetComprasRecientes(CancellationToken cancellationToken, [FromQuery] int cantidad = 5)
-        {
-            if (cantidad < 1 || cantidad > 50) return BadRequest("La cantidad debe estar entre 1 y 50");
-            var compras = await _compraRepository.GetComprasRecientesAsync(KioscoId, cantidad, cancellationToken);
-
-            return Ok(compras);
-        }
-
-        [HttpGet("total")]
-        public async Task<ActionResult<decimal>> GetTotalComprasPeriodo(
-            CancellationToken cancellationToken,
-            [FromQuery] DateTime? fechaDesde = null,
-            [FromQuery] DateTime? fechaHasta = null)
-        {
-            if (fechaDesde.HasValue && fechaHasta.HasValue && fechaDesde > fechaHasta)
-            {
-                return BadRequest("La fecha desde no puede ser mayor que la fecha hasta");
-            }
-
-            var total = await _compraRepository.GetTotalComprasDelPeriodoAsync(KioscoId, cancellationToken, fechaDesde, fechaHasta);
-
-            return Ok(total);
         }
 
         [HttpPost]
@@ -80,6 +32,32 @@ namespace API.Controllers
                 compraDto, KioscoId, usuarioId, cancellationToken);
 
             return result.ToActionResult(compra => CreatedAtAction(nameof(GetCompra), new { id = compra.Id }, compra));
+        }
+
+        [HttpGet("export")]
+        public async Task<ActionResult<IReadOnlyList<CompraDto>>> GetComprasForExport(
+            CancellationToken cancellationToken,
+            [FromQuery] DateTime? fechaInicio = null,
+            [FromQuery] DateTime? fechaFin = null,
+            [FromQuery] int? limite = null)
+        {
+            if (fechaInicio.HasValue && fechaFin.HasValue && fechaInicio > fechaFin)
+            {
+                return BadRequest("La fecha inicio no puede ser mayor que la fecha fin");
+            }
+
+            if (limite.HasValue && limite <= 0)
+            {
+                return BadRequest("El límite debe ser mayor que cero");
+            }
+
+            if (limite.HasValue && limite > 10000)
+            {
+                return BadRequest("El límite no puede ser mayor a 10,000 registros");
+            }
+
+            var compras = await _compraRepository.GetComprasForExportAsync(KioscoId, cancellationToken, fechaInicio, fechaFin, limite);
+            return Ok(compras);
         }
     }
 }

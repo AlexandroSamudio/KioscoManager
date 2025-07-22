@@ -9,27 +9,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Data.Repositories
 {
-    public class ProductoRepository : IProductoRepository
+    public class ProductoRepository(DataContext context, IMapper mapper) : IProductoRepository
     {
-        private readonly DataContext _context;
-        private readonly IMapper _mapper;
-
-        public ProductoRepository(DataContext context, IMapper mapper)
+        public async Task<ProductoDto?> GetProductoByIdAsync(int kioscoId, int id, CancellationToken cancellationToken)
         {
-            _context = context;
-            _mapper = mapper;
-        }
-
-        public async Task<ProductoDto?> GetProductoByIdAsync(int kioscoId,int id,CancellationToken cancellationToken)
-        {
-            return await _context.Productos!
+            return await context.Productos!
                 .Where(p => p.Id == id && p.KioscoId == kioscoId)
                 .AsNoTracking()
-                            .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
+                            .ProjectTo<ProductoDto>(mapper.ConfigurationProvider)
                             .SingleOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<PagedList<ProductoDto>> GetProductosAsync(
+        public async Task<PagedList<ProductoDto>> GetProductosPaginatedAsync(
             CancellationToken cancellationToken,
             int kioscoId,
             int pageNumber,
@@ -40,7 +31,7 @@ namespace API.Data.Repositories
             string? sortColumn = null,
             string? sortDirection = null)
         {
-            var query = _context.Productos!
+            var query = context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
                 .AsNoTracking();
 
@@ -89,36 +80,36 @@ namespace API.Data.Repositories
                 _ => query.OrderBy(p => p.Id)
             };
 
-            return await PagedList<ProductoDto>.CreateAsync(query.ProjectTo<ProductoDto>(_mapper.ConfigurationProvider),
+            return await PagedList<ProductoDto>.CreateAsync(query.ProjectTo<ProductoDto>(mapper.ConfigurationProvider),
                 pageNumber, pageSize, cancellationToken);
         }
 
-        public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int cantidad,int kioscoId,CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<ProductoDto>> GetProductosByLowestStockAsync(int cantidad, int kioscoId, CancellationToken cancellationToken)
         {
             const int LowStockThreshold = 3;
-            return await _context.Productos!
+            return await context.Productos!
                 .Where(p => p.Stock <= LowStockThreshold && p.KioscoId == kioscoId)
                 .OrderBy(p => p.Stock)
                 .AsNoTracking()
-                .Take(cantidad) 
-                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
+                .Take(cantidad)
+                .ProjectTo<ProductoDto>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
         }
 
         public async Task<Result> DeleteProductoAsync(int kioscoId, int id, CancellationToken cancellationToken)
         {
-            var producto = await _context.Productos!
+            var producto = await context.Productos!
                 .FirstOrDefaultAsync(p => p.Id == id && p.KioscoId == kioscoId, cancellationToken);
             if (producto == null) return Result.Failure(ErrorCodes.EntityNotFound, "Producto no encontrado");
 
-            _context.Productos!.Remove(producto);
-            await _context.SaveChangesAsync(cancellationToken);
+            context.Productos!.Remove(producto);
+            await context.SaveChangesAsync(cancellationToken);
             return Result.Success();
         }
 
         public async Task<Result<ProductoDto>> CreateProductoAsync(int kioscoId, ProductoCreateDto createDto, CancellationToken cancellationToken)
         {
-            var exists = await _context.Productos!
+            var exists = await context.Productos!
                 .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == createDto.Sku, cancellationToken);
 
             if (exists)
@@ -126,63 +117,77 @@ namespace API.Data.Repositories
                 return Result<ProductoDto>.Failure(ErrorCodes.FieldExists, "El SKU ya existe para este kiosco.");
             }
 
-            var producto = _mapper.Map<Entities.Producto>(createDto);
+            var producto = mapper.Map<Entities.Producto>(createDto);
             producto.KioscoId = kioscoId;
 
-            _context.Productos!.Add(producto);
-            await _context.SaveChangesAsync(cancellationToken);
+            context.Productos!.Add(producto);
+            await context.SaveChangesAsync(cancellationToken);
 
-            var productoDto = _mapper.Map<ProductoDto>(producto);
+            var productoDto = mapper.Map<ProductoDto>(producto);
 
             return Result<ProductoDto>.Success(productoDto);
         }
 
         public async Task<Result> UpdateProductoAsync(int kioscoId, int id, ProductoUpdateDto dto, CancellationToken cancellationToken)
         {
-            var producto = await _context.Productos!
+            var producto = await context.Productos!
                 .FirstOrDefaultAsync(p => p.Id == id && p.KioscoId == kioscoId, cancellationToken);
             if (producto == null) return Result.Failure(ErrorCodes.EntityNotFound, "Producto no encontrado");
 
-            var exists = await _context.Productos!
+            var exists = await context.Productos!
                 .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == dto.Sku && p.Id != id, cancellationToken);
             if (exists)
             {
                 return Result.Failure(ErrorCodes.FieldExists, "Ya existe un producto con el mismo SKU en este kiosco.");
             }
 
-            _mapper.Map(dto, producto);
+            mapper.Map(dto, producto);
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
         }
 
         public async Task<ProductoDto?> GetProductoBySkuAsync(int kioscoId, string sku, CancellationToken cancellationToken)
         {
-            return await _context.Productos!
+            return await context.Productos!
                 .Where(p => p.KioscoId == kioscoId && p.Sku == sku)
                 .AsNoTracking()
-                .ProjectTo<ProductoDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<ProductoDto>(mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<ProductoInfoDto> GetCapitalInvertidoTotalAsync(int kioscoId, CancellationToken cancellationToken)
+        public async Task<decimal> GetCapitalInvertidoTotalAsync(int kioscoId, CancellationToken cancellationToken)
         {
-            var totalCapital = await _context.Productos!
+            var totalCapital = await context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
                 .SumAsync(p => (decimal?)(p.PrecioCompra * p.Stock) ?? 0, cancellationToken);
 
-            return new ProductoInfoDto
-            {
-                TotalCapitalInvertido = totalCapital,
-            };
+            return totalCapital;
         }
 
         public async Task<int> GetTotalProductosUnicosAsync(int kioscoId, CancellationToken cancellationToken)
         {
-            return await _context.Productos!
+            return await context.Productos!
                 .Where(p => p.KioscoId == kioscoId)
                 .CountAsync(cancellationToken);
+        }
+        
+        public async Task<IReadOnlyList<ProductoDto>> GetProductosForExportAsync(int kioscoId, CancellationToken cancellationToken, int? limite = null)
+        {
+            const int DEFAULT_EXPORT_LIMIT = 5000;
+            var limiteAplicar = limite ?? DEFAULT_EXPORT_LIMIT;
+
+            var query = context.Productos!
+                .Where(v => v.KioscoId == kioscoId)
+                .OrderBy(v => v.Id)
+                .AsNoTracking()
+                .AsQueryable();
+
+            return await query
+                .Take(limiteAplicar)
+                .ProjectTo<ProductoDto>(mapper.ConfigurationProvider)
+                .ToListAsync(cancellationToken);
         }
     }
 }

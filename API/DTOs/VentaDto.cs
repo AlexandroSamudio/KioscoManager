@@ -38,5 +38,15 @@ namespace API.DTOs
         [Required]
         [Column(TypeName = "decimal(18, 2)")]
         public required decimal TotalVentas { get; set; }
+
+        /// Tipo de agrupación utilizada: "daily", "weekly", "monthly"
+        public string? TipoAgrupacion { get; set; }
+    }
+
+    public class VentaChartDto
+    {
+        public int Id { get; set; }
+        public DateTime Fecha { get; set; }
+        public decimal Total { get; set; }
     }
 }
