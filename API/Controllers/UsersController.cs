@@ -6,14 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Authorize]
+[Authorize(Policy = "RequireAdminRole")]
 public class UsersController(IUserRepository _userRepository) : BaseApiController
 {
     protected int KioscoId => User.GetKioscoId();
     protected int UserId => User.GetUserId();
 
     [HttpGet("{id}")]
-    [Authorize(Roles = "administrador")]
     public async Task<ActionResult<UserManagementDto>> GetUser(int id, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetUserByIdAsync(id, cancellationToken);
@@ -27,7 +26,6 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
     }
 
     [HttpGet("kiosco/{kioscoId}")]
-    [Authorize(Roles = "administrador")]
     public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersByKiosco(
         int kioscoId, 
         [FromQuery] int pageNumber = 1, 
@@ -49,7 +47,6 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
     }
 
     [HttpPost("{userId}/role")]
-    [Authorize(Roles = "administrador")]
     public async Task<ActionResult<UserRoleResponseDto>> AssignRole(int userId, UserRoleAssignmentDto roleAssignment, CancellationToken cancellationToken)
     {
         var result = await _userRepository.AssignRoleAsync(userId, roleAssignment.Role, UserId, cancellationToken);
@@ -58,7 +55,6 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
     }
 
     [HttpGet("{userId}/is-admin")]
-    [Authorize(Roles = "administrador")]
     public async Task<ActionResult<bool>> IsUserAdmin(int userId, CancellationToken cancellationToken)
     {
         var isAdmin = await _userRepository.IsUserAdminAsync(userId, cancellationToken);

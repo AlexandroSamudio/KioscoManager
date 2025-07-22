@@ -1,10 +1,12 @@
 using API.DTOs;
 using API.Extensions;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    [Authorize]
     public class VentasController(IVentaRepository ventaRepository) : BaseApiController
     {
         protected int KioscoId => User.GetKioscoId();
@@ -61,7 +63,7 @@ namespace API.Controllers
             var productos = await ventaRepository.GetProductosMasVendidosDelDiaAsync(KioscoId, cantidad, cancellationToken, null);
             return Ok(productos);
         }
-        
+
         [HttpGet("productos-mas-vendidos/{fecha:datetime}")]
         public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDia(DateTime fecha, CancellationToken cancellationToken, [FromQuery] int cantidad = 4)
         {
@@ -78,11 +80,12 @@ namespace API.Controllers
             }
 
             var result = await ventaRepository.CreateVentaAsync(ventaDto, KioscoId, UserId, cancellationToken);
-            
+
             return result.ToActionResult(venta => CreatedAtAction(nameof(GetVentasDelDia), new { fecha = venta.Fecha.Date }, venta));
         }
 
         [HttpGet("export")]
+        [Authorize(Policy = "RequireAdminRole")]
         public async Task<ActionResult<IReadOnlyList<VentaDto>>> GetVentasForExport(
             CancellationToken cancellationToken,
             [FromQuery] DateTime? fechaInicio = null,

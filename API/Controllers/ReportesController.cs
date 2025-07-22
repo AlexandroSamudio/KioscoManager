@@ -1,10 +1,12 @@
 using API.DTOs;
 using API.Extensions;
 using API.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    [Authorize]
     public class ReportesController(IReporteRepository reportRepository, IVentaRepository ventaRepository) : BaseApiController
     {
         protected int KioscoId => User.GetKioscoId();

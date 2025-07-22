@@ -3,9 +3,11 @@ using API.Helpers;
 using API.Interfaces;
 using API.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
+    [Authorize]
     public class ProductosController(IProductoRepository productoRepository) : BaseApiController
     {
         protected int KioscoId => User.GetKioscoId();
@@ -107,8 +109,9 @@ namespace API.Controllers
             var total = await productoRepository.GetTotalProductosUnicosAsync(KioscoId, cancellationToken);
             return Ok(total);
         }
-        
+
         [HttpGet("export")]
+        [Authorize(Policy = "RequireAdminRole")]
         public async Task<ActionResult<IReadOnlyList<ProductoDto>>> GetProductosForExport(
             CancellationToken cancellationToken,
             [FromQuery] int? limite = null)

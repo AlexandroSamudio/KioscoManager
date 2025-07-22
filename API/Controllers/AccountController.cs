@@ -4,6 +4,7 @@ using API.Entities;
 using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -121,6 +122,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         }
     }
 
+        
     [HttpGet("kiosco-invitation-codes")]
     public async Task<ActionResult<IEnumerable<object>>> GetKioscoInvitationCodes()
     {
@@ -221,6 +223,8 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         }
     }
 
+
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("generate-invitation-code")]
     public async Task<ActionResult<GeneratedInvitationCodeDto>> GenerateInvitationCode()
     {
