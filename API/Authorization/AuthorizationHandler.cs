@@ -3,6 +3,11 @@ using System.Security.Claims;
 
 namespace API.Authorization
 {
+    public static class ApplicationRoles
+    {
+        public const string Miembro = "miembro";
+        public const string Administrador = "administrador";
+    }
     public class MiembroBlockRequirement : IAuthorizationRequirement
     {
     }
@@ -41,7 +46,7 @@ namespace API.Authorization
             AuthorizationHandlerContext context, 
             MiembroBlockRequirement requirement)
         {
-            var isMiembro = IsUserInRole(context.User, "miembro");
+            var isMiembro = IsUserInRole(context.User, ApplicationRoles.Miembro);
 
             if (isMiembro)
             {
@@ -58,7 +63,7 @@ namespace API.Authorization
             AuthorizationHandlerContext context, 
             AdminOnlyRequirement requirement)
         {
-            var isAdmin = IsUserInRole(context.User, "administrador");
+            var isAdmin = IsUserInRole(context.User, ApplicationRoles.Administrador);
 
             if (!isAdmin)
             {
@@ -76,10 +81,6 @@ namespace API.Authorization
             if (context.Resource is HttpContext httpContext)
             {
                 httpContext.Items[AUTHORIZATION_ERROR_MESSAGE_KEY] = message;
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"Warning: Could not store authorization error message. Resource type: {context.Resource?.GetType().Name ?? "null"}");
             }
         }
 

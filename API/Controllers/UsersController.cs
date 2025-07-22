@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-[Authorize(Policy = "RequireAdminRole")]
 public class UsersController(IUserRepository _userRepository) : BaseApiController
 {
     protected int KioscoId => User.GetKioscoId();
     protected int UserId => User.GetUserId();
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("{id}")]
     public async Task<ActionResult<UserManagementDto>> GetUser(int id, CancellationToken cancellationToken)
     {
@@ -25,6 +25,7 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
         return Ok(user);
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("kiosco/{kioscoId}")]
     public async Task<ActionResult<IEnumerable<UserManagementDto>>> GetUsersByKiosco(
         int kioscoId, 
@@ -46,6 +47,7 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
         return Ok(users);
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("{userId}/role")]
     public async Task<ActionResult<UserRoleResponseDto>> AssignRole(int userId, UserRoleAssignmentDto roleAssignment, CancellationToken cancellationToken)
     {
@@ -54,6 +56,7 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
         return result.ToActionResult();
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("{userId}/is-admin")]
     public async Task<ActionResult<bool>> IsUserAdmin(int userId, CancellationToken cancellationToken)
     {
@@ -61,8 +64,8 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
         return Ok(isAdmin);
     }
 
-    [HttpPut("{userId}/perfil")]
     [Authorize]
+    [HttpPut("{userId}/perfil")]
     public async Task<IActionResult> UpdateProfile(int userId, ProfileUpdateDto profileData, CancellationToken cancellationToken)
     {
         if (UserId != userId)
@@ -76,8 +79,8 @@ public class UsersController(IUserRepository _userRepository) : BaseApiControlle
 
     }
 
-    [HttpPut("{userId}/password")]
     [Authorize]
+    [HttpPut("{userId}/password")]
     public async Task<IActionResult> ChangePassword(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken)
     {
         if (UserId != userId)

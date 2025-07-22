@@ -78,7 +78,7 @@ namespace API.Extensions
                             {
                                 statusCode = 401,
                                 message = "Token de autenticación inválido.",
-                                details = context.Exception.Message.Contains("expired") 
+                                details = context.Exception is SecurityTokenExpiredException 
                                     ? "El token ha expirado. Por favor, inicie sesión nuevamente."
                                     : "El token proporcionado no es válido."
                             };
