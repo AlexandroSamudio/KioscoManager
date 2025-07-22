@@ -89,12 +89,11 @@ namespace API.Data.Repositories
 
         public async Task<decimal> GetTotalVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
-            var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
-            var fechaFin = fechaUtc.AddDays(1);
+            var fechaInicio = fecha?.Date ?? DateTime.UtcNow.Date;
+            var fechaFin = fechaInicio.AddDays(1);
 
             return await context.Ventas!
-                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaUtc && v.Fecha < fechaFin)
+                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < fechaFin)
                 .AsNoTracking()
                 .SumAsync(v => v.Total, cancellationToken);
         }

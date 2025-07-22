@@ -21,7 +21,7 @@ namespace API.Data.Repositories
             CancellationToken cancellationToken)
         {
             var ventasQuery = context.Ventas!
-                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < fechaFin);
+                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha <= fechaFin);
 
             var numeroTransacciones = await ventasQuery.CountAsync(cancellationToken);
 
@@ -31,7 +31,7 @@ namespace API.Data.Repositories
             var detallesVenta = await context.DetalleVentas!
                 .Include(d => d.Producto)
                 .Include(d => d.Venta)
-                .Where(d => d.Venta!.KioscoId == kioscoId && d.Venta.Fecha >= fechaInicio && d.Venta.Fecha < fechaFin)
+                .Where(d => d.Venta!.KioscoId == kioscoId && d.Venta.Fecha >= fechaInicio && d.Venta.Fecha <= fechaFin)
                 .ToListAsync(cancellationToken);
 
             var productosYFechas = detallesVenta
