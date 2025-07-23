@@ -8,11 +8,11 @@ export class RoleService {
   private accountService = inject(AccountService);
 
   isAdmin = computed(() =>
-    this.hasRole(['administrador', 'admin'])
+    this.hasRole(['administrador'])
   );
 
   isEmpleado = computed(() =>
-    this.hasRole(['empleado', 'administrador', 'admin'])
+    this.hasRole(['empleado'])
   );
 
   isMiembro = computed(() =>
@@ -36,19 +36,4 @@ export class RoleService {
     );
   }
 
-  canAccess(feature: 'reportes' | 'usuarios' | 'categorias' | 'negocio'): boolean {
-    switch (feature) {
-      case 'reportes':
-      case 'usuarios':
-      case 'categorias':
-      case 'negocio':
-        return this.isAdmin();
-      default:
-        return false;
-    }
-  }
-
-  canPerformActions(): boolean {
-    return !this.isMiembro();
-  }
 }

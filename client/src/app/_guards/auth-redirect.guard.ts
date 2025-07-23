@@ -7,7 +7,7 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
   if (!accountService.isLoggedIn()) {
-    return router.createUrlTree(['/']);
+    return router.createUrlTree(['/home']);
   }
 
   const kioscoId = accountService.kioscoId();

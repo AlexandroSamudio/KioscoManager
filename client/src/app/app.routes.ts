@@ -4,11 +4,15 @@ import { adminGuard } from './_guards/admin.guard';
 import { authRedirectGuard } from './_guards/auth-redirect.guard';
 
 export const routes: Routes = [
-  // Rutas públicas
   {
     path: '',
+    canActivate: [authRedirectGuard],
+    children: []
+  },
+  // Rutas públicas
+  {
+    path: 'home',
     loadComponent: () => import('./_components/home/home.component').then(m => m.HomeComponent),
-    canActivate: [authRedirectGuard]
   },
   {
     path: 'login',
@@ -17,10 +21,6 @@ export const routes: Routes = [
   {
     path: 'register',
     loadComponent: () => import('./_components/register/register.component').then(m => m.RegisterComponent),
-  },
-  {
-    path: 'home',
-    loadComponent: () => import('./_components/home/home.component').then(m => m.HomeComponent),
   },
 
   // Rutas protegidas
