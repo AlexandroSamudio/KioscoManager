@@ -1,6 +1,6 @@
 import { CommonModule, NgOptimizedImage } from '@angular/common';
 import { Component, signal, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { UiService } from '../../_services/ui.service';
 import {
   HomeDataService,
@@ -18,7 +18,7 @@ interface NavItem {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage],
+  imports: [CommonModule, NgOptimizedImage, RouterLink],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
@@ -34,7 +34,7 @@ export class HomeComponent {
   readonly testimonials = this.homeDataService.testimonials;
   readonly socialLinks = this.homeDataService.socialLinks;
   dashboardImage: string =
-    'https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+    'open.avif';
 
   navItems: NavItem[] = [
     { label: 'Características', section: 'features' },

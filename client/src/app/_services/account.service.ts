@@ -105,7 +105,7 @@ export class AccountService {
     localStorage.removeItem('user');
     this.currentUser.set(null);
     this.decodedTokenCache = { userToken: null, payload: null };
-    this.router.navigate(['/']);
+    this.router.navigate(['/login']);
   }
 
   private handleAuth(obs: Observable<User>): Observable<User> {

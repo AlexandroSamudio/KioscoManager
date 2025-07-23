@@ -1,19 +1,33 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './_guards/auth.guard';
+import { adminGuard } from './_guards/admin.guard';
+import { authRedirectGuard } from './_guards/auth-redirect.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./_components/home/home.component').then(m => m.HomeComponent)
+    canActivate: [authRedirectGuard],
+    children: []
   },
+  // Rutas públicas
+  {
+    path: 'home',
+    loadComponent: () => import('./_components/home/home.component').then(m => m.HomeComponent),
+  },
+  {
+    path: 'login',
+    loadComponent: () => import('./_components/login/login.component').then(m => m.LoginComponent),
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./_components/register/register.component').then(m => m.RegisterComponent),
+  },
+
+  // Rutas protegidas
   {
     path: 'bienvenida',
     loadComponent: () => import('./_components/bienvenida/bienvenida.component').then(m => m.BienvenidaComponent),
     canActivate: [authGuard]
-  },
-  {
-    path: 'register',
-    loadComponent: () => import('./_components/register/register.component').then(m => m.RegisterComponent)
   },
   {
     path: 'dashboard',
@@ -43,7 +57,7 @@ export const routes: Routes = [
   {
     path: 'reportes',
     loadComponent: () => import('./_components/reportes/reportes-page.component').then(m => m.ReportesPageComponent),
-    canActivate: [authGuard]
+    canActivate: [authGuard, adminGuard]
   },
   {
     path: 'configuracion',
@@ -61,28 +75,30 @@ export const routes: Routes = [
       },
       {
         path: 'negocio',
-        loadComponent: () => import('./_components/info-negocio/info-negocio.component').then(m => m.InfoNegocioComponent)
+        loadComponent: () => import('./_components/info-negocio/info-negocio.component').then(m => m.InfoNegocioComponent),
+        canActivate: [adminGuard]
       },
       {
         path: 'usuarios',
-        loadComponent: () => import('./_components/configuracion/usuarios-permisos/usuarios-permisos.component').then(m => m.UsuariosPermisosComponent)
+        loadComponent: () => import('./_components/configuracion/usuarios-permisos/usuarios-permisos.component').then(m => m.UsuariosPermisosComponent),
+        canActivate: [adminGuard]
       },
       {
         path: 'categorias',
-        loadComponent: () => import('./_components/configuracion/configuracion-categorias/configuracion-categorias.component').then(m => m.ConfiguracionCategoriasComponent)
+        loadComponent: () => import('./_components/configuracion/configuracion-categorias/configuracion-categorias.component').then(m => m.ConfiguracionCategoriasComponent),
+        canActivate: [adminGuard]
       },
       {
         path: 'reportes',
-        loadComponent: () => import('./_components/configuracion/configuracion-reportes/configuracion-reportes.component').then(m => m.ConfiguracionReportesComponent)
+        loadComponent: () => import('./_components/configuracion/configuracion-reportes/configuracion-reportes.component').then(m => m.ConfiguracionReportesComponent),
+        canActivate: [adminGuard]
       }
     ]
   },
-  {
-    path: 'login',
-    loadComponent: () => import('./_components/login/login.component').then(m => m.LoginComponent)
-  },
+
   {
     path: '**',
-    loadComponent: () => import('./_components/home/home.component').then(m => m.HomeComponent)
-  },
+    canActivate: [authRedirectGuard],
+    children: []
+  }
 ];

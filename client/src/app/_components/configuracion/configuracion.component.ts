@@ -1,7 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar.component';
+import { RoleService } from '../../_services/role.service';
 
 export interface ConfigurationSection {
   id: string;
@@ -20,7 +21,14 @@ export interface ConfigurationSection {
   styleUrls: ['./configuracion.component.css']
 })
 export class ConfiguracionComponent {
+  roleService = inject(RoleService);
+  private router = inject(Router);
+
   activeSection = signal<string>('perfil');
+
+  visibleConfigSections = computed(() => {
+    return this.configSections.filter(section => this.canAccessSection(section));
+  });
 
   readonly configSections: ConfigurationSection[] = [
     {
@@ -64,8 +72,6 @@ export class ConfiguracionComponent {
     }
   ];
 
-  constructor(private router: Router) {}
-
   selectSection(sectionId: string, route: string): void {
     this.activeSection.set(sectionId);
     this.router.navigate([route]);
@@ -75,23 +81,18 @@ export class ConfiguracionComponent {
     return this.router.url.startsWith(route);
   }
 
-  // TODO: Implementar verificación de roles de usuario
-  isAdmin(): boolean {
-    return true;
-  }
-
   canAccessSection(section: ConfigurationSection): boolean {
     if (!section.adminOnly) return true;
-    return this.isAdmin();
+    return this.roleService.isAdmin();
   }
 
   getCurrentSectionTitle(): string {
-    const currentSection = this.configSections.find(s => s.id === this.activeSection());
+    const currentSection = this.visibleConfigSections().find(s => s.id === this.activeSection());
     return currentSection?.title || 'Configuración';
   }
 
   getCurrentSectionDescription(): string {
-    const currentSection = this.configSections.find(s => s.id === this.activeSection());
+    const currentSection = this.visibleConfigSections().find(s => s.id === this.activeSection());
     return currentSection?.description || 'Gestiona la configuración de tu aplicación';
   }
 
@@ -99,8 +100,5 @@ export class ConfiguracionComponent {
     return this.router.url !== '/configuracion' && this.router.url.startsWith('/configuracion/');
   }
 
-  hasUnsavedChanges(): boolean {
-    // TODO: Implementar lógica para detectar cambios no guardados
-    return false;
-  }
+  trackBySectionId = (_: number, s: ConfigurationSection) => s.id;
 }
