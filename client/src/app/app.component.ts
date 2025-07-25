@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AccountService } from './_services/account.service';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -10,9 +11,19 @@ import { AccountService } from './_services/account.service';
 })
 export class AppComponent implements OnInit {
   accountService = inject(AccountService);
+  metaService = inject(Meta);
+  titleService = inject(Title);
+  title = 'Kiosco Manager';
+
 
   ngOnInit() {
     this.setCurrentUser();
+    this.titleService.setTitle(this.title);
+
+     this.metaService.addTag({
+      name: 'description',
+      content: 'Gestiona tu kiosco de forma eficiente. Controla el stock, ventas, productos, y más, con estadísticas en tiempo real.'
+    });
   }
 
   setCurrentUser() {

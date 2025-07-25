@@ -11,10 +11,10 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
-    
+
     options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider>();
     options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
-    
+
     options.MimeTypes = Microsoft.AspNetCore.ResponseCompression.ResponseCompressionDefaults.MimeTypes.Concat(new[]
     {
         "application/json",
@@ -38,7 +38,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200", "https://kioscomanager.com", "https://www.kioscomanager.com")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
