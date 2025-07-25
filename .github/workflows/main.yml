@@ -86,6 +86,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
+            bash -c ' 
             echo "Iniciando despliegue en el servidor..."
 
             DEPLOY_PATH="/var/www"
@@ -146,3 +147,4 @@ jobs:
             fi
             sudo nginx -t
             echo "Despliegue completado."
+            '
