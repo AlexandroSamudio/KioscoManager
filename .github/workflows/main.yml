@@ -85,7 +85,6 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e
             bash -c ' 
             echo "Iniciando despliegue en el servidor..."
 
