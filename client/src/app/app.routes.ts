@@ -57,7 +57,7 @@ export const routes: Routes = [
   {
     path: 'reportes',
     loadComponent: () => import('./_components/reportes/reportes-page.component').then(m => m.ReportesPageComponent),
-    canActivate: [authGuard, adminGuard]
+    canActivate: [authGuard]
   },
   {
     path: 'configuracion',

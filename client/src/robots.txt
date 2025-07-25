@@ -1,0 +1,8 @@
+# Permite a todos los user-agents rastrear todo el sitio
+User-agent: *
+Allow: /
+
+# Puedes añadir rutas que no quieres que se rastreen, por ejemplo:
+# Disallow: /admin/
+# Disallow: /private/
+

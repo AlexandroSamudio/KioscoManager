@@ -1,6 +1,8 @@
+@import '@fortawesome/fontawesome-free/css/all.min.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 /* Aplicación de la fuente Inter en toda la aplicación */
 html, body {

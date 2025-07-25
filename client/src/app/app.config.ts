@@ -4,7 +4,6 @@ import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/
 
 import { routes } from './app.routes';
 import { jwtInterceptor } from './_interceptors/jwt.interceptor';
-import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,6 +20,5 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([jwtInterceptor]),
       withFetch() // Fetch API en lugar de XHR para mejor rendimiento
     ),
-    provideCharts(withDefaultRegisterables()),
   ],
 };
