@@ -95,8 +95,10 @@ namespace API.DTOs
         [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre del producto debe tener entre 2 y 50 caracteres.")]
         public required string NombreProducto { get; set; }
             
+        [StringLength(13, MinimumLength = 13, ErrorMessage = "El SKU debe tener 13 caracteres.")]
+        [RegularExpression(@"^\d{13}$", ErrorMessage = "El SKU debe contener exactamente 13 dígitos numéricos (EAN-13).")]
         public string? Sku { get; set; }
-        
+
         [Required]
         public required int CantidadVendida { get; set; }
         
