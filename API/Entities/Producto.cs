@@ -1,5 +1,3 @@
-
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,7 +6,7 @@ namespace API.Entities;
 public class Producto
 {
     public int Id { get; set; }
-    [MaxLength(50)]
+    [StringLength(13, MinimumLength = 13)]
     public required string Sku { get; set; }
     public required string Nombre { get; set; }
     public string? Descripcion { get; set; }

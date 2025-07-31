@@ -20,18 +20,22 @@ namespace API.Helpers
             CreateMap<Producto, ProductoDto>()
                 .ForMember(dest => dest.CategoriaNombre, opt => opt.MapFrom(src => src.Categoria!.Nombre));
 
-            CreateMap<Venta, VentaDto>()
-                .ForMember(dest => dest.CantidadProductos, opt => opt.MapFrom(src => src.Detalles.Sum(d => d.Cantidad)));
-
             CreateMap<ProductoCreateDto, Producto>();
 
-            CreateMap<VentaCreateDto, Venta>()
-                .ForMember(dest => dest.Detalles, opt => opt.MapFrom(src => src.Productos));
+            CreateMap<ProductoUpdateDto, Producto>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.KioscoId, opt => opt.Ignore());
 
             CreateMap<ProductoVentaDto, DetalleVenta>()
                 .ForMember(dest => dest.ProductoId, opt => opt.MapFrom(src => src.ProductoId))
                 .ForMember(dest => dest.Cantidad, opt => opt.MapFrom(src => src.Cantidad))
                 .ForMember(dest => dest.PrecioUnitario, opt => opt.Ignore());
+
+            CreateMap<Venta, VentaDto>()
+                .ForMember(dest => dest.CantidadProductos, opt => opt.MapFrom(src => src.Detalles.Sum(d => d.Cantidad)));
+
+            CreateMap<VentaCreateDto, Venta>()
+                .ForMember(dest => dest.Detalles, opt => opt.MapFrom(src => src.Productos));
 
             CreateMap<Compra, CompraDto>()
                 .ForMember(dest => dest.Detalles, opt => opt.MapFrom(src => src.Detalles));
