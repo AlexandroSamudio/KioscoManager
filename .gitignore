@@ -515,3 +515,4 @@ client/.vscode/tasks.json
 .github/instructions
 *.sln
 API/Tests/ModelVerificationTest.cs
+API/Migrations/20250726165814_ChangeSKUFormat.Designer.cs

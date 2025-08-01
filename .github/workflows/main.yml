@@ -101,8 +101,8 @@ jobs:
             BACKEND_OLD_PATH="${DEPLOY_PATH}/mi-app/publish_old"
             FRONTEND_PATH="${DEPLOY_PATH}/mi-app-frontend/browser"
             FRONTEND_OLD_PATH="${DEPLOY_PATH}/mi-app-frontend/browser_old"
-            BACKEND_TEMP="/home/runner/work/${{ github.repository }}/${{ github.repository }}/publish_backend_temp/."
-            FRONTEND_TEMP="/home/runner/work/${{ github.repository }}/${{ github.repository }}/dist_frontend_temp/."
+            BACKEND_TEMP="./publish_backend_temp/." 
+            FRONTEND_TEMP="./dist_frontend_temp/." 
 
             rollback() {
               echo "Rollback iniciado..."
