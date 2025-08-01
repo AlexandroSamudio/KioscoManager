@@ -67,7 +67,7 @@ jobs:
         with:
           name: frontend-build
           path: ./client/dist/client
-          
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -145,8 +145,8 @@ jobs:
             sudo mv "$BACKEND_PATH" "$BACKEND_OLD_PATH" || true # Mover la versión actual a backup (ignorar error si no existe)
 
             # Mover la nueva versión transferida a su ubicación final
-            # 'new_backend_build' es la carpeta que se transfirió a /tmp/
-            sudo mv /tmp/new_backend_build "$BACKEND_PATH" 
+            # new_backend_build es la carpeta que se transfirió a /tmp/
+            sudo mv /tmp/new_backend_build "$BACKEND_PATH"
 
             sudo chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} "$BACKEND_PATH"
             sudo systemctl start kioscomanager.service
@@ -195,7 +195,7 @@ jobs:
             sudo mv "$FRONTEND_PATH" "$FRONTEND_OLD_PATH" || true # Mover la versión actual a backup (ignorar error si no existe)
 
             # Mover la nueva versión transferida a su ubicación final
-            # 'new_frontend_build' es la carpeta que se transfirió a /tmp/
+            # new_frontend_build es la carpeta que se transfirió a /tmp/
             sudo mv /tmp/new_frontend_build "$FRONTEND_PATH" 
 
             sudo chown -R www-data:www-data "$FRONTEND_PATH"
