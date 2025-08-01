@@ -78,15 +78,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: backend-build
-          path: ./publish_backend_temp # Descargado en el runner de GitHub Actions
+          path: ./publish_backend_temp
 
       - name: Download Frontend Artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-          path: ./dist_frontend_temp # Descargado en el runner de GitHub Actions
+          path: ./dist_frontend_temp
 
-      # --- PASOS DE DEPURACIÓN (puedes dejarlos o quitarlos después de que funcione) ---
+      # --- PASOS DE DEPURACIÓN---
       - name: "Debug: Show contents of downloaded Backend Artifact on Runner"
         run: |
           echo "Content of publish_backend_temp on GitHub Actions runner:"
@@ -100,17 +100,7 @@ jobs:
           ls -la ./dist_frontend_temp/.
       # --- FIN PASOS DE DEPURACIÓN ---
 
-      # --- NUEVO PASO: Despliegue del BACKEND (Transferencia + Lógica en servidor) ---
-      - name: Transfer Backend Files to Server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./publish_backend_temp/."
-          target: "/tmp/new_backend_build"
-          strip_components: 1
-
+      # --- Despliegue del BACKEND---
       - name: Deploy Backend on Server
         uses: appleboy/ssh-action@master
         with:
@@ -145,7 +135,7 @@ jobs:
             sudo mv "$BACKEND_PATH" "$BACKEND_OLD_PATH" || true # Mover la versión actual a backup (ignorar error si no existe)
 
             # Mover la nueva versión transferida a su ubicación final
-            # new_backend_build es la carpeta que se transfirió a /tmp/
+            # 'new_backend_build' es la carpeta que se transfirió a /tmp/
             sudo mv /tmp/new_backend_build "$BACKEND_PATH"
 
             sudo chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} "$BACKEND_PATH"
@@ -153,7 +143,13 @@ jobs:
             sleep 5
             if ! sudo systemctl is-active --quiet kioscomanager.service; then
               echo "Error: El servicio Backend no está activo después del despliegue."
-      # --- NUEVO PASO: Despliegue del FRONTEND (Transferencia + Lógica en servidor) ---
+              exit 1 # Falla el job si el servicio no arranca
+            fi
+            sudo systemctl status kioscomanager.service --no-pager
+            echo "Despliegue de Backend completado."
+            '
+
+      # --- Despliegue del FRONTEND---
       - name: Transfer Frontend Files to Server
         uses: appleboy/scp-action@master
         with:
