@@ -1,6 +1,6 @@
 [
     {
-        "sku": "FID-001",
+        "sku": "7791234567001",
         "nombre": "Fideos",
         "descripcion": "Fideos de trigo, ideales para sopas y guisos.",
         "precioCompra": 40,
@@ -10,7 +10,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "LEC-001",
+        "sku": "7791234567002",
         "nombre": "Leche Entera",
         "descripcion": "Leche fresca entera, rica en calcio y vitaminas.",
         "precioCompra": 60,
@@ -20,7 +20,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "YOG-001",
+        "sku": "7791234567003",
         "nombre": "Yogur Natural",
         "descripcion": "Yogur cremoso natural, sin azúcares añadidos.",
         "precioCompra": 12,
@@ -30,7 +30,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "GAL-001",
+        "sku": "7791234567004",
         "nombre": "Galletas de Avena",
         "descripcion": "Galletas saludables de avena",
         "precioCompra": 60,
@@ -40,7 +40,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "AGU-001",
+        "sku": "7791234567005",
         "nombre": "Agua mineral con gas",
         "descripcion": "Agua mineral con gas de 500ml",
         "precioCompra": 26,
@@ -50,7 +50,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "CHO-001",
+        "sku": "7791234567006",
         "nombre": "Barra chocolate",
         "descripcion": "Barra de chocolate con leche",
         "precioCompra": 4,
@@ -60,7 +60,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "CIG-001",
+        "sku": "7791234567007",
         "nombre": "Cigarillo de Menta",
         "descripcion": "Cigarillo de menta suave y refrescante",
         "precioCompra": 43,
@@ -70,7 +70,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "DES-001",
+        "sku": "7791234567008",
         "nombre": "Desodorante",
         "descripcion": "Desodorante en barra, 50ml",
         "precioCompra": 61,
@@ -80,7 +80,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "ALF-001",
+        "sku": "7791234567009",
         "nombre": "Alfajor de Dulce de Leche",
         "descripcion": "Alfajor relleno de dulce de leche con cobertura de chocolate",
         "precioCompra": 28,
@@ -90,7 +90,7 @@
         "kioscoId": 1
     },
     {
-        "sku": "GAL-002",
+        "sku": "7791234567010",
         "nombre": "Galletas saladas",
         "descripcion": "Galletas saladas con sabor a queso",
         "precioCompra": 50,

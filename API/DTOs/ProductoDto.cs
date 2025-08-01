@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using API.Attributes;
 
 namespace API.DTOs
@@ -7,7 +6,8 @@ namespace API.DTOs
     public class ProductoDto
     {
         public required int Id { get; set; }
-        [Required, StringLength(50, MinimumLength = 2, ErrorMessage = "El SKU debe tener entre 2 y 50 caracteres.")]
+        [Required, StringLength(13, MinimumLength = 13, ErrorMessage = "El SKU debe tener 13 caracteres.")]
+        [RegularExpression(@"^\d{13}$", ErrorMessage = "El SKU debe contener exactamente 13 dígitos numéricos (EAN-13).")]
         public required string Sku { get; set; } = default!;
         [Required, StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
         public required string Nombre { get; set; } = default!;
@@ -30,9 +30,9 @@ namespace API.DTOs
     {
         [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
         public string? Nombre { get; set; }
-        
-        [StringLength(50, MinimumLength = 1, ErrorMessage = "El SKU debe tener entre 1 y 50 caracteres.")]
-        [RegularExpression(@"^[A-Za-z0-9\-_]+$", ErrorMessage = "El SKU solo puede contener letras, números, guiones y guiones bajos.")]
+
+        [StringLength(13, MinimumLength = 13, ErrorMessage = "El SKU debe tener 13 caracteres.")]
+        [RegularExpression(@"^\d{13}$", ErrorMessage = "El SKU debe contener exactamente 13 dígitos numéricos (EAN-13).")]
         public string? Sku { get; set; }
         
         [StringLength(500, ErrorMessage = "La descripción no puede tener más de 500 caracteres.")]
@@ -81,8 +81,8 @@ namespace API.DTOs
         public string? Descripcion { get; set; }
 
         [Required]
-        [StringLength(50, MinimumLength = 1, ErrorMessage = "El SKU debe tener entre 1 y 50 caracteres.")]
-        [RegularExpression(@"^[A-Za-z0-9\-_]+$", ErrorMessage = "El SKU solo puede contener letras, números, guiones y guiones bajos.")]
+        [StringLength(13, MinimumLength = 13, ErrorMessage = "El SKU debe tener 13 caracteres.")]
+        [RegularExpression(@"^\d{13}$", ErrorMessage = "El SKU debe contener exactamente 13 dígitos numéricos (EAN-13).")]
         public required string Sku { get; set; }
     }
 
@@ -95,8 +95,10 @@ namespace API.DTOs
         [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre del producto debe tener entre 2 y 50 caracteres.")]
         public required string NombreProducto { get; set; }
             
+        [StringLength(13, MinimumLength = 13, ErrorMessage = "El SKU debe tener 13 caracteres.")]
+        [RegularExpression(@"^\d{13}$", ErrorMessage = "El SKU debe contener exactamente 13 dígitos numéricos (EAN-13).")]
         public string? Sku { get; set; }
-        
+
         [Required]
         public required int CantidadVendida { get; set; }
         
