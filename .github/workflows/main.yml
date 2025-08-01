@@ -67,7 +67,7 @@ jobs:
         with:
           name: frontend-build
           path: ./client/dist/client
-
+          
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -78,80 +78,135 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: backend-build
-          path: ./publish_backend_temp
+          path: ./publish_backend_temp # Descargado en el runner de GitHub Actions
 
       - name: Download Frontend Artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
-          path: ./dist_frontend_temp
+          path: ./dist_frontend_temp # Descargado en el runner de GitHub Actions
 
-      - name: Deploy to Server via SSH
+      # --- PASOS DE DEPURACIÓN (puedes dejarlos o quitarlos después de que funcione) ---
+      - name: "Debug: Show contents of downloaded Backend Artifact on Runner"
+        run: |
+          echo "Content of publish_backend_temp on GitHub Actions runner:"
+          ls -la ./publish_backend_temp
+          ls -la ./publish_backend_temp/.
+
+      - name: "Debug: Show contents of downloaded Frontend Artifact on Runner"
+        run: |
+          echo "Content of dist_frontend_temp on GitHub Actions runner:"
+          ls -la ./dist_frontend_temp
+          ls -la ./dist_frontend_temp/.
+      # --- FIN PASOS DE DEPURACIÓN ---
+
+      # --- NUEVO PASO: Despliegue del BACKEND (Transferencia + Lógica en servidor) ---
+      - name: Transfer Backend Files to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./publish_backend_temp/."
+          target: "/tmp/new_backend_build"
+          strip_components: 1
+
+      - name: Deploy Backend on Server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash -c ' 
-            echo "Iniciando despliegue en el servidor..."
+            bash -c '
+            echo "Iniciando despliegue de Backend en el servidor..."
 
             DEPLOY_PATH="/var/www"
             BACKEND_PATH="${DEPLOY_PATH}/mi-app/publish"
             BACKEND_OLD_PATH="${DEPLOY_PATH}/mi-app/publish_old"
-            FRONTEND_PATH="${DEPLOY_PATH}/mi-app-frontend/browser"
-            FRONTEND_OLD_PATH="${DEPLOY_PATH}/mi-app-frontend/browser_old"
-            BACKEND_TEMP="./publish_backend_temp/." 
-            FRONTEND_TEMP="./dist_frontend_temp/." 
 
-            rollback() {
-              echo "Rollback iniciado..."
+            # Función de rollback solo para backend
+            rollback_backend() {
+              echo "Rollback de Backend iniciado..."
               if [ -d "$BACKEND_OLD_PATH" ]; then
-                sudo rm -rf "$BACKEND_PATH"
+                sudo rm -rf "$BACKEND_PATH" || true # Borra el posible despliegue fallido
                 sudo mv "$BACKEND_OLD_PATH" "$BACKEND_PATH"
-                echo "Backend restaurado."
-              fi
-              if [ -d "$FRONTEND_OLD_PATH" ]; then
-                sudo rm -rf "$FRONTEND_PATH"
-                sudo mv "$FRONTEND_OLD_PATH" "$FRONTEND_PATH"
-                echo "Frontend restaurado."
+                echo "Backend restaurado a versión anterior."
               fi
               sudo systemctl restart kioscomanager.service || true
-              sudo systemctl restart nginx || true
-              echo "Rollback completado."
+              echo "Rollback de Backend completado."
             }
+            trap rollback_backend ERR # Si algo falla en este bloque, se ejecuta el rollback
 
-            trap rollback ERR
+            sudo systemctl stop kioscomanager.service || true # Detener servicio (ignorar error si ya está detenido)
+            
+            # Limpiar y mover la versión anterior
+            sudo rm -rf "$BACKEND_OLD_PATH" # Eliminar la copia antigua de la versión anterior
+            sudo mv "$BACKEND_PATH" "$BACKEND_OLD_PATH" || true # Mover la versión actual a backup (ignorar error si no existe)
 
-            echo "Desplegando Backend..."
-            sudo systemctl stop kioscomanager.service || true
-            sudo rm -rf "$BACKEND_OLD_PATH"
-            sudo mv "$BACKEND_PATH" "$BACKEND_OLD_PATH" || true
-            sudo mkdir -p "$BACKEND_PATH"
-            sudo cp -r "$BACKEND_TEMP" "$BACKEND_PATH/"
+            # Mover la nueva versión transferida a su ubicación final
+            # 'new_backend_build' es la carpeta que se transfirió a /tmp/
+            sudo mv /tmp/new_backend_build "$BACKEND_PATH" 
+
             sudo chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} "$BACKEND_PATH"
             sudo systemctl start kioscomanager.service
             sleep 5
             if ! sudo systemctl is-active --quiet kioscomanager.service; then
-              echo "Error: El servicio Backend no está activo."
-              exit 1
-            fi
-            sudo systemctl status kioscomanager.service --no-pager
+              echo "Error: El servicio Backend no está activo después del despliegue."
+      # --- NUEVO PASO: Despliegue del FRONTEND (Transferencia + Lógica en servidor) ---
+      - name: Transfer Frontend Files to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "./dist_frontend_temp/."
+          target: "/tmp/new_frontend_build"
+          strip_components: 1
 
-            echo "Desplegando Frontend..."
-            sudo rm -rf "$FRONTEND_OLD_PATH"
-            sudo mv "$FRONTEND_PATH" "$FRONTEND_OLD_PATH" || true
-            sudo mkdir -p "$FRONTEND_PATH"
-            sudo cp -r "$FRONTEND_TEMP" "$FRONTEND_PATH/"
+      - name: Deploy Frontend on Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            bash -c '
+            echo "Iniciando despliegue de Frontend en el servidor..."
+
+            DEPLOY_PATH="/var/www"
+            FRONTEND_PATH="${DEPLOY_PATH}/mi-app-frontend/browser"
+            FRONTEND_OLD_PATH="${DEPLOY_PATH}/mi-app-frontend/browser_old"
+
+            # Función de rollback solo para frontend
+            rollback_frontend() {
+              echo "Rollback de Frontend iniciado..."
+              if [ -d "$FRONTEND_OLD_PATH" ]; then
+                sudo rm -rf "$FRONTEND_PATH" || true
+                sudo mv "$FRONTEND_OLD_PATH" "$FRONTEND_PATH"
+                echo "Frontend restaurado a versión anterior."
+              fi
+              sudo systemctl restart nginx || true
+              echo "Rollback de Frontend completado."
+            }
+            trap rollback_frontend ERR # Si algo falla en este bloque, se ejecuta el rollback
+
+            sudo rm -rf "$FRONTEND_OLD_PATH" # Eliminar la copia antigua de la versión anterior
+            sudo mv "$FRONTEND_PATH" "$FRONTEND_OLD_PATH" || true # Mover la versión actual a backup (ignorar error si no existe)
+
+            # Mover la nueva versión transferida a su ubicación final
+            # 'new_frontend_build' es la carpeta que se transfirió a /tmp/
+            sudo mv /tmp/new_frontend_build "$FRONTEND_PATH" 
+
             sudo chown -R www-data:www-data "$FRONTEND_PATH"
             sudo chmod -R g+w "$FRONTEND_PATH"
             sudo chmod g+s "${DEPLOY_PATH}/mi-app-frontend"
             sudo systemctl restart nginx
             sleep 5
             if ! sudo systemctl is-active --quiet nginx; then
-              echo "Error: Nginx no está activo."
-              exit 1
+              echo "Error: Nginx no está activo después del despliegue."
+              exit 1 # Falla el job si Nginx no arranca
             fi
             sudo nginx -t
-            echo "Despliegue completado."
+            echo "Despliegue de Frontend completado."
             '
