@@ -100,7 +100,6 @@ jobs:
           ls -la ./dist_frontend_temp/.
       # --- FIN PASOS DE DEPURACIÓN ---
 
-      # --- Despliegue del BACKEND---
       - name: Deploy Backend on Server
         uses: appleboy/ssh-action@master
         with:
@@ -115,35 +114,22 @@ jobs:
             BACKEND_PATH="${DEPLOY_PATH}/mi-app/publish"
             BACKEND_OLD_PATH="${DEPLOY_PATH}/mi-app/publish_old"
 
-            # Función de rollback solo para backend
-            rollback_backend() {
-              echo "Rollback de Backend iniciado..."
-              if [ -d "$BACKEND_OLD_PATH" ]; then
-                sudo rm -rf "$BACKEND_PATH" || true # Borra el posible despliegue fallido
-                sudo mv "$BACKEND_OLD_PATH" "$BACKEND_PATH"
-                echo "Backend restaurado a versión anterior."
-              fi
-              sudo systemctl restart kioscomanager.service || true
-              echo "Rollback de Backend completado."
-            }
-            trap rollback_backend ERR # Si algo falla en este bloque, se ejecuta el rollback
+            # ... (tu función rollback_backend y trap) ...
 
-            sudo systemctl stop kioscomanager.service || true # Detener servicio (ignorar error si ya está detenido)
+            sudo systemctl stop kioscomanager.service || true
             
-            # Limpiar y mover la versión anterior
-            sudo rm -rf "$BACKEND_OLD_PATH" # Eliminar la copia antigua de la versión anterior
-            sudo mv "$BACKEND_PATH" "$BACKEND_OLD_PATH" || true # Mover la versión actual a backup (ignorar error si no existe)
+            sudo rm -rf "$BACKEND_OLD_PATH"
+            sudo mv "$BACKEND_PATH" "$BACKEND_OLD_PATH" || true
 
-            # Mover la nueva versión transferida a su ubicación final
-            # 'new_backend_build' es la carpeta que se transfirió a /tmp/
-            sudo mv /tmp/new_backend_build "$BACKEND_PATH"
+            sudo mv /tmp/new_backend_build/* "$BACKEND_PATH/"
+            sudo mv /tmp/new_backend_build/.* "$BACKEND_PATH/" 2>/dev/null || true
 
             sudo chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} "$BACKEND_PATH"
             sudo systemctl start kioscomanager.service
             sleep 5
             if ! sudo systemctl is-active --quiet kioscomanager.service; then
               echo "Error: El servicio Backend no está activo después del despliegue."
-              exit 1 # Falla el job si el servicio no arranca
+              exit 1
             fi
             sudo systemctl status kioscomanager.service --no-pager
             echo "Despliegue de Backend completado."
