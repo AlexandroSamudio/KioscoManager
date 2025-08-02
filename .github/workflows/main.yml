@@ -71,7 +71,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat--modificar-archivo-de-workflow')
 
     steps:
       - name: Download Backend Artifact
@@ -116,7 +116,8 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash -c '
+            #!/bin/bash
+            set -e
             echo "Iniciando despliegue de Backend en el servidor..."
 
             DEPLOY_PATH="/var/www"
@@ -174,7 +175,6 @@ jobs:
             fi
             sudo systemctl status kioscomanager.service --no-pager
             echo "Despliegue de Backend completado."
-            '
 
       # ---Despliegue del FRONTEND (Transferencia + Lógica en servidor) ---
       - name: Transfer Frontend Files to Server
@@ -193,7 +193,8 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash -c '
+            #!/bin/bash
+            set -e
             echo "Iniciando despliegue de Frontend en el servidor..."
 
             DEPLOY_PATH="/var/www"
@@ -248,4 +249,3 @@ jobs:
             fi
             sudo nginx -t
             echo "Despliegue de Frontend completado."
-            '
