@@ -118,7 +118,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            #!/bin/bash
+            /bin/bash << 'EOF'
             set -e
             echo "Iniciando despliegue de Backend en el servidor..."
 
@@ -177,6 +177,7 @@ jobs:
             fi
             sudo systemctl status kioscomanager.service --no-pager
             echo "Despliegue de Backend completado."
+            EOF
 
       # ---Despliegue del FRONTEND (Transferencia + Lógica en servidor) ---
       - name: Transfer Frontend Files to Server
@@ -195,7 +196,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            #!/bin/bash
+            /bin/bash << 'EOF'
             set -e
             echo "Iniciando despliegue de Frontend en el servidor..."
 
@@ -251,3 +252,4 @@ jobs:
             fi
             sudo nginx -t
             echo "Despliegue de Frontend completado."
+            EOF
