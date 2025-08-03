@@ -4,6 +4,15 @@ on:
   push:
     branches:
       - main
+      - feat--modificar-archivo-de-workflow
+    paths:
+      - "API/**"
+      - "client/**"
+      - ".github/workflows/main.yml"
+  pull_request:
+    branches:
+      - main
+      - feat--modificar-archivo-de-workflow
     paths:
       - "API/**"
       - "client/**"
