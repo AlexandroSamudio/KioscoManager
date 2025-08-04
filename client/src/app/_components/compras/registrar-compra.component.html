@@ -48,7 +48,7 @@
           >
             <div class="text-center">
               <div class="text-lg font-bold text-purple-600">
-                ${{ totalCompra()}}
+                ${{ totalCompra() | number:'1.2-2' }}
               </div>
               <div class="text-xs text-purple-500">Total</div>
             </div>
@@ -249,7 +249,7 @@
               >
               <span class="text-lg font-bold text-green-800">
                 ${{
-                  (cantidad() * costoUnitario())
+                  (cantidad() * costoUnitario() | number:'1.2-2') || 0
                 }}
               </span>
             </div>
@@ -427,7 +427,7 @@
                       >Total a Pagar:</span
                     >
                     <span class="text-2xl font-bold text-purple-600">
-                      ${{ totalCompra() }}
+                      ${{ totalCompra() | number:'1.2-2' }}
                     </span>
                   </div>
                 </div>

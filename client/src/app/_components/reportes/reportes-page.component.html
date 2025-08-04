@@ -201,7 +201,7 @@
               <p class="text-sm font-medium text-green-700">Total de Ventas</p>
             </div>
             <p class="text-3xl font-bold text-green-900 mb-1">
-              ${{(reporteSummary()?.totalVentas || 0) }}
+              ${{(reporteSummary()?.totalVentas | number:'1.2-2') || 0 }}
             </p>
             <p class="text-sm text-green-600 font-medium">Ingresos totales</p>
           </div>
@@ -239,7 +239,7 @@
               </p>
             </div>
             <p class="text-3xl font-bold text-orange-900 mb-1">
-              ${{(reporteSummary()?.costoMercaderiaVendida || 0)}}
+              ${{(reporteSummary()?.costoMercaderiaVendida | number:'1.2-2') || 0}}
             </p>
             <p class="text-sm text-orange-600 font-medium">
               Costo de productos
@@ -275,7 +275,7 @@
               <p class="text-sm font-medium text-blue-700">Ganancia Bruta</p>
             </div>
             <p class="text-3xl font-bold text-blue-900 mb-1">
-              ${{(reporteSummary()?.gananciaBruta || 0)}}
+              ${{(reporteSummary()?.gananciaBruta | number:'1.2-2') || 0}}
             </p>
             <p class="text-sm text-blue-600 font-medium">Beneficio neto</p>
           </div>
@@ -469,7 +469,7 @@
                 <span
                   class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-semibold bg-green-100 text-green-800 border border-green-200"
                 >
-                  ${{producto.totalVentas}}
+                  ${{producto.totalVentas | number:'1.2-2'}}
                 </span>
               </td>
             </tr>

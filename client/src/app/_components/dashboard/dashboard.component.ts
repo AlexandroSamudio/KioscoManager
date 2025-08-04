@@ -18,7 +18,7 @@ import { VentaService } from '../../_services/venta.service';
 import { forkJoin } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LineChartComponent } from '../line-chart/line-chart.component';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,7 +33,6 @@ export class DashboardComponent implements OnInit {
   productoService = inject(ProductoService);
   ventaService = inject(VentaService);
   destroyRef = inject(DestroyRef);
-  router = inject(Router);
 
   lowestStockProducts: WritableSignal<Producto[]> = signal([]);
   totalVentasDia: WritableSignal<number> = signal(0);

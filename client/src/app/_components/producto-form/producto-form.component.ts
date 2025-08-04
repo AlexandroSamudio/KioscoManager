@@ -50,19 +50,14 @@ export class ProductoFormComponent implements OnInit {
     nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     sku: ['', [Validators.required, Validators.pattern(/^\d{13}$/)]],
     descripcion: ['', [Validators.maxLength(500)]],
-    precioCompra: [0, [Validators.required, Validators.min(0)]],
-    precioVenta: [0, [Validators.required, Validators.min(0)]],
+    precioCompra: [0, [Validators.required, Validators.min(0),Validators.max(1000000)]],
+    precioVenta: [0, [Validators.required, Validators.min(0),Validators.max(1000000)]],
     stock: [0, [Validators.required, Validators.min(0)]],
-    categoriaId: ['', [Validators.required]]
+    categoriaId: [null, [Validators.required]]
   });
 
   ngOnInit(): void {
     this.loadCategorias();
-  }
-
-  getNombreCategoria(categoriaId: number): string {
-    const categoria = this.categorias.find((c) => c.id === categoriaId);
-    return categoria ? categoria.nombre : 'Categoría no encontrada';
   }
 
   private populateForm(producto: Producto): void {
@@ -73,7 +68,7 @@ export class ProductoFormComponent implements OnInit {
       precioCompra: producto.precioCompra,
       precioVenta: producto.precioVenta,
       stock: producto.stock,
-      categoriaId: producto.categoriaId?.toString() ?? ''
+      categoriaId: producto.categoriaId ?? null
     });
   }
 
@@ -85,7 +80,7 @@ export class ProductoFormComponent implements OnInit {
       precioCompra: 0,
       precioVenta: 0,
       stock: 0,
-      categoriaId: ''
+      categoriaId: null
     });
   }
 
