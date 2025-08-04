@@ -23,6 +23,7 @@ namespace API.DTOs
         public required int Stock { get; set; }
         [Required, StringLength(100)]
         public required string CategoriaNombre { get; set; } = default!;
+        public int CategoriaId { get; set; }
     }
 
     [AtLeastOneProperty(ErrorMessage = "Se debe proporcionar al menos un campo para actualizar.")]

@@ -50,7 +50,7 @@ export class ConfiguracionComponent {
       id: 'usuarios',
       title: 'Usuarios y Permisos',
       icon: 'fas fa-users',
-      description: 'Gestión de empleados y roles',
+      description: 'Gestión de roles y códigos de invitación',
       route: '/configuracion/usuarios',
       adminOnly: true
     },

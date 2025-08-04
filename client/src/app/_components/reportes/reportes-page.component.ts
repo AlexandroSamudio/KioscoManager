@@ -42,6 +42,7 @@ import { Observable } from 'rxjs';
 import { NotificationService } from '../../_services/notification.service';
 import { setPaginatedResponseSignal } from '../../_services/pagination.helper';
 import { TipoAgrupacion } from '../../_models/venta-por-dia.model';
+import { ProductoMasVendido } from '../../_models/producto-mas-vendido.model';
 
 export interface ReportesErrores {
   resumen: string | null;
@@ -419,18 +420,6 @@ export class ReportesPageComponent implements OnInit {
     this.cargarReportesConRango(fechaInicio!, fechaFin!);
   }
 
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES');
-  }
-
-  formatCurrency(value: number): string {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: 'ARS',
-    }).format(value);
-  }
-
   private getFechaFromFormControl(
     controlName: string,
     isEndDate = false
@@ -518,4 +507,7 @@ export class ReportesPageComponent implements OnInit {
     this.currentPage.set(page);
     this.cargarTopProductosConRango(fechaInicio!, fechaFin!);
   }
+
+  trackBySku = (_: number, p: ProductoMasVendido) => p.sku;
+
 }

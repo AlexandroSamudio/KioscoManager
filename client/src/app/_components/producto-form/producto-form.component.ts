@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, Input, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductoService } from '../../_services/producto.service';
@@ -13,7 +13,7 @@ import { NotificationService } from '../../_services/notification.service';
 @Component({
   selector: 'app-producto-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './producto-form.component.html',
   styleUrl: './producto-form.component.css',
 })
@@ -22,32 +22,71 @@ export class ProductoFormComponent implements OnInit {
   private productoService = inject(ProductoService);
   private categoriaService = inject(CategoriaService);
   private notificationService = inject(NotificationService);
+  private fb = inject(FormBuilder);
+
   @Input() isVisible = false;
   @Input() isEditMode = false;
+
   private _initialProduct: Producto | null = null;
   @Input() set initialProduct(value: Producto | null) {
     this._initialProduct = value;
     if (this.isEditMode && value) {
-      this.producto = {
-        ...value,
-        categoriaId: this.parseCategoriaId(value.categoriaId),
-      };
+      this.populateForm(value);
     } else {
-      this.producto = this.getEmptyProduct();
+      this.resetForm();
     }
   }
   get initialProduct(): Producto | null {
     return this._initialProduct;
   }
+
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<Producto>();
 
   isLoading = false;
-  producto: Producto = this.getEmptyProduct();
   categorias: Categoria[] = [];
+
+  productoForm: FormGroup = this.fb.group({
+    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+    sku: ['', [Validators.required, Validators.pattern(/^\d{13}$/)]],
+    descripcion: ['', [Validators.maxLength(500)]],
+    precioCompra: [0, [Validators.required, Validators.min(0)]],
+    precioVenta: [0, [Validators.required, Validators.min(0)]],
+    stock: [0, [Validators.required, Validators.min(0)]],
+    categoriaId: ['', [Validators.required]]
+  });
 
   ngOnInit(): void {
     this.loadCategorias();
+  }
+
+  getNombreCategoria(categoriaId: number): string {
+    const categoria = this.categorias.find((c) => c.id === categoriaId);
+    return categoria ? categoria.nombre : 'Categoría no encontrada';
+  }
+
+  private populateForm(producto: Producto): void {
+    this.productoForm.patchValue({
+      nombre: producto.nombre,
+      sku: producto.sku,
+      descripcion: producto.descripcion,
+      precioCompra: producto.precioCompra,
+      precioVenta: producto.precioVenta,
+      stock: producto.stock,
+      categoriaId: producto.categoriaId?.toString() ?? ''
+    });
+  }
+
+  private resetForm(): void {
+    this.productoForm.reset({
+      nombre: '',
+      sku: '',
+      descripcion: '',
+      precioCompra: 0,
+      precioVenta: 0,
+      stock: 0,
+      categoriaId: ''
+    });
   }
 
   private loadCategorias(): void {
@@ -67,41 +106,39 @@ export class ProductoFormComponent implements OnInit {
       });
   }
 
-  private parseCategoriaId(value: unknown): number {
-    const parsed = Number(value);
-    return isNaN(parsed) ? 0 : parsed;
+  isFieldInvalid(fieldName:string):boolean{
+    const field = this.productoForm.get(fieldName);
+    return !!(field && field.invalid && field.touched);
   }
 
-  private getEmptyProduct(): Producto {
-    return {
-      id: 0,
-      sku: '',
-      nombre: '',
-      descripcion: '',
-      precioCompra: 0,
-      precioVenta: 0,
-      stock: 0,
-      categoriaNombre: '',
-      categoriaId: 0,
-    };
+  getFieldError(fieldName: string, errorType: string): boolean {
+    const field = this.productoForm.get(fieldName);
+    return !!(field && field.hasError(errorType) && field.touched);
   }
 
   onSubmit(): void {
-    if (!this.producto.categoriaId || this.producto.categoriaId === 0) {
-      const categoria = this.categorias.find(
-        (c) => c.nombre === this.producto.categoriaNombre
-      );
-      if (categoria) {
-        this.producto.categoriaId = categoria.id;
-      }
+    if (this.productoForm.invalid || this.isLoading) {
+      this.productoForm.markAllAsTouched();
+      return;
     }
-    if (this.isLoading) return;
+
     this.isLoading = true;
-    const { id, categoriaNombre, ...productoSinId } = this.producto;
-    const obs =
-      this.isEditMode && this.producto.id
-        ? this.productoService.updateProducto(this.producto.id, productoSinId)
-        : this.productoService.createProducto(productoSinId);
+    const formValue = this.productoForm.value;
+
+    const productoData = {
+      sku: formValue.sku,
+      nombre: formValue.nombre,
+      descripcion: formValue.descripcion,
+      precioCompra: formValue.precioCompra,
+      precioVenta: formValue.precioVenta,
+      stock: formValue.stock,
+      categoriaId: Number(formValue.categoriaId)
+    };
+
+    const obs = this.isEditMode && this._initialProduct?.id
+      ? this.productoService.updateProducto(this._initialProduct.id, productoData)
+      : this.productoService.createProducto(productoData);
+
     obs
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -123,15 +160,44 @@ export class ProductoFormComponent implements OnInit {
       });
   }
 
-  onCategoryChange(nombre: string): void {
-    const cat = this.categorias.find((c) => c.nombre === nombre);
-    this.producto.categoriaId = cat ? cat.id : 0;
-    this.producto.categoriaNombre = nombre;
+  onCategoryChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const categoriaId = target.value;
+    this.productoForm.patchValue({ categoriaId });
   }
 
   closeModal(): void {
     this.close.emit();
-    this.producto = this.getEmptyProduct();
+    this.resetForm();
     this.isLoading = false;
+  }
+
+  get nombreValue(): string {
+    return this.productoForm.get('nombre')?.value || '';
+  }
+
+  get precioCompraValue(): number {
+    return this.productoForm.get('precioCompra')?.value || 0;
+  }
+
+  get precioVentaValue(): number {
+    return this.productoForm.get('precioVenta')?.value || 0;
+  }
+
+  get stockValue(): number {
+    return this.productoForm.get('stock')?.value || 0;
+  }
+
+  get margenGanancia(): number {
+    return this.precioVentaValue - this.precioCompraValue;
+  }
+
+  get porcentajeMargen(): number {
+    if (this.precioCompraValue === 0) return 0;
+    return (this.margenGanancia / this.precioCompraValue) * 100;
+  }
+
+  get shouldShowMargen(): boolean {
+    return this.precioCompraValue > 0 && this.precioVentaValue > 0;
   }
 }

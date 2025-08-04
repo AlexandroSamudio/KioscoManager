@@ -20,7 +20,6 @@ export class ProductSearchComponent {
   @ViewChild('searchInput') searchInputRef!: ElementRef<HTMLInputElement>;
 
   @Input() placeholder: string = 'Ingrese nombre o SKU del producto';
-  @Input() label: string = 'Buscar Producto (por Nombre o SKU)';
   @Input() showPriceInfo: boolean = true;
   @Input() showStockInfo: boolean = true;
   @Input() showDescription: boolean = true;

@@ -120,6 +120,9 @@ export class VentasChartComponent implements OnChanges {
             weight: 600,
             size: 14,
           },
+          callback: (value: number | string) => {
+            return '$' + new Intl.NumberFormat('es-ES').format(Number(value));
+          },
         },
       },
     },
@@ -178,10 +181,7 @@ export class VentasChartComponent implements OnChanges {
           },
           label: (context) => {
             const tipoAgrupacion = this.tipoAgrupacion();
-            const monto = new Intl.NumberFormat('es-ES', {
-              style: 'currency',
-              currency: 'ARS',
-            }).format(context.parsed.y);
+            const monto = '$' + new Intl.NumberFormat('es-ES').format(context.parsed.y);
 
             switch (tipoAgrupacion) {
               case 'weekly':

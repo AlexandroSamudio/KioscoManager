@@ -6,13 +6,28 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
       <div class="flex items-center justify-between">
-        <div>
-          <h1 class="text-3xl font-bold text-amber-900">
-            Reportes y Estadísticas
-          </h1>
-          <p class="text-amber-700">
-            Análisis detallado del rendimiento de tu kiosco
-          </p>
+        <div class="flex items-center space-x-4">
+          <div
+            class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg"
+          >
+            <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="white"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-amber-900">Reportes y Estadísticas</h1>
+            <p class="text-amber-700">Análisis detallado del rendimiento de tu kiosco</p>
+          </div>
         </div>
       </div>
     </div>
@@ -186,7 +201,7 @@
               <p class="text-sm font-medium text-green-700">Total de Ventas</p>
             </div>
             <p class="text-3xl font-bold text-green-900 mb-1">
-              {{ formatCurrency(reporteSummary()?.totalVentas || 0) }}
+              ${{(reporteSummary()?.totalVentas || 0) }}
             </p>
             <p class="text-sm text-green-600 font-medium">Ingresos totales</p>
           </div>
@@ -224,9 +239,7 @@
               </p>
             </div>
             <p class="text-3xl font-bold text-orange-900 mb-1">
-              {{
-                formatCurrency(reporteSummary()?.costoMercaderiaVendida || 0)
-              }}
+              ${{(reporteSummary()?.costoMercaderiaVendida || 0)}}
             </p>
             <p class="text-sm text-orange-600 font-medium">
               Costo de productos
@@ -262,7 +275,7 @@
               <p class="text-sm font-medium text-blue-700">Ganancia Bruta</p>
             </div>
             <p class="text-3xl font-bold text-blue-900 mb-1">
-              {{ formatCurrency(reporteSummary()?.gananciaBruta || 0) }}
+              ${{(reporteSummary()?.gananciaBruta || 0)}}
             </p>
             <p class="text-sm text-blue-600 font-medium">Beneficio neto</p>
           </div>
@@ -406,12 +419,12 @@
             class="bg-white/50 backdrop-blur-sm divide-y divide-amber-200/50"
           >
             <tr
-              *ngFor="let producto of productosPaginados?.result; let i = index"
+              *ngFor="let producto of productosPaginados?.result; let i = index; trackBy: trackBySku"
               class="hover:bg-amber-100/30 transition-all duration-200 group"
             >
               <td class="px-6 py-4 whitespace-nowrap">
                 <div
-                  class="text-sm font-medium text-amber-900 bg-amber-100 px-3 py-1 rounded-lg border border-amber-200"
+                  class="inline-block text-sm font-medium text-amber-900 bg-amber-100 px-2 py-1 rounded border border-amber-200"
                 >
                   {{ producto.sku }}
                 </div>
@@ -456,7 +469,7 @@
                 <span
                   class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-semibold bg-green-100 text-green-800 border border-green-200"
                 >
-                  {{ formatCurrency(producto.totalVentas) }}
+                  ${{producto.totalVentas}}
                 </span>
               </td>
             </tr>
