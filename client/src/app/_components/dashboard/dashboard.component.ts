@@ -18,12 +18,12 @@ import { VentaService } from '../../_services/venta.service';
 import { forkJoin } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LineChartComponent } from '../line-chart/line-chart.component';
-import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [NavbarComponent, CommonModule, LineChartComponent],
+  imports: [NavbarComponent, CommonModule, LineChartComponent, RouterLink],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
@@ -33,7 +33,6 @@ export class DashboardComponent implements OnInit {
   productoService = inject(ProductoService);
   ventaService = inject(VentaService);
   destroyRef = inject(DestroyRef);
-  router = inject(Router);
 
   lowestStockProducts: WritableSignal<Producto[]> = signal([]);
   totalVentasDia: WritableSignal<number> = signal(0);
@@ -89,10 +88,6 @@ export class DashboardComponent implements OnInit {
     if (topProductos.length === 0 || topProductos[0].cantidadVendida === 0)
       return 0;
     return (producto.cantidadVendida / topProductos[0].cantidadVendida) * 100;
-  }
-
-  navigateTo(route: string): void {
-    this.router.navigate([route]);
   }
 
 }

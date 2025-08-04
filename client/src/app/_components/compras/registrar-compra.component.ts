@@ -1,4 +1,4 @@
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component, inject, signal, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +21,6 @@ import { ProductSearchComponent } from '../shared/product-search/product-search.
     FormsModule,
     CompraDetalleListComponent,
     NavbarComponent,
-    CurrencyPipe,
     ProductSearchComponent,
   ],
   templateUrl: './registrar-compra.component.html',
