@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feat--modificar-archivo-de-workflow
     paths:
       - "API/**"
       - "client/**"
@@ -11,6 +12,7 @@ on:
   pull_request:
     branches:
       - main
+      - feat--modificar-archivo-de-workflow
     paths:
       - "API/**"
       - "client/**"
@@ -66,12 +68,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: ./client/dist/client
+          path: ./client/dist/client/browser
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat--modificar-archivo-de-workflow')
 
     steps:
       - name: Download Backend Artifact
@@ -86,97 +88,52 @@ jobs:
           name: frontend-build
           path: ./dist_frontend_temp
 
-      # --- PASOS DE DEPURACIÓN---
+      # --- PASOS DE DEPURACIÓN (déjalos por ahora para verificar rutas) ---
       - name: "Debug: Show contents of downloaded Backend Artifact on Runner"
         run: |
           echo "Content of publish_backend_temp on GitHub Actions runner:"
           ls -la ./publish_backend_temp
-          ls -la ./publish_backend_temp/.
+          ls -la ./publish_backend_temp/. # Esto mostrará el contenido real
 
       - name: "Debug: Show contents of downloaded Frontend Artifact on Runner"
         run: |
           echo "Content of dist_frontend_temp on GitHub Actions runner:"
           ls -la ./dist_frontend_temp
-          ls -la ./dist_frontend_temp/.
+          ls -la ./dist_frontend_temp/. # Esto mostrará el contenido real
       # --- FIN PASOS DE DEPURACIÓN ---
+      # =========================================================================
+      # AHORA SEPARAMOS LA TRANSFERENCIA DE ARCHIVOS DE LA EJECUCIÓN DEL SCRIPT
+      # =========================================================================
 
-      # ---Despliegue del BACKEND---
+      # --- Despliegue del BACKEND (Transferencia) ---
       - name: Transfer Backend Files to Server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./publish_backend_temp/"
-          target: "/tmp/backend_deploy_temp_dir/"
-      - name: Deploy Backend on Server
+          source: "./publish_backend_temp/" # La ruta en el runner de GitHub Actions
+          target: "/tmp/backend_deploy_temp_dir" # La NUEVA ruta temporal en el servidor remoto
+          # SCP copiará el contenido de publish_backend_temp/ dentro de backend_deploy_temp_dir/
+          # Es decir, en el servidor remoto, el backend estará en /tmp/backend_deploy_temp_dir/publish_backend_temp/
+
+      - name: Deploy Backend on Server (Execute commands on remote server)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash -c '
-            echo "Iniciando despliegue de Backend en el servidor..."
+            # Crear script usando printf (compatible con fish)
+            printf '#!/bin/bash\nset -e\n\necho "Iniciando despliegue de Backend en el servidor..."\n\nDEPLOY_PATH="/var/www"\nBACKEND_PATH="${DEPLOY_PATH}/mi-app/publish"\nBACKEND_OLD_PATH="${DEPLOY_PATH}/mi-app/publish_old"\n\nBACKEND_TRANSFER_ROOT="/tmp/backend_deploy_temp_dir"\nBACKEND_ACTUAL_TEMP_PATH="${BACKEND_TRANSFER_ROOT}/publish_backend_temp"\n\nrollback_backend() {\n  echo "Rollback de Backend iniciado..."\n  if [ -d "$BACKEND_TRANSFER_ROOT" ]; then\n      sudo rm -rf "$BACKEND_TRANSFER_ROOT"\n      echo "Directorio temporal del backend limpiado."\n  fi\n  if [ -d "$BACKEND_OLD_PATH" ]; then\n    sudo rm -rf "$BACKEND_PATH" || true\n    sudo mv "$BACKEND_OLD_PATH" "$BACKEND_PATH"\n    echo "Backend restaurado a versión anterior."\n  fi\n  sudo systemctl restart kioscomanager.service || true\n  echo "Rollback de Backend completado."\n}\ntrap rollback_backend ERR\n\nsudo systemctl stop kioscomanager.service || true\n\nsudo rm -rf "$BACKEND_OLD_PATH"\nsudo mv "$BACKEND_PATH" "$BACKEND_OLD_PATH" || true\n\nsudo mkdir -p "$BACKEND_PATH"\n\nif [ -d "$BACKEND_ACTUAL_TEMP_PATH" ]; then\n    sudo cp -r "${BACKEND_ACTUAL_TEMP_PATH}/." "$BACKEND_PATH/"\n    sudo rm -rf "$BACKEND_TRANSFER_ROOT"\nelse\n    echo "Error: El directorio de build del backend '"'"'${BACKEND_ACTUAL_TEMP_PATH}'"'"' no fue encontrado en el servidor. Abortando despliegue."\n    exit 1\nfi\n\nsudo chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} "$BACKEND_PATH"\nsudo systemctl start kioscomanager.service\nsleep 5\nif ! sudo systemctl is-active --quiet kioscomanager.service; then\n  echo "Error: El servicio Backend no está activo después del despliegue."\n  exit 1\nfi\nsudo systemctl status kioscomanager.service --no-pager\necho "Despliegue de Backend completado."\n' > /tmp/deploy_backend_script.sh
 
-            DEPLOY_PATH="/var/www"
-            BACKEND_PATH="${DEPLOY_PATH}/mi-app/publish"
-            BACKEND_OLD_PATH="${DEPLOY_PATH}/mi-app/publish_old"
-            # Define la ruta temporal donde se copió el artefacto
-            # Ahora la acción SCP copiará `publish_backend_temp` dentro de `backend_deploy_temp_dir`
-            BACKEND_TRANSFER_BASE_PATH="/tmp/backend_deploy_temp_dir"
-            BACKEND_TRANSFER_PATH="${BACKEND_TRANSFER_BASE_PATH}/publish_backend_temp"
+            # Ejecutar el script con bash explícitamente
+            /bin/bash /tmp/deploy_backend_script.sh
 
+            # Limpiar el script temporal
+            rm -f /tmp/deploy_backend_script.sh
 
-            # Función de rollback para backend
-            rollback_backend() {
-              echo "Rollback de Backend iniciado..."
-              # Limpiar el directorio temporal si existe un error
-              if [ -d "$BACKEND_TRANSFER_BASE_PATH" ]; then
-                  sudo rm -rf "$BACKEND_TRANSFER_BASE_PATH"
-                  echo "Directorio temporal del backend limpiado."
-              fi
-              if [ -d "$BACKEND_OLD_PATH" ]; then
-                sudo rm -rf "$BACKEND_PATH" || true # Borra el posible despliegue fallido
-                sudo mv "$BACKEND_OLD_PATH" "$BACKEND_PATH"
-                echo "Backend restaurado a versión anterior."
-              fi
-              sudo systemctl restart kioscomanager.service || true
-              echo "Rollback de Backend completado."
-            }
-            trap rollback_backend ERR # Si algo falla en este bloque, se ejecuta el rollback
-
-            sudo systemctl stop kioscomanager.service || true # Detener servicio (ignorar error si ya está detenido)
-            
-            # Limpiar y mover la versión anterior
-            sudo rm -rf "$BACKEND_OLD_PATH" # Eliminar la copia antigua de la versión anterior
-            sudo mv "$BACKEND_PATH" "$BACKEND_OLD_PATH" || true # Mover la versión actual a backup (ignorar error si no existe)
-
-            # Asegurarse de que el directorio de destino exista antes de mover
-            sudo mkdir -p "$BACKEND_PATH"
-            # Verificar si el directorio transferido existe antes de copiar
-            if [ -d "$BACKEND_TRANSFER_PATH" ]; then
-                # Mover el contenido de la nueva versión transferida a su ubicación final
-                sudo cp -r "${BACKEND_TRANSFER_PATH}/." "$BACKEND_PATH/"
-                # Eliminar la carpeta temporal después de copiar
-                sudo rm -rf "$BACKEND_TRANSFER_BASE_PATH"
-            else
-                echo "Error: El directorio de build del backend '${BACKEND_TRANSFER_PATH}' no fue encontrado en el servidor. Abortando despliegue."
-                exit 1 # Forzar la falla si no se encuentra el artefacto transferido
-            fi
-
-            sudo chown -R ${{ secrets.SSH_USERNAME }}:${{ secrets.SSH_USERNAME }} "$BACKEND_PATH"
-            sudo systemctl start kioscomanager.service
-            sleep 5
-            if ! sudo systemctl is-active --quiet kioscomanager.service; then
-              echo "Error: El servicio Backend no está activo después del despliegue."
-              exit 1 # Falla el job si el servicio no arranca
-            fi
-            sudo systemctl status kioscomanager.service --no-pager
-            echo "Despliegue de Backend completado."
-            '
-
-      # ---Despliegue del FRONTEND (Transferencia + Lógica en servidor) ---
+      # --- Despliegue del FRONTEND (Transferencia) ---
       - name: Transfer Frontend Files to Server
         uses: appleboy/scp-action@master
         with:
@@ -184,68 +141,20 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "./dist_frontend_temp/"
-          target: "/tmp/frontend_deploy_temp_dir/"
+          target: "/tmp/frontend_deploy_temp_dir" # La NUEVA ruta temporal en el servidor remoto
 
-      - name: Deploy Frontend on Server
+      - name: Deploy Frontend on Server (Execute commands on remote server)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            bash -c '
-            echo "Iniciando despliegue de Frontend en el servidor..."
+            # Crear script usando printf (compatible con fish)
+            printf '#!/bin/bash\nset -e\n\necho "Iniciando despliegue de Frontend en el servidor..."\n\nDEPLOY_PATH="/var/www"\nFRONTEND_PATH="${DEPLOY_PATH}/mi-app-frontend/browser"\nFRONTEND_OLD_PATH="${DEPLOY_PATH}/mi-app-frontend/browser_old"\n\nFRONTEND_TRANSFER_ROOT="/tmp/frontend_deploy_temp_dir"\nFRONTEND_ACTUAL_TEMP_PATH="${FRONTEND_TRANSFER_ROOT}/dist_frontend_temp"\n\nrollback_frontend() {\n  echo "Rollback de Frontend iniciado..."\n  if [ -d "$FRONTEND_TRANSFER_ROOT" ]; then\n      sudo rm -rf "$FRONTEND_TRANSFER_ROOT"\n      echo "Directorio temporal del frontend limpiado."\n  fi\n  if [ -d "$FRONTEND_OLD_PATH" ]; then\n    sudo rm -rf "$FRONTEND_PATH" || true\n    sudo mv "$FRONTEND_OLD_PATH" "$FRONTEND_PATH"\n    echo "Frontend restaurado a versión anterior."\n  fi\n  sudo systemctl restart nginx || true\n  echo "Rollback de Frontend completado."\n}\ntrap rollback_frontend ERR\n\necho "Verificando estructura del artifact descargado..."\nls -la "$FRONTEND_TRANSFER_ROOT" || echo "No se pudo listar FRONTEND_TRANSFER_ROOT"\nls -la "$FRONTEND_ACTUAL_TEMP_PATH" || echo "No se pudo listar FRONTEND_ACTUAL_TEMP_PATH"\n\n# Verificar que el artifact contiene index.html\nif [ ! -f "$FRONTEND_ACTUAL_TEMP_PATH/index.html" ]; then\n    echo "Error: index.html no encontrado en el artifact. Estructura del artifact:"\n    find "$FRONTEND_TRANSFER_ROOT" -name "*.html" || echo "No se encontraron archivos HTML"\n    exit 1\nfi\n\necho "index.html encontrado correctamente en el artifact."\n\nsudo rm -rf "$FRONTEND_OLD_PATH"\nsudo mv "$FRONTEND_PATH" "$FRONTEND_OLD_PATH" || true\n\nsudo mkdir -p "$FRONTEND_PATH"\n\n# Copiar archivos del artifact al directorio de despliegue\nsudo cp -r "${FRONTEND_ACTUAL_TEMP_PATH}/." "$FRONTEND_PATH/"\nsudo rm -rf "$FRONTEND_TRANSFER_ROOT"\n\n# Verificar que index.html se copió correctamente\nif [ ! -f "$FRONTEND_PATH/index.html" ]; then\n    echo "Error: index.html no se copió correctamente al directorio de despliegue."\n    exit 1\nfi\n\necho "Archivos copiados correctamente. Estableciendo permisos..."\n\n# Establecer permisos correctos para nginx\nsudo chown -R www-data:www-data "$FRONTEND_PATH"\nsudo chmod -R 755 "$FRONTEND_PATH"\nsudo find "$FRONTEND_PATH" -type f -exec chmod 644 {} \\;\n\necho "Verificando contenido final del directorio de despliegue:"\nls -la "$FRONTEND_PATH"\n\nsudo systemctl restart nginx\nsleep 5\nif ! sudo systemctl is-active --quiet nginx; then\n  echo "Error: Nginx no está activo después del despliegue."\n  exit 1\nfi\nsudo nginx -t\necho "Despliegue de Frontend completado exitosamente."\n' > /tmp/deploy_frontend_script.sh
 
-            DEPLOY_PATH="/var/www"
-            FRONTEND_PATH="${DEPLOY_PATH}/mi-app-frontend/browser"
-            FRONTEND_OLD_PATH="${DEPLOY_PATH}/mi-app-frontend/browser_old"
-            # Define la ruta temporal donde se copió el artefacto
-            FRONTEND_TRANSFER_BASE_PATH="/tmp/frontend_deploy_temp_dir"
-            FRONTEND_TRANSFER_PATH="${FRONTEND_TRANSFER_BASE_PATH}/dist_frontend_temp"
+            # Ejecutar el script con bash explícitamente
+            /bin/bash /tmp/deploy_frontend_script.sh
 
-            # Función de rollback para frontend
-            rollback_frontend() {
-              echo "Rollback de Frontend iniciado..."
-              # Limpiar el directorio temporal si existe un error
-              if [ -d "$FRONTEND_TRANSFER_BASE_PATH" ]; then
-                  sudo rm -rf "$FRONTEND_TRANSFER_BASE_PATH"
-                  echo "Directorio temporal del frontend limpiado."
-              fi
-              if [ -d "$FRONTEND_OLD_PATH" ]; then
-                sudo rm -rf "$FRONTEND_PATH" || true
-                sudo mv "$FRONTEND_OLD_PATH" "$FRONTEND_PATH"
-                echo "Frontend restaurado a versión anterior."
-              fi
-              sudo systemctl restart nginx || true
-              echo "Rollback de Frontend completado."
-            }
-            trap rollback_frontend ERR # Si algo falla en este bloque, se ejecuta el rollback
-
-            sudo rm -rf "$FRONTEND_OLD_PATH"
-            sudo mv "$FRONTEND_PATH" "$FRONTEND_OLD_PATH" || true
-
-            # Asegurarse de que el directorio de destino exista antes de copiar
-            sudo mkdir -p "$FRONTEND_PATH"
-            # Verificar si el directorio transferido existe antes de copiar
-            if [ -d "$FRONTEND_TRANSFER_PATH" ]; then
-                # Mover el contenido de la nueva versión transferida a su ubicación final
-                sudo cp -r "${FRONTEND_TRANSFER_PATH}/." "$FRONTEND_PATH/"
-                # Eliminar la carpeta temporal después de copiar
-                sudo rm -rf "$FRONTEND_TRANSFER_BASE_PATH"
-            else
-                echo "Error: El directorio de build del frontend '${FRONTEND_TRANSFER_PATH}' no fue encontrado en el servidor. Abortando despliegue."
-                exit 1 # Forzar la falla si no se encuentra el artefacto transferido
-            fi
-
-            sudo chown -R www-data:www-data "$FRONTEND_PATH"
-            sudo chmod -R g+w "$FRONTEND_PATH"
-            sudo chmod g+s "${DEPLOY_PATH}/mi-app-frontend"
-            sudo systemctl restart nginx
-            sleep 5
-            if ! sudo systemctl is-active --quiet nginx; then
-              echo "Error: Nginx no está activo después del despliegue."
-              exit 1
-            fi
-            sudo nginx -t
-            echo "Despliegue de Frontend completado."
-            '
+            # Limpiar el script temporal
+            rm -f /tmp/deploy_frontend_script.sh
