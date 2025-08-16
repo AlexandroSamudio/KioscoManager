@@ -27,19 +27,19 @@
   <summary>Tabla de contenidos</summary>
   <ol>
     <li>
-      <a href="#about-the-project">Acerca del proyecto</a>
+      <a href="#acerca-del-proyecto">Acerca del proyecto</a>
       <ul>
-        <li><a href="#built-with">Desarrollado con</a></li>
+        <li><a href="#desarrollado-con">Desarrollado con</a></li>
       </ul>
     </li>
     <li>
-      <a href="#getting-started">Instalación y configuración</a>
+      <a href="#instalación-y-configuración">Instalación y configuración</a>
     </li>
-    <li><a href="#usage">Guía de uso</a></li>
+    <li><a href="#guía-de-uso">Guía de uso</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contribuir</a></li>
-    <li><a href="#license">Licencia</a></li>
-    <li><a href="#contact">Contacto y comunidad</a></li>
+    <li><a href="#contribuir">Contribuir</a></li>
+    <li><a href="#licencia">Licencia</a></li>
+    <li><a href="#contacto">Contacto</a></li>
   </ol>
 </details>
 
