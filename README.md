@@ -33,9 +33,9 @@
       </ul>
     </li>
     <li>
-      <a href="#instalación-y-configuración">Instalación y configuración</a>
+      <a href="#instalacion-y-configuracion">Instalación y configuración</a>
     </li>
-    <li><a href="#guía-de-uso">Guía de uso</a></li>
+    <li><a href="#guia-de-uso">Guía de uso</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contribuir">Contribuir</a></li>
     <li><a href="#licencia">Licencia</a></li>
@@ -46,6 +46,7 @@
 
 
 <!-- ABOUT THE PROJECT -->
+<a id="acerca-del-proyecto"></a>
 ## ❓ Acerca del proyecto
 ### 🎥 Demostración en Video
 El siguiente video muestra el flujo completo de la aplicación en un minuto:
@@ -55,7 +56,7 @@ https://github.com/user-attachments/assets/6515e98a-840e-4739-aa37-c9fd7d9ccb10
 KioscoManager nace de la observación directa de las necesidades reales de pequeños comercios. Muchos kioscos y tiendas de conveniencia siguen dependiendo de métodos manuales o sistemas anticuados que limitan su potencial de crecimiento.
 
 
-
+<a id="desarrollado-con"></a>
 ### 🚀 Desarrollado con
 
 ![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
@@ -68,6 +69,7 @@ KioscoManager nace de la observación directa de las necesidades reales de peque
 
 
 <!-- GETTING STARTED -->
+<a id="instalacion-y-configuracion"></a>
 ## 🛠️ Instalación y configuración
 
 1. Clonar el repositorio
@@ -96,6 +98,7 @@ KioscoManager nace de la observación directa de las necesidades reales de peque
 
 
 <!-- USAGE EXAMPLES -->
+<a id="guia-de-uso"></a>
 ## 📋 Guía de Uso
 
 ### 🏪 Para Administradores (Dueños de Kiosco)
@@ -126,6 +129,7 @@ KioscoManager nace de la observación directa de las necesidades reales de peque
 
 
 <!-- ROADMAP -->
+<a id="roadmap"></a>
 ## 🗺️ Roadmap
 ### ✅ MVP (Completado)
 - [x] Sistema de autenticación JWT
@@ -140,6 +144,7 @@ KioscoManager nace de la observación directa de las necesidades reales de peque
 
 
 <!-- CONTRIBUTING -->
+<a id="contribuir"></a>
 ## 🤝 Contribuir
 
 ¡Las contribuciones son bienvenidas! Por favor:
@@ -153,6 +158,7 @@ KioscoManager nace de la observación directa de las necesidades reales de peque
 
 
 <!-- LICENSE -->
+<a id="licencia"></a>
 ## Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
@@ -160,6 +166,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para
 
 
 <!-- CONTACTO -->
+<a id="contacto"></a>
 ## Contacto y Comunidad
 - 📧 **Email**: alexandrosamudio27@gmail.com
 - 💼 **LinkedIn**: https://www.linkedin.com/in/alexandro-samudio-b40b76289/
