@@ -19,7 +19,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
     {
-        if (await UserExists(registerDto.Username)) return BadRequest("El nombre de usuario ya está en uso");
+        if (await UserExists(registerDto.UserName)) return BadRequest("El nombre de usuario ya está en uso");
 
 
         if (await EmailExists(registerDto.Email)) return BadRequest("El correo electrónico ya está en uso");

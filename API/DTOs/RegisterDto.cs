@@ -18,6 +18,6 @@ public class RegisterDto
     [Required(ErrorMessage = "El nombre de usuario es requerido.")]
     [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre de usuario debe tener entre 3 y 50 caracteres.")]
     [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "El nombre de usuario solo puede contener letras, números y guiones bajos.")]
-    public required string Username { get; set; }
+    public required string UserName { get; set; }
 }
 

@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API.Extensions
 {
     public static class IdentityServiceExtensions
     {
+        private static readonly string[] TokenErrorMessages = ["Debe proporcionar un token de autenticación válido para acceder a este recurso."];
+
         public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
         {
             services.AddIdentityCore<AppUser>(opt => 
@@ -52,41 +55,61 @@ namespace API.Extensions
                     };
 
                     options.Events = new JwtBearerEvents
-                    {
-                        OnChallenge = context =>
                         {
-                            context.HandleResponse();
-                            context.Response.StatusCode = 401;
-                            context.Response.ContentType = "application/json";
-
-                            var response = new
+                            OnChallenge = context =>
                             {
-                                statusCode = 401,
-                                message = "Acceso no autorizado.",
-                                details = "Debe proporcionar un token de autenticación válido para acceder a este recurso."
-                            };
+                                context.HandleResponse();
+                                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                                context.Response.ContentType = "application/problem+json";
+                                context.Response.Headers.WWWAuthenticate = "Bearer realm=\"api\", error=\"invalid_token\", error_description=\"Token ausente o inválido\"";
 
-                            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response, jsonSerializerOptions));
-                        },
-                        OnAuthenticationFailed = context =>
-                        {
-                            context.NoResult();
-                            context.Response.StatusCode = 401;
-                            context.Response.ContentType = "application/json";
+                                var problemDetails = new ProblemDetails
+                                {
+                                    Type = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+                                    Title = "Acceso no autorizado.",
+                                    Status = StatusCodes.Status401Unauthorized,
+                                    Detail = "Debe proporcionar un token de autenticación válido para acceder a este recurso.",
+                                    Instance = context.Request?.Path
+                                };
+                                problemDetails.Extensions["errors"] = new Dictionary<string, string[]>
+                                {
+                                    { "token", TokenErrorMessages }
+                                };
 
-                            var response = new
+                                return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, jsonSerializerOptions));
+                            },
+                            OnAuthenticationFailed = context =>
                             {
-                                statusCode = 401,
-                                message = "Token de autenticación inválido.",
-                                details = context.Exception is SecurityTokenExpiredException 
-                                    ? "El token ha expirado. Por favor, inicie sesión nuevamente."
-                                    : "El token proporcionado no es válido."
-                            };
+                                context.NoResult();
+                                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                                context.Response.ContentType = "application/problem+json";
+                                if (context.Exception is SecurityTokenExpiredException stex)
+                                {
+                                    context.Response.Headers.WWWAuthenticate =
+                                      $"Bearer realm=\"api\", error=\"invalid_token\", error_description=\"El token expiró en {stex.Expires:O}\"";
+                                }
+                                else
+                                {
+                                    context.Response.Headers.WWWAuthenticate =
+                                      "Bearer realm=\"api\", error=\"invalid_token\", error_description=\"Token inválido\"";
+                                }
 
-                            return context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response, jsonSerializerOptions));
-                        }
-                    };
-                });
+                                var problemDetails = new ProblemDetails
+                                {
+                                    Type = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+                                    Title = "Token de autenticación inválido.",
+                                    Status = StatusCodes.Status401Unauthorized,
+                                    Detail = context.Exception is SecurityTokenExpiredException
+                                        ? "El token ha expirado. Por favor, inicie sesión nuevamente."
+                                        : "El token proporcionado no es válido.",
+                                    Instance = context.Request?.Path
+                                };
+
+                                return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, jsonSerializerOptions));
+                            }
+                        };
+
+            });
 
             services.AddScoped<IAuthorizationHandler, RoleBasedAuthorizationHandler>();
 
