@@ -61,7 +61,7 @@ namespace API.Extensions
                                 context.HandleResponse();
                                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                                 context.Response.ContentType = "application/problem+json";
-                                context.Response.Headers.WWWAuthenticate = "Bearer realm=\"api\", error=\"invalid_token\", error_description=\"Token ausente o inválido\"";
+                                context.Response.Headers.WWWAuthenticate = "Bearer realm=\"api\", error=\"invalid_token\", error_description=\"Token ausente o invalido\"";
 
                                 var problemDetails = new ProblemDetails
                                 {
@@ -91,17 +91,17 @@ namespace API.Extensions
                                 else
                                 {
                                     context.Response.Headers.WWWAuthenticate =
-                                      "Bearer realm=\"api\", error=\"invalid_token\", error_description=\"Token inválido\"";
+                                      "Bearer realm=\"api\", error=\"invalid_token\", error_description=\"Token invalido\"";
                                 }
 
                                 var problemDetails = new ProblemDetails
                                 {
                                     Type = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
-                                    Title = "Token de autenticación inválido.",
+                                    Title = "Token de autenticación invalido.",
                                     Status = StatusCodes.Status401Unauthorized,
                                     Detail = context.Exception is SecurityTokenExpiredException
                                         ? "El token ha expirado. Por favor, inicie sesión nuevamente."
-                                        : "El token proporcionado no es válido.",
+                                        : "El token proporcionado no es valido.",
                                     Instance = context.Request?.Path
                                 };
 
