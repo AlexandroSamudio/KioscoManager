@@ -1,6 +1,6 @@
 namespace API.Validators;
 
-public class ValidationProblemDetailsDto
+public record ValidationProblemDetailsDto
 {
     public required string Type { get; set; }
     public required string Title { get; set; }

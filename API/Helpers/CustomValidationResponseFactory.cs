@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace API.Helpers
 {
@@ -12,7 +13,7 @@ namespace API.Helpers
           kvp => kvp.Key,
           kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
         );
-        
+
       var problem = new ValidationProblemDetails(errors)
       {
         Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1",

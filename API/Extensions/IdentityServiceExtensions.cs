@@ -13,7 +13,7 @@ namespace API.Extensions
 {
     public static class IdentityServiceExtensions
     {
-        private static readonly string[] value = new[] { "Debe proporcionar un token de autenticación válido para acceder a este recurso." };
+        private static readonly string[] TokenErrorMessages = ["Debe proporcionar un token de autenticación válido para acceder a este recurso."];
 
         public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration config)
         {
@@ -59,20 +59,21 @@ namespace API.Extensions
                             OnChallenge = context =>
                             {
                                 context.HandleResponse();
-                                context.Response.StatusCode = 401;
+                                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                                 context.Response.ContentType = "application/problem+json";
+                                context.Response.Headers.WWWAuthenticate = "Bearer realm=\"api\", error=\"invalid_token\", error_description=\"Token ausente o inválido\"";
 
                                 var problemDetails = new ProblemDetails
                                 {
                                     Type = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
                                     Title = "Acceso no autorizado.",
-                                    Status = 401,
+                                    Status = StatusCodes.Status401Unauthorized,
                                     Detail = "Debe proporcionar un token de autenticación válido para acceder a este recurso.",
                                     Instance = context.Request?.Path
                                 };
                                 problemDetails.Extensions["errors"] = new Dictionary<string, string[]>
                                 {
-                                    { "token", value }
+                                    { "token", TokenErrorMessages }
                                 };
 
                                 return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, jsonSerializerOptions));
@@ -80,14 +81,24 @@ namespace API.Extensions
                             OnAuthenticationFailed = context =>
                             {
                                 context.NoResult();
-                                context.Response.StatusCode = 401;
+                                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                                 context.Response.ContentType = "application/problem+json";
+                                if (context.Exception is SecurityTokenExpiredException stex)
+                                {
+                                    context.Response.Headers.WWWAuthenticate =
+                                      $"Bearer realm=\"api\", error=\"invalid_token\", error_description=\"El token expiró en {stex.Expires:O}\"";
+                                }
+                                else
+                                {
+                                    context.Response.Headers.WWWAuthenticate =
+                                      "Bearer realm=\"api\", error=\"invalid_token\", error_description=\"Token inválido\"";
+                                }
 
                                 var problemDetails = new ProblemDetails
                                 {
                                     Type = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
                                     Title = "Token de autenticación inválido.",
-                                    Status = 401,
+                                    Status = StatusCodes.Status401Unauthorized,
                                     Detail = context.Exception is SecurityTokenExpiredException
                                         ? "El token ha expirado. Por favor, inicie sesión nuevamente."
                                         : "El token proporcionado no es válido.",

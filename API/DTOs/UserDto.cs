@@ -9,10 +9,11 @@ public class UserDto
     [Required]
     [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]
     public required string Email { get; set; }
+    [Required]
     public required string Token { get; set; }
     [Required]
     [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre de usuario debe tener entre 3 y 50 caracteres.")]
-    public required string Username { get; set; }
+    public required string UserName { get; set; }
     public int? KioscoId { get; set; }
     public string? CodigoInvitacion { get; set; }
 }
@@ -22,7 +23,7 @@ public class UserManagementDto
     public int Id { get; set; }
     [Required]
     [StringLength(50, MinimumLength = 3, ErrorMessage = "El nombre de usuario debe tener entre 3 y 50 caracteres.")]
-    public required string Username { get; set; }
+    public required string UserName { get; set; }
     [Required]
     [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]
     public required string Email { get; set; }

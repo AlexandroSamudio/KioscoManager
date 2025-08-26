@@ -26,7 +26,7 @@ namespace API.Middleware
         var problemDetails = new ProblemDetails
         {
           Type     = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
-          Title    = "An unexpected error occurred.",
+          Title    = "Un error inesperado ha ocurrido.",
           Status   = (int)HttpStatusCode.InternalServerError,
           Detail   = isDevelopment
                        ? ex.Message

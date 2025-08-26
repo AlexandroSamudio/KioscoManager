@@ -6,36 +6,46 @@ namespace API.Extensions
 {
     public static class ResultExtensions
     {
-        private static object CreateErrorResponseObject(string errorCode, string? message)
+        private static ValidationProblemDetails CreateErrorResponseObject(string errorCode, string? message)
         {
-            return new
+            var detail = message ?? "Uno o más errores de validación ocurrieron.";
+            var errorKey = GetErrorKey(errorCode);
+            var errorsDict = new Dictionary<string, string[]>
             {
-                type = GetErrorTypeUrl(errorCode),
-                title = GetErrorTitle(errorCode),
-                status = GetStatusCode(errorCode),
-                detail = message ?? "Uno o más errores de validación ocurrieron.",
-                errors = new Dictionary<string, string[]>
-                {
-                    { GetErrorKey(errorCode), new[] { message ?? "Error desconocido" } }
-                }
+                { errorKey, new[] { message ?? "Error desconocido" } }
             };
+
+            var problemDetails = new ValidationProblemDetails(errorsDict)
+            {
+                Type = GetErrorTypeUrl(errorCode),
+                Title = GetErrorTitle(errorCode),
+                Status = GetStatusCode(errorCode),
+                Detail = detail
+            };
+            return problemDetails;
         }
 
         private static ObjectResult CreateObjectResultForErrorCode(string errorCode, object responseObj)
         {
             return errorCode switch
             {
-                ErrorCodes.EntityNotFound => new NotFoundObjectResult(responseObj),
-                ErrorCodes.FieldExists => new ConflictObjectResult(responseObj),
-                ErrorCodes.EmptyField => new BadRequestObjectResult(responseObj),
-                ErrorCodes.InvalidOperation => new BadRequestObjectResult(responseObj),
-                ErrorCodes.ValidationError => new BadRequestObjectResult(responseObj),
-                ErrorCodes.Forbidden => new ObjectResult(responseObj) { StatusCode = 403 },
-                ErrorCodes.InvalidCurrentPassword => new BadRequestObjectResult(responseObj),
-                ErrorCodes.Unauthorized => new UnauthorizedObjectResult(responseObj),
-                "UnknownError" => new ObjectResult(responseObj) { StatusCode = 500 },
-                _ => new ObjectResult(responseObj) { StatusCode = 500 }
+                ErrorCodes.EntityNotFound       => WithProblemContentType(new NotFoundObjectResult(responseObj)),
+                ErrorCodes.FieldExists          => WithProblemContentType(new ConflictObjectResult(responseObj)),
+                ErrorCodes.EmptyField           => WithProblemContentType(new BadRequestObjectResult(responseObj)),
+                ErrorCodes.InvalidOperation     => WithProblemContentType(new BadRequestObjectResult(responseObj)),
+                ErrorCodes.ValidationError      => WithProblemContentType(new BadRequestObjectResult(responseObj)),
+                ErrorCodes.Forbidden            => WithProblemContentType(new ObjectResult(responseObj) { StatusCode = 403 }),
+                ErrorCodes.InvalidCurrentPassword => WithProblemContentType(new BadRequestObjectResult(responseObj)),
+                ErrorCodes.Unauthorized         => WithProblemContentType(new UnauthorizedObjectResult(responseObj)),
+                "UnknownError"                  => WithProblemContentType(new ObjectResult(responseObj) { StatusCode = 500 }),
+                _                               => WithProblemContentType(new ObjectResult(responseObj) { StatusCode = 500 })
             };
+        }
+
+        private static T WithProblemContentType<T>(T result) where T : ObjectResult
+        {
+            result.ContentTypes.Add("application/problemjson");
+            return result;
         }
         public static IActionResult ToActionResult(this Result result)
         {
