@@ -44,7 +44,8 @@ namespace API.Extensions
 
         private static T WithProblemContentType<T>(T result) where T : ObjectResult
         {
-            result.ContentTypes.Add("application/problemjson");
+            result.ContentTypes.Clear();
+            result.ContentTypes.Add("application/problem+json");
             return result;
         }
         public static IActionResult ToActionResult(this Result result)
@@ -156,7 +157,7 @@ namespace API.Extensions
                 ErrorCodes.InvalidCurrentPassword => "password",
                 ErrorCodes.Unauthorized => "authentication",
                 "UnknownError" => "unknown",
-                _ => "server"
+                _ => "unknown"
             };
         }
     }
