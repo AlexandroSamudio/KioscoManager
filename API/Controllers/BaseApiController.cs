@@ -4,7 +4,8 @@ namespace API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BaseApiController : ControllerBase
+[Produces("application/json","application/problem+json")]
+public abstract class BaseApiController : ControllerBase
 {
 
 }
