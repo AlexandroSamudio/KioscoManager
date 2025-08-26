@@ -26,7 +26,9 @@ namespace API.Data.Repositories
 
         public IAsyncEnumerable<Compra> GetComprasAsync(int kioscoId, CancellationToken cancellationToken)
         {
-            return context.Compras!.Where(c => c.KioscoId == kioscoId).AsAsyncEnumerable();
+            return context.Compras!.Where(c => c.KioscoId == kioscoId)
+            .AsNoTracking()
+            .AsAsyncEnumerable();
         }
 
         public async Task<Dictionary<int, Producto>> GetProductosByIdsAsync(int kioscoId, IEnumerable<int> productosIds, CancellationToken cancellationToken)
@@ -92,6 +94,36 @@ namespace API.Data.Repositories
                 await transaction.RollbackAsync(cancellationToken);
                 return Result<CompraDto>.Failure(ErrorCodes.InvalidOperation, "Error al procesar la compra");
             }
+        }
+
+        public async Task<IReadOnlyList<CompraDto>> GetComprasForExportAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fechaInicio = null, DateTime? fechaFin = null, int limite = 5000)
+        {
+            var query = GetComprasQueryable(kioscoId);
+
+            if (fechaInicio.HasValue)
+            {
+                var fechaInicioUtc = fechaInicio.Value.Kind == DateTimeKind.Utc
+                    ? fechaInicio.Value
+                    : fechaInicio.Value.ToUniversalTime();
+                query = query.Where(v => v.Fecha >= fechaInicioUtc);
+            }
+
+            if (fechaFin.HasValue)
+            {
+                var fechaFinUtc = fechaFin.Value.Kind == DateTimeKind.Utc
+                    ? fechaFin.Value
+                    : fechaFin.Value.ToUniversalTime();
+                query = query.Where(v => v.Fecha <= fechaFinUtc);
+            }
+
+            var compras = await query
+                .OrderByDescending(v => v.Fecha)
+                .Take(limite)
+                .AsNoTracking()
+                .ProjectTo<CompraDto>(mapper.ConfigurationProvider)
+                .ToListAsync(cancellationToken);
+
+            return compras;
         }
     }
 }

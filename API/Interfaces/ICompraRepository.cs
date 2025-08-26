@@ -10,5 +10,6 @@ namespace API.Interfaces
         IAsyncEnumerable<Compra> GetComprasAsync(int kioscoId, CancellationToken cancellationToken);
         Task<Dictionary<int, Producto>> GetProductosByIdsAsync(int kioscoId, IEnumerable<int> productosIds, CancellationToken cancellationToken);
         Task<Result<CompraDto>> CreateCompraWithStockAdjustmentsAsync(CompraCreateDto compraData, int kioscoId, int usuarioId, CancellationToken cancellationToken);
+        Task<IReadOnlyList<CompraDto>> GetComprasForExportAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fechaInicio = null, DateTime? fechaFin = null, int limite = 5000);
     }
 }

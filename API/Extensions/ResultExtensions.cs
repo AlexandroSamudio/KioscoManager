@@ -8,7 +8,7 @@ namespace API.Extensions
     {
         private static ValidationProblemDetails CreateErrorResponseObject(string errorCode, string? message)
         {
-            var detail = message ?? "Uno o más errores de validación ocurrieron.";
+            var detail = "Uno o más errores han ocurrido.";
             var errorKey = GetErrorKey(errorCode);
             var errorsDict = new Dictionary<string, string[]>
             {
