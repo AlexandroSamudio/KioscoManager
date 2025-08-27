@@ -18,6 +18,8 @@ public static class ApplicationServiceExtensions
         });
 
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IVentaService, VentaService>();
+        services.AddScoped<ICompraService, CompraService>();
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IVentaRepository, VentaRepository>();
         services.AddScoped<ICompraRepository, CompraRepository>();
@@ -25,6 +27,7 @@ public static class ApplicationServiceExtensions
         services.AddScoped<IConfigRepository, ConfigRepository>();
         services.AddScoped<ICategoriaRepository, CategoriaRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     
         services.AddMemoryCache();

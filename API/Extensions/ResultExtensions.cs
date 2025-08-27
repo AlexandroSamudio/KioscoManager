@@ -6,20 +6,118 @@ namespace API.Extensions
 {
     public static class ResultExtensions
     {
+        private class ErrorMetadata
+        {
+            public required int StatusCode { get; init; }
+            public required string Title { get; init; }
+            public required string TypeUrl { get; init; }
+            public required string Key { get; init; }
+            public required Func<object, ObjectResult> ResultFactory { get; init; }
+        }
+
+        private static readonly Dictionary<string, ErrorMetadata> ErrorMetadataMap = new()
+        {
+            [ErrorCodes.EntityNotFound] = new()
+            {
+                StatusCode = 404,
+                Title = "Recurso no encontrado",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+                Key = "resource",
+                ResultFactory = responseObj => WithProblemContentType(new NotFoundObjectResult(responseObj))
+            },
+            [ErrorCodes.FieldExists] = new()
+            {
+                StatusCode = 409,
+                Title = "Conflicto de recursos",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+                Key = "field",
+                ResultFactory = responseObj => WithProblemContentType(new ConflictObjectResult(responseObj))
+            },
+            [ErrorCodes.InsufficientStock] = new()
+            {
+                StatusCode = 409,
+                Title = "Stock insuficiente",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+                Key = "stock",
+                ResultFactory = responseObj => WithProblemContentType(new ConflictObjectResult(responseObj))
+            },
+            [ErrorCodes.EmptyField] = new()
+            {
+                StatusCode = 400,
+                Title = "Campo requerido vacío",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                Key = "field",
+                ResultFactory = responseObj => WithProblemContentType(new BadRequestObjectResult(responseObj))
+            },
+            [ErrorCodes.InvalidOperation] = new()
+            {
+                StatusCode = 400,
+                Title = "Operación inválida",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                Key = "operation",
+                ResultFactory = responseObj => WithProblemContentType(new BadRequestObjectResult(responseObj))
+            },
+            [ErrorCodes.ValidationError] = new()
+            {
+                StatusCode = 400,
+                Title = "Error de validación",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                Key = "validation",
+                ResultFactory = responseObj => WithProblemContentType(new BadRequestObjectResult(responseObj))
+            },
+            [ErrorCodes.Forbidden] = new()
+            {
+                StatusCode = 403,
+                Title = "Acceso prohibido",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.4",
+                Key = "authorization",
+                ResultFactory = responseObj => WithProblemContentType(new ObjectResult(responseObj) { StatusCode = 403 })
+            },
+            [ErrorCodes.InvalidCurrentPassword] = new()
+            {
+                StatusCode = 400,
+                Title = "Contraseña incorrecta",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+                Key = "password",
+                ResultFactory = responseObj => WithProblemContentType(new BadRequestObjectResult(responseObj))
+            },
+            [ErrorCodes.Unauthorized] = new()
+            {
+                StatusCode = 401,
+                Title = "Acceso no autorizado",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+                Key = "authentication",
+                ResultFactory = responseObj => WithProblemContentType(new UnauthorizedObjectResult(responseObj))
+            }
+        };
+
+        private static readonly ErrorMetadata DefaultErrorMetadata = new()
+        {
+            StatusCode = 500,
+            Title = "Error interno del servidor",
+            TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.6.1",
+            Key = "unknown",
+            ResultFactory = responseObj => WithProblemContentType(new ObjectResult(responseObj) { StatusCode = 500 })
+        };
+
+        private static ErrorMetadata GetErrorMetadata(string errorCode)
+        {
+            return ErrorMetadataMap.TryGetValue(errorCode, out var metadata) ? metadata : DefaultErrorMetadata;
+        }
         private static ValidationProblemDetails CreateErrorResponseObject(string errorCode, string? message)
         {
+            var metadata = GetErrorMetadata(errorCode);
             var detail = "Uno o más errores han ocurrido.";
-            var errorKey = GetErrorKey(errorCode);
             var errorsDict = new Dictionary<string, string[]>
             {
-                { errorKey, new[] { message ?? "Error desconocido" } }
+                { metadata.Key, new[] { message ?? "Error desconocido" } }
             };
 
             var problemDetails = new ValidationProblemDetails(errorsDict)
             {
-                Type = GetErrorTypeUrl(errorCode),
-                Title = GetErrorTitle(errorCode),
-                Status = GetStatusCode(errorCode),
+                Type = metadata.TypeUrl,
+                Title = metadata.Title,
+                Status = metadata.StatusCode,
                 Detail = detail
             };
             return problemDetails;
@@ -27,19 +125,8 @@ namespace API.Extensions
 
         private static ObjectResult CreateObjectResultForErrorCode(string errorCode, object responseObj)
         {
-            return errorCode switch
-            {
-                ErrorCodes.EntityNotFound       => WithProblemContentType(new NotFoundObjectResult(responseObj)),
-                ErrorCodes.FieldExists          => WithProblemContentType(new ConflictObjectResult(responseObj)),
-                ErrorCodes.EmptyField           => WithProblemContentType(new BadRequestObjectResult(responseObj)),
-                ErrorCodes.InvalidOperation     => WithProblemContentType(new BadRequestObjectResult(responseObj)),
-                ErrorCodes.ValidationError      => WithProblemContentType(new BadRequestObjectResult(responseObj)),
-                ErrorCodes.Forbidden            => WithProblemContentType(new ObjectResult(responseObj) { StatusCode = 403 }),
-                ErrorCodes.InvalidCurrentPassword => WithProblemContentType(new BadRequestObjectResult(responseObj)),
-                ErrorCodes.Unauthorized         => WithProblemContentType(new UnauthorizedObjectResult(responseObj)),
-                "UnknownError"                  => WithProblemContentType(new ObjectResult(responseObj) { StatusCode = 500 }),
-                _                               => WithProblemContentType(new ObjectResult(responseObj) { StatusCode = 500 })
-            };
+            var metadata = GetErrorMetadata(errorCode);
+            return metadata.ResultFactory(responseObj);
         }
 
         private static T WithProblemContentType<T>(T result) where T : ObjectResult
@@ -91,74 +178,6 @@ namespace API.Extensions
             var errorCode = result.ErrorCode ?? "UnknownError";
             var responseObj = CreateErrorResponseObject(errorCode, result.Message);
             return CreateObjectResultForErrorCode(errorCode, responseObj);
-        }
-
-        private static string GetErrorTypeUrl(string errorCode)
-        {
-            return errorCode switch
-            {
-                ErrorCodes.EntityNotFound => "https://tools.ietf.org/html/rfc9110#section-15.5.5",
-                ErrorCodes.FieldExists => "https://tools.ietf.org/html/rfc9110#section-15.5.10",
-                ErrorCodes.EmptyField => "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-                ErrorCodes.InvalidOperation => "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-                ErrorCodes.ValidationError => "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-                ErrorCodes.Forbidden => "https://tools.ietf.org/html/rfc9110#section-15.5.4",
-                ErrorCodes.InvalidCurrentPassword => "https://tools.ietf.org/html/rfc9110#section-15.5.1",
-                ErrorCodes.Unauthorized => "https://tools.ietf.org/html/rfc9110#section-15.5.2",
-                "UnknownError" => "https://tools.ietf.org/html/rfc9110#section-15.6.1",
-                _ => "https://tools.ietf.org/html/rfc9110#section-15.6.1"
-            };
-        }
-
-        private static string GetErrorTitle(string errorCode)
-        {
-            return errorCode switch
-            {
-                ErrorCodes.EntityNotFound => "Recurso no encontrado",
-                ErrorCodes.FieldExists => "Conflicto de recursos",
-                ErrorCodes.EmptyField => "Campo requerido vacío",
-                ErrorCodes.InvalidOperation => "Operación inválida",
-                ErrorCodes.ValidationError => "Error de validación",
-                ErrorCodes.Forbidden => "Acceso prohibido",
-                ErrorCodes.InvalidCurrentPassword => "Contraseña incorrecta",
-                ErrorCodes.Unauthorized => "Acceso no autorizado",
-                "UnknownError" => "Error desconocido",
-                _ => "Error interno del servidor"
-            };
-        }
-
-        private static int GetStatusCode(string errorCode)
-        {
-            return errorCode switch
-            {
-                ErrorCodes.EntityNotFound => 404,
-                ErrorCodes.FieldExists => 409,
-                ErrorCodes.EmptyField => 400,
-                ErrorCodes.InvalidOperation => 400,
-                ErrorCodes.ValidationError => 400,
-                ErrorCodes.Forbidden => 403,
-                ErrorCodes.InvalidCurrentPassword => 400,
-                ErrorCodes.Unauthorized => 401,
-                "UnknownError" => 500,
-                _ => 500
-            };
-        }
-
-        private static string GetErrorKey(string errorCode)
-        {
-            return errorCode switch
-            {
-                ErrorCodes.EntityNotFound => "resource",
-                ErrorCodes.FieldExists => "field",
-                ErrorCodes.EmptyField => "field",
-                ErrorCodes.InvalidOperation => "operation",
-                ErrorCodes.ValidationError => "validation",
-                ErrorCodes.Forbidden => "authorization",
-                ErrorCodes.InvalidCurrentPassword => "password",
-                ErrorCodes.Unauthorized => "authentication",
-                "UnknownError" => "unknown",
-                _ => "unknown"
-            };
         }
     }
 }
