@@ -5,12 +5,12 @@ namespace API.Interfaces
 {
   public interface IVentaRepository
   {
-    Task<IReadOnlyList<VentaDto>> GetVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null);
-    Task<IReadOnlyList<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken);
-    Task<IReadOnlyList<VentaDto>> GetVentasForExportAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? limite = null);
-    Task<decimal> GetTotalVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null);
-    Task<IReadOnlyList<ProductoMasVendidoDto>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, CancellationToken cancellationToken, DateTime? fecha = null);
-    Task<IReadOnlyList<VentaChartDto>> GetVentasIndividualesDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null);
-    Task<Result<VentaDto>> CreateVentaAsync(VentaCreateDto ventaData, int kioscoId, int usuarioId, CancellationToken cancellationToken = default);
+    Task<Result<IReadOnlyList<VentaDto>>> GetVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null);
+    Task<Result<IReadOnlyList<VentaDto>>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken);
+    Result<IAsyncEnumerable<VentaDto>> GetVentasForExportAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? limite = null);
+    Task<Result<decimal>> GetMontoTotalVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null);
+    Task<Result<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, CancellationToken cancellationToken, DateTime? fecha = null);
+    Task<Result<IReadOnlyList<VentaChartDto>>> GetVentasIndividualesDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null);
+    Task<Result<VentaDto>> CreateVentaAsync(VentaCreateDto ventaData, int kioscoId, int usuarioId, CancellationToken cancellationToken);
   }
 }

@@ -5,12 +5,13 @@ using AutoMapper.QueryableExtensions;
 using API.Entities;
 using Microsoft.EntityFrameworkCore;
 using API.Constants;
+using System.Runtime.CompilerServices;
 
 namespace API.Data.Repositories
 {
     public class VentaRepository(DataContext context, IMapper mapper) : IVentaRepository
     {
-        public async Task<Result<VentaDto>> CreateVentaAsync(VentaCreateDto ventaCreateDto, int kioscoId, int usuarioId, CancellationToken cancellationToken = default)
+        public async Task<Result<VentaDto>> CreateVentaAsync(VentaCreateDto ventaCreateDto, int kioscoId, int usuarioId, CancellationToken cancellationToken)
         {
             var productosIds = ventaCreateDto.Productos.Select(p => p.ProductoId).Distinct().ToList();
             var productos = await context.Productos!
@@ -20,11 +21,31 @@ namespace API.Data.Repositories
             if (productos.Count != productosIds.Count)
             {
                 var noEncontrados = productosIds.Except(productos.Keys).ToList();
-                var errorMessage = $"Los siguientes productos no se encontraron: {string.Join(", ", noEncontrados)}";
-                return Result<VentaDto>.Failure(VentaErrorCodes.ProductosNoEncontrados, errorMessage);
+                return Result<VentaDto>.Failure(ErrorCodes.EntityNotFound, $"Los siguientes id de productos no se encontraron en el kiosco: {string.Join(", ", noEncontrados)}");
             }
 
-            using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+            var cantidadesPorProducto = new Dictionary<int, int>();
+            foreach (var detalle in ventaCreateDto.Productos)
+            {
+                if (!cantidadesPorProducto.TryAdd(detalle.ProductoId, detalle.Cantidad))
+                {
+                    cantidadesPorProducto[detalle.ProductoId] += detalle.Cantidad;
+                }
+            }
+
+            foreach (var kvp in cantidadesPorProducto)
+            {
+                var productoId = kvp.Key;
+                var cantidadSolicitada = kvp.Value;
+                var producto = productos[productoId];
+                if (producto.Stock < cantidadSolicitada)
+                {
+                    var errorMessage = $"Stock insuficiente para '{producto.Nombre}'. Solicitado: {cantidadSolicitada}, Disponible: {producto.Stock}.";
+                    return Result<VentaDto>.Failure(ErrorCodes.InsufficientStock, errorMessage);
+                }
+            }
+
+            await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
 
             try
             {
@@ -36,12 +57,6 @@ namespace API.Data.Repositories
                 foreach (var detalle in venta.Detalles)
                 {
                     var producto = productos[detalle.ProductoId];
-                    if (producto.Stock < detalle.Cantidad)
-                    {
-                        var errorMessage = $"Stock insuficiente para '{producto.Nombre}'. Solicitado: {detalle.Cantidad}, Disponible: {producto.Stock}.";
-                        return Result<VentaDto>.Failure(VentaErrorCodes.StockInsuficiente, errorMessage);
-                    }
-
                     detalle.PrecioUnitario = producto.PrecioVenta;
                     producto.Stock -= detalle.Cantidad;
                 }
@@ -59,52 +74,60 @@ namespace API.Data.Repositories
             catch (Exception)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Result<VentaDto>.Failure(VentaErrorCodes.ErrorDeCreacion, "Ocurrió un error al crear la venta.");
+                return Result<VentaDto>.Failure(ErrorCodes.InvalidOperation, "Ocurrió un error al crear la venta.");
             }
         }
 
-        public async Task<IReadOnlyList<VentaDto>> GetVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
+        public async Task<Result<IReadOnlyList<VentaDto>>> GetVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            var fechaInicio = fecha?.Date ?? DateTime.UtcNow.Date;
+            var baseDate = fecha?.Date ?? DateTime.UtcNow.Date;
+            var fechaInicio = baseDate.Kind == DateTimeKind.Utc ? baseDate : DateTime.SpecifyKind(baseDate, DateTimeKind.Utc);
             var fechaFin = fechaInicio.AddDays(1);
 
-            return await context.Ventas!
+            var ventas = await context.Ventas!
                 .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < fechaFin)
                 .OrderByDescending(v => v.Fecha)
                 .AsNoTracking()
                 .ProjectTo<VentaDto>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
+
+            return Result<IReadOnlyList<VentaDto>>.Success(ventas);
         }
 
-        public async Task<IReadOnlyList<VentaDto>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken)
+        public async Task<Result<IReadOnlyList<VentaDto>>> GetVentasRecientesAsync(int kioscoId, int cantidad, CancellationToken cancellationToken)
         {
-            return await context.Ventas!
+            var ventas = await context.Ventas!
                 .Where(v => v.KioscoId == kioscoId)
                 .OrderByDescending(v => v.Fecha)
                 .Take(cantidad)
                 .AsNoTracking()
                 .ProjectTo<VentaDto>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken);
+
+            return Result<IReadOnlyList<VentaDto>>.Success(ventas);
         }
 
-        public async Task<decimal> GetTotalVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
+        public async Task<Result<decimal>> GetMontoTotalVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            var fechaInicio = fecha?.Date ?? DateTime.UtcNow.Date;
+            var baseDate = fecha?.Date ?? DateTime.UtcNow.Date;
+            var fechaInicio = baseDate.Kind == DateTimeKind.Utc ? baseDate : DateTime.SpecifyKind(baseDate, DateTimeKind.Utc);
             var fechaFin = fechaInicio.AddDays(1);
 
-            return await context.Ventas!
+            var montoVentas = await context.Ventas!
                 .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < fechaFin)
                 .AsNoTracking()
                 .SumAsync(v => v.Total, cancellationToken);
+
+            return Result<decimal>.Success(montoVentas);
         }
 
-        public async Task<IReadOnlyList<ProductoMasVendidoDto>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, CancellationToken cancellationToken, DateTime? fecha = null)
+        public async Task<Result<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, CancellationToken cancellationToken, DateTime? fecha = null)
         {
             var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
             var fechaFin = fechaUtc.AddDays(1);
 
-            return await context.DetalleVentas!
+            var productos = await context.DetalleVentas!
                 .AsNoTracking()
                 .Where(dv => dv.Venta!.KioscoId == kioscoId && dv.Venta!.Fecha >= fechaUtc && dv.Venta.Fecha < fechaFin)
                 .GroupBy(dv => new { dv.ProductoId, dv.Producto!.Nombre})
@@ -113,17 +136,33 @@ namespace API.Data.Repositories
                     ProductoId = g.Key.ProductoId,
                     NombreProducto = g.Key.Nombre,
                     CantidadVendida = g.Sum(dv => dv.Cantidad),
+                    TotalVentas = g.Sum(dv => dv.Cantidad * dv.PrecioUnitario),
                 })
                 .OrderByDescending(p => p.CantidadVendida)
                 .Take(cantidad)
                 .ToListAsync(cancellationToken);
+
+            return Result<IReadOnlyList<ProductoMasVendidoDto>>.Success(productos);
         }
 
-        public async Task<IReadOnlyList<VentaDto>> GetVentasForExportAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? limite = null)
+        public Result<IAsyncEnumerable<VentaDto>> GetVentasForExportAsync(
+            int kioscoId,
+            CancellationToken cancellationToken,
+            DateTime? fechaInicio = null,
+            DateTime? fechaFin = null,
+            int? limite = null)
         {
-            const int DEFAULT_EXPORT_LIMIT = 5000;
-            var limiteAplicar = limite ?? DEFAULT_EXPORT_LIMIT;
+            var stream = GetVentasForExportInternalAsync(kioscoId, cancellationToken, fechaInicio, fechaFin, limite);
+            return Result<IAsyncEnumerable<VentaDto>>.Success(stream);
+        }
 
+        private async IAsyncEnumerable<VentaDto> GetVentasForExportInternalAsync(
+            int kioscoId,
+            [EnumeratorCancellation] CancellationToken cancellationToken,
+            DateTime? fechaInicio = null,
+            DateTime? fechaFin = null,
+            int? limite = null)
+        {
             var query = context.Ventas!
                 .Where(v => v.KioscoId == kioscoId)
                 .AsNoTracking()
@@ -145,20 +184,29 @@ namespace API.Data.Repositories
                 query = query.Where(v => v.Fecha <= fechaFinUtc);
             }
 
-            return await query
-                .OrderByDescending(v => v.Fecha)
-                .Take(limiteAplicar)
+            query = query.OrderByDescending(v => v.Fecha);
+            if (limite.HasValue)
+            {
+                query = query.Take(limite.Value);
+            }
+
+            var ventas = query
                 .ProjectTo<VentaDto>(mapper.ConfigurationProvider)
-                .ToListAsync(cancellationToken);
+                .AsAsyncEnumerable();
+
+            await foreach (var venta in ventas.WithCancellation(cancellationToken))
+            {
+                yield return venta;
+            }
         }
 
-        public async Task<IReadOnlyList<VentaChartDto>> GetVentasIndividualesDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
+        public async Task<Result<IReadOnlyList<VentaChartDto>>> GetVentasIndividualesDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
             var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
             var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
             var fechaFin = fechaUtc.AddDays(1);
 
-            return await context.Ventas!
+            var ventas = await context.Ventas!
                 .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaUtc && v.Fecha < fechaFin)
                 .OrderBy(v => v.Fecha)
                 .AsNoTracking()
@@ -169,6 +217,8 @@ namespace API.Data.Repositories
                     Total = v.Total
                 })
                 .ToListAsync(cancellationToken);
+
+            return Result<IReadOnlyList<VentaChartDto>>.Success(ventas);
         }
     }
 }

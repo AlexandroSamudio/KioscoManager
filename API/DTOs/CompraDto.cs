@@ -24,7 +24,7 @@ namespace API.DTOs
 
     public class CompraCreateDto
     {
-        public ICollection<CompraDetalleDto> Detalles { get; set; } = new List<CompraDetalleDto>();
+        public List<CompraDetalleDto> Detalles { get; set; } = [];
         public string? Proveedor { get; set; }
         public string? Nota { get; set; }
     }

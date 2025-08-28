@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using FluentValidation.AspNetCore;
 using API.Validators;
 using FluentValidation;
-using API.Interfaces;
-using API.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
@@ -27,7 +25,6 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = CustomValidationResponseFactory.CreateValidationProblemResponse;
 });
-builder.Services.AddScoped<ICompraService, CompraService>();
 builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
