@@ -149,7 +149,7 @@ namespace API.Controllers
                 return Result<IAsyncEnumerable<VentaDto>>.Failure(ErrorCodes.ValidationError, "La fecha de inicio no puede ser posterior a la fecha de fin.").ToActionResult();
             }
             
-            var result = ventaRepository.GetVentasForExportAsync(KioscoId, cancellationToken, fechaInicio, fechaFin, limite);
+            var result = ventaRepository.GetVentasForExport(KioscoId, cancellationToken, fechaInicio, fechaFin, limite);
             return result.ToActionResult();
         }
     }

@@ -6,8 +6,8 @@ using System.Reflection;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation.AspNetCore;
-using API.Validators;
 using FluentValidation;
+using API.Validators;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers()
@@ -18,9 +18,9 @@ builder.Services.AddControllers()
       o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
       o.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
   });
+builder.Services.AddValidatorsFromAssemblyContaining<CompraCreateDtoValidator>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssemblyContaining<CompraCreateDtoValidator>();
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = CustomValidationResponseFactory.CreateValidationProblemResponse;

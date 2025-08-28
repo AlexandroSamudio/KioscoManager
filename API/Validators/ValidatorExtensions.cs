@@ -4,7 +4,7 @@ namespace API.Validators;
 
 public static class ValidatorExtensions
 {
-  public static IRuleBuilderOptions<T, string> NameRules<T>(this IRuleBuilder<T, string> ruleBuilder, int min = 2, int max = 50)
+  public static IRuleBuilderOptions<T, string?> NameRules<T>(this IRuleBuilder<T, string?> ruleBuilder, int min = 2, int max = 50)
   {
     return ruleBuilder
       .MinimumLength(min).WithMessage($"El campo debe tener al menos {min} caracteres.")
@@ -16,6 +16,7 @@ public static class ValidatorExtensions
     return ruleBuilder
       .NotEmpty().WithMessage($"El campo {fieldName} es requerido.");
   }
+
   public static IRuleBuilderOptions<T, TProperty> GreaterThanZero<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder, string fieldName)
     where TProperty : struct, IComparable<TProperty>
   {
