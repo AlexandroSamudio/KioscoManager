@@ -74,7 +74,7 @@ namespace API.Controllers
         /// <response code="400">Parámetros no válidos.</response>
         /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
         /// <response code="403">Prohibido. Se requiere rol de administrador.</response>
-        [ProducesResponseType(typeof(IEnumerable<CompraDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IAsyncEnumerable<CompraDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status403Forbidden)]
@@ -91,7 +91,7 @@ namespace API.Controllers
                 return Result<IAsyncEnumerable<CompraDto>>.Failure(ErrorCodes.ValidationError, "La fecha de inicio no puede ser posterior a la fecha de fin.").ToActionResult();
             }
 
-            var result = compraRepository.GetComprasForExportAsync(KioscoId, cancellationToken, fechaInicio, fechaFin, limite);
+            var result = compraRepository.GetComprasForExport(KioscoId, cancellationToken, fechaInicio, fechaFin, limite);
             return result.ToActionResult();
         }
     }

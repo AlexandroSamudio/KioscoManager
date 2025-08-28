@@ -105,7 +105,7 @@ namespace API.Data.Repositories
         }
 
 
-        public Result<IAsyncEnumerable<CompraDto>> GetComprasForExportAsync(
+        public Result<IAsyncEnumerable<CompraDto>> GetComprasForExport(
             int kioscoId,
             CancellationToken cancellationToken,
             DateTime? fechaInicio = null,
