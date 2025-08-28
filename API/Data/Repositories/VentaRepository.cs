@@ -145,7 +145,7 @@ namespace API.Data.Repositories
             return Result<IReadOnlyList<ProductoMasVendidoDto>>.Success(productos);
         }
 
-        public Result<IAsyncEnumerable<VentaDto>> GetVentasForExportAsync(
+        public Result<IAsyncEnumerable<VentaDto>> GetVentasForExport(
             int kioscoId,
             CancellationToken cancellationToken,
             DateTime? fechaInicio = null,

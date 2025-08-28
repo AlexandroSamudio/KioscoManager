@@ -86,7 +86,7 @@ namespace API.Data.Repositories
 
                 var compraDto = await context.Compras!
                     .AsNoTracking()
-                    .Where(c => c.Id == savedCompra.Id)
+                    .Where(c => c.Id == savedCompra.Id && c.KioscoId == kioscoId)
                     .ProjectTo<CompraDto>(mapper.ConfigurationProvider)
                     .SingleAsync(cancellationToken);
                 

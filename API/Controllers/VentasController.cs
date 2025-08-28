@@ -132,7 +132,7 @@ namespace API.Controllers
         /// <response code="400">Parámetros no válidos (fechas, límites).</response>
         /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
         /// <response code="403">Prohibido. Se requiere rol de administrador.</response>
-        [ProducesResponseType(typeof(IEnumerable<VentaDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IAsyncEnumerable<VentaDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status403Forbidden)]
@@ -149,7 +149,7 @@ namespace API.Controllers
                 return Result<IAsyncEnumerable<VentaDto>>.Failure(ErrorCodes.ValidationError, "La fecha de inicio no puede ser posterior a la fecha de fin.").ToActionResult();
             }
             
-            var result = ventaRepository.GetVentasForExportAsync(KioscoId, cancellationToken, fechaInicio, fechaFin, limite);
+            var result = ventaRepository.GetVentasForExport(KioscoId, cancellationToken, fechaInicio, fechaFin, limite);
             return result.ToActionResult();
         }
     }
