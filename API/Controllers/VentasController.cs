@@ -132,7 +132,7 @@ namespace API.Controllers
         /// <response code="400">Parámetros no válidos (fechas, límites).</response>
         /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
         /// <response code="403">Prohibido. Se requiere rol de administrador.</response>
-        [ProducesResponseType(typeof(IAsyncEnumerable<VentaDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(IEnumerable<VentaDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status403Forbidden)]

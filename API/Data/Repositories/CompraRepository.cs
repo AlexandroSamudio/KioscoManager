@@ -5,18 +5,26 @@ using API.Constants;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 
 namespace API.Data.Repositories
 {
     public class CompraRepository(DataContext context, IMapper mapper) : ICompraRepository
     {
-        public async Task<CompraDto?> GetCompraByIdAsync(int kioscoId, int id, CancellationToken cancellationToken)
+        public async Task<Result<CompraDto>> GetCompraByIdAsync(int kioscoId, int id, CancellationToken cancellationToken)
         {
-            return await context.Compras!
+            var compra = await context.Compras!
                 .Where(c => c.Id == id && c.KioscoId == kioscoId)
                 .AsNoTracking()
                 .ProjectTo<CompraDto>(mapper.ConfigurationProvider)
                 .SingleOrDefaultAsync(cancellationToken);
+            
+            if(compra == null)
+            {
+                return Result<CompraDto>.Failure(ErrorCodes.EntityNotFound, "Compra no encontrada");
+            }
+
+            return Result<CompraDto>.Success(compra);
         }
 
         public IQueryable<Compra> GetComprasQueryable(int kioscoId)
@@ -96,7 +104,19 @@ namespace API.Data.Repositories
             }
         }
 
-        public async Task<IReadOnlyList<CompraDto>> GetComprasForExportAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fechaInicio = null, DateTime? fechaFin = null, int limite = 5000)
+
+        public Result<IAsyncEnumerable<CompraDto>> GetComprasForExportAsync(
+            int kioscoId,
+            CancellationToken cancellationToken,
+            DateTime? fechaInicio = null,
+            DateTime? fechaFin = null,
+            int? limite = null)
+        {
+            var stream = GetComprasForExportInternalAsync(kioscoId, cancellationToken, fechaInicio, fechaFin, limite);
+            return Result<IAsyncEnumerable<CompraDto>>.Success(stream);
+        }
+
+        private async IAsyncEnumerable<CompraDto> GetComprasForExportInternalAsync(int kioscoId, [EnumeratorCancellation] CancellationToken cancellationToken, DateTime? fechaInicio = null, DateTime? fechaFin = null, int? limite = null)
         {
             var query = GetComprasQueryable(kioscoId);
 
@@ -116,14 +136,21 @@ namespace API.Data.Repositories
                 query = query.Where(v => v.Fecha <= fechaFinUtc);
             }
 
-            var compras = await query
-                .OrderByDescending(v => v.Fecha)
-                .Take(limite)
+            query = query.OrderByDescending(v => v.Fecha);
+            if (limite.HasValue)
+            {
+                query = query.Take(limite.Value);
+            }
+
+            var compras = query
                 .AsNoTracking()
                 .ProjectTo<CompraDto>(mapper.ConfigurationProvider)
-                .ToListAsync(cancellationToken);
+                .AsAsyncEnumerable();
 
-            return compras;
+            await foreach (var compra in compras.WithCancellation(cancellationToken))
+            {
+                yield return compra;
+            }
         }
     }
 }
