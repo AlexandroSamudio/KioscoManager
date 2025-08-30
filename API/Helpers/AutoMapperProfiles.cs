@@ -24,7 +24,14 @@ namespace API.Helpers
 
             CreateMap<ProductoUpdateDto, Producto>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.KioscoId, opt => opt.Ignore());
+                .ForMember(dest => dest.KioscoId, opt => opt.Ignore())
+                .ForMember(dest => dest.Nombre, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Nombre)))
+                .ForMember(dest => dest.Sku, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Sku)))
+                .ForMember(dest => dest.Descripcion, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Descripcion)))
+                .ForMember(dest => dest.PrecioCompra, opt => opt.Condition(src => src.PrecioCompra.HasValue))
+                .ForMember(dest => dest.PrecioVenta, opt => opt.Condition(src => src.PrecioVenta.HasValue))
+                .ForMember(dest => dest.Stock, opt => opt.Condition(src => src.Stock.HasValue))
+                .ForMember(dest => dest.CategoriaId, opt => opt.Condition(src => src.CategoriaId.HasValue));
 
             CreateMap<ProductoVentaDto, DetalleVenta>()
                 .ForMember(dest => dest.ProductoId, opt => opt.MapFrom(src => src.ProductoId))

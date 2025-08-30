@@ -1,5 +1,6 @@
 using API.Constants;
 using API.DTOs;
+using API.Enums;
 using API.Helpers;
 using API.Interfaces;
 using API.Entities;
@@ -35,7 +36,7 @@ namespace API.Data.Repositories
             int pageNumber,
             int pageSize,
             int? categoriaId = null,
-            string? stockStatus = null,
+            StockStatus? stockStatus = null,
             string? searchTerm = null,
             string? sortColumn = null,
             string? sortDirection = null)
@@ -49,17 +50,17 @@ namespace API.Data.Repositories
                 query = query.Where(p => p.CategoriaId == categoriaId.Value);
             }
 
-            if (!string.IsNullOrEmpty(stockStatus))
+            if (stockStatus.HasValue && stockStatus.Value != StockStatus.All)
             {
-                switch (stockStatus.ToLower())
+                switch (stockStatus.Value)
                 {
-                    case "low":
+                    case StockStatus.Low:
                         query = query.Where(p => p.Stock > 0 && p.Stock <= LowStockThreshold);
                         break;
-                    case "out":
+                    case StockStatus.Out:
                         query = query.Where(p => p.Stock == 0);
                         break;
-                    case "in":
+                    case StockStatus.In:
                         query = query.Where(p => p.Stock > LowStockThreshold);
                         break;
                 }
@@ -67,10 +68,10 @@ namespace API.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var search = searchTerm.Trim().ToLower();
+                var search = $"%{searchTerm.Trim()}%";
                 query = query.Where(p =>
-                    p.Nombre.ToLower().Contains(search) ||
-                    p.Sku.ToLower().Contains(search)
+                    EF.Functions.Like(p.Nombre, search) ||
+                    EF.Functions.Like(p.Sku, search)
                 );
             }
 
@@ -118,8 +119,9 @@ namespace API.Data.Repositories
                 return Result<ProductoDto>.Failure(ErrorCodes.EntityNotFound, $"La categoría con ID {createDto.CategoriaId} no existe.");
             }
 
+            var normalizedSku = createDto.Sku?.Trim();
             var exists = await context.Productos!
-                .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == createDto.Sku, cancellationToken);
+                .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == normalizedSku, cancellationToken);
 
             if (exists)
             {
@@ -130,7 +132,15 @@ namespace API.Data.Repositories
             producto.KioscoId = kioscoId;
 
             context.Productos!.Add(producto);
-            await context.SaveChangesAsync(cancellationToken);
+            
+            try
+            {
+                await context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                return Result<ProductoDto>.Failure(ErrorCodes.FieldExists, "Ya existe un producto con el mismo SKU en este kiosco.");
+            }
 
             var productoDto = mapper.Map<ProductoDto>(producto);
 
@@ -156,8 +166,9 @@ namespace API.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(dto.Sku))
             {
+                var normalizedSku = dto.Sku.Trim();
                 var exists = await context.Productos!
-                    .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == dto.Sku && p.Id != id, cancellationToken);
+                    .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == normalizedSku && p.Id != id, cancellationToken);
 
                 if (exists)
                 {
@@ -167,7 +178,14 @@ namespace API.Data.Repositories
 
             mapper.Map(dto, producto);
 
-            await context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                await context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                return Result.Failure(ErrorCodes.FieldExists, "Ya existe un producto con el mismo SKU en este kiosco.");
+            }
 
             return Result.Success();
         }
@@ -177,6 +195,14 @@ namespace API.Data.Repositories
             var producto = await context.Productos!
                 .FirstOrDefaultAsync(p => p.Id == id && p.KioscoId == kioscoId, cancellationToken);
             if (producto == null) return Result.Failure(ErrorCodes.EntityNotFound, "Producto no encontrado");
+
+            var hasVentas = await context.DetalleVentas!
+                .AnyAsync(dv => dv.ProductoId == id, cancellationToken);
+
+            if (hasVentas)
+            {
+                return Result.Failure(ErrorCodes.ValidationError, "No se puede eliminar el producto porque tiene ventas asociadas.");
+            }
 
             context.Productos!.Remove(producto);
             await context.SaveChangesAsync(cancellationToken);
@@ -246,6 +272,13 @@ namespace API.Data.Repositories
             {
                 yield return producto;
             }
+        }
+
+        private static bool IsUniqueConstraintViolation(DbUpdateException ex)
+        {
+            return ex.InnerException?.Message.Contains("UNIQUE constraint failed") == true ||
+                   ex.InnerException?.Message.Contains("duplicate key") == true ||
+                   ex.InnerException?.Message.Contains("violates unique constraint") == true;
         }
     }
 }

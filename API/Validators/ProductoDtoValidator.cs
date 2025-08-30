@@ -42,7 +42,7 @@ public sealed class ProductoDtoValidator : AbstractValidator<ProductoDto>
         RuleFor(p => p.PrecioCompra).GreaterThanZero("precioCompra");
         RuleFor(p => p.PrecioVenta)
             .GreaterThanZero("precioVenta")
-            .GreaterThanOrEqualTo(p => p.PrecioCompra).WithMessage("precioVenta debe ser mayor a precioCompra");
+            .GreaterThan(p => p.PrecioCompra).WithMessage("precioVenta debe ser mayor a precioCompra");
         RuleFor(p => p.Stock).GreaterThanZero("stock");
         RuleFor(p => p.CategoriaNombre).NameRules(2, 50);
         RuleFor(p => p.CategoriaId).GreaterThanZero("categoriaId");
@@ -65,9 +65,11 @@ public sealed class ProductoUpdateDtoValidator : AbstractValidator<ProductoUpdat
             .GreaterThanZero("precioCompra")
             .When(p => p.PrecioCompra.HasValue);
         RuleFor(p => p.PrecioVenta)
-            .GreaterThanZero("precioVenta")
-            .When(p => p.PrecioVenta.HasValue)
-            .GreaterThanOrEqualTo(p => p.PrecioCompra).WithMessage("precioVenta debe ser mayor a precioCompra");
+           .GreaterThanZero("precioVenta")
+           .When(p => p.PrecioVenta.HasValue)
+           .GreaterThan(p => p.PrecioCompra!.Value)
+           .WithMessage("precioVenta debe ser mayor que precioCompra")
+           .When(p => p.PrecioVenta.HasValue && p.PrecioCompra.HasValue);
         RuleFor(p => p.Stock)
             .GreaterThanZero("stock")
             .When(p => p.Stock.HasValue);
@@ -88,7 +90,7 @@ public sealed class ProductoCreateDtoValidator : AbstractValidator<ProductoCreat
         RuleFor(p => p.Descripcion).NameRules(2, 100);
         RuleFor(p => p.PrecioCompra).GreaterThanZero("precioCompra");
         RuleFor(p => p.PrecioVenta).GreaterThanZero("precioVenta")
-            .GreaterThanOrEqualTo(p => p.PrecioCompra).WithMessage("precioVenta debe ser mayor a precioCompra");
+            .GreaterThan(p => p.PrecioCompra).WithMessage("precioVenta debe ser mayor a precioCompra");
         RuleFor(p => p.Stock).GreaterThanZero("stock");
         RuleFor(p => p.CategoriaId).GreaterThanZero("categoriaId");
     }

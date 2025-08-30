@@ -3,7 +3,6 @@ using API.DTOs;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
-using API.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +27,7 @@ namespace API.Controllers
         public async Task<ActionResult<PagedList<CategoriaDto>>> GetCategorias(
             CancellationToken cancellationToken,
             [FromQuery, Range(1, 100)] int pageNumber = 1,
-            [FromQuery, Range(1, 100)] int pageSize = 10)
+            [FromQuery, Range(1, 10)] int pageSize = 10)
         {
             var result = await categoriaRepository.GetCategoriasAsync(pageNumber, pageSize, cancellationToken);
 

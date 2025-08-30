@@ -1,4 +1,5 @@
 using API.DTOs;
+using API.Enums;
 using API.Helpers;
 using API.Interfaces;
 using API.Extensions;
@@ -21,7 +22,7 @@ namespace API.Controllers
         /// <param name="pageSize">Tamaño de página (por defecto: 10, máximo: 10)</param>
         /// <param name="categoriaId">ID de categoría para filtrar (0 = todas las categorías)</param>
         /// <param name="stockStatus">Estado del stock: 'low' (bajo), 'out' (agotado), null (todos)</param>
-        /// <param name="searchTerm">Término de búsqueda para filtrar por nombre</param>
+        /// <param name="searchTerm">Término de búsqueda para filtrar</param>
         /// <param name="sortColumn">Columna por la cual ordenar</param>
         /// <param name="sortDirection">Dirección del ordenamiento: 'asc' o 'desc'</param>
         /// <returns>Lista paginada de productos</returns>
@@ -35,16 +36,14 @@ namespace API.Controllers
         public async Task<ActionResult<PagedList<ProductoDto>>> GetProductosPaginated(
             CancellationToken cancellationToken,
             [FromQuery, Range(1, 100)] int pageNumber = 1,
-            [FromQuery, Range(1, 100)] int pageSize = 10,
+            [FromQuery, Range(1, 10)] int pageSize = 10,
             int categoriaId = 0,
-            string? stockStatus = null,
+            StockStatus? stockStatus = null,
             string? searchTerm = null,
             string? sortColumn = null,
             string? sortDirection = null
             )
         {
-            pageSize = Math.Clamp(pageSize, 1, 10);
-            pageNumber = Math.Max(pageNumber, 1);
 
             var result = await productoRepository.GetProductosPaginatedAsync(
                 cancellationToken,
@@ -143,7 +142,6 @@ namespace API.Controllers
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status409Conflict)]
