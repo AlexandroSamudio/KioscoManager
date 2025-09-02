@@ -68,10 +68,10 @@ namespace API.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var search = $"%{searchTerm.Trim()}%";
+                var search = $"%{searchTerm.Trim().ToLower()}%";
                 query = query.Where(p =>
-                    EF.Functions.Like(p.Nombre, search) ||
-                    EF.Functions.Like(p.Sku, search)
+                    EF.Functions.Like(p.Nombre.ToLower(), search) ||
+                    EF.Functions.Like(p.Sku.ToLower(), search)
                 );
             }
 

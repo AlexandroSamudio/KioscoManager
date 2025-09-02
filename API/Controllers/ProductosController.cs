@@ -18,10 +18,10 @@ namespace API.Controllers
         /// Obtiene una lista paginada de productos
         /// </summary>
         /// <param name="cancellationToken">Token de cancelación</param>
-        /// <param name="pageNumber">Número de página (por defecto: 1)</param>
+        /// <param name="pageNumber">Número de página (por defecto: 1, máximo: 100)</param>
         /// <param name="pageSize">Tamaño de página (por defecto: 10, máximo: 10)</param>
         /// <param name="categoriaId">ID de categoría para filtrar (0 = todas las categorías)</param>
-        /// <param name="stockStatus">Estado del stock: 'low' (bajo), 'out' (agotado), null (todos)</param>
+        /// <param name="stockStatus">Estado del stock: 'low' (bajo), 'out' (agotado), 'in' (con stock), 'all' (todos) o null (todos)</param>
         /// <param name="searchTerm">Término de búsqueda para filtrar</param>
         /// <param name="sortColumn">Columna por la cual ordenar</param>
         /// <param name="sortDirection">Dirección del ordenamiento: 'asc' o 'desc'</param>
