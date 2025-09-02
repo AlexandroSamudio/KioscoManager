@@ -56,13 +56,11 @@ namespace API.Controllers
                 sortColumn,
                 sortDirection);
 
-            if (result.IsSuccess)
+            return result.ToActionResult(paged =>
             {
-                Response.AddPaginationHeader(result.Data!);
-                return Ok(result.Data);
-            }
-
-            return result.ToActionResult();
+                Response.AddPaginationHeader(paged);
+                return Ok(paged);
+            });
         }
 
         /// <summary>
@@ -135,8 +133,7 @@ namespace API.Controllers
         /// <returns>Resultado de la operación de actualización</returns>
         /// <response code="204">Producto actualizado exitosamente</response>
         /// <response code="400">Datos de entrada inválidos</response>
-        /// <response code="404">Producto no encontrado</response>
-        /// <response code="404">Categoría no encontrada</response>
+        /// <response code="404">Producto o Categoría no encontrado</response>
         /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
         /// <response code="409">Conflicto. SKU duplicado</response>
         [HttpPut("{id}")]
@@ -227,7 +224,7 @@ namespace API.Controllers
         /// Exporta productos para descarga (solo administradores)
         /// </summary>
         /// <param name="cancellationToken">Token de cancelación</param>
-        /// <param name="limite">Límite máximo de productos a exportar (entre 1 y 5000, por defecto: 5000)</param>
+        /// <param name="limite">Límite máximo de productos a exportar (entre 1 y 5000)</param>
         /// <returns>Flujo de datos de productos para exportación</returns>
         /// <response code="200">Datos de productos para exportación obtenidos exitosamente</response>
         /// <response code="400">Límite inválido (debe estar entre 1 y 5000)</response>
