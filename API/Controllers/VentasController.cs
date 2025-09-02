@@ -4,7 +4,6 @@ using API.Entities;
 using API.DTOs;
 using API.Extensions;
 using API.Interfaces;
-using API.Validators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -11,28 +11,36 @@ namespace API.Data.Repositories
 {
     public class CategoriaRepository(DataContext context, IMapper mapper) : ICategoriaRepository
     {
-        public async Task<PagedList<CategoriaDto>> GetCategoriasAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
+        public async Task<Result<PagedList<CategoriaDto>>> GetCategoriasAsync(int pageNumber, int pageSize, CancellationToken cancellationToken)
         {
             var query = context.Categorias!
                 .AsNoTracking()
                 .OrderBy(c => c.Nombre)
                 .ProjectTo<CategoriaDto>(mapper.ConfigurationProvider);
 
-            return await PagedList<CategoriaDto>.CreateAsync(query, pageNumber, pageSize, cancellationToken);
+            var pagedList = await PagedList<CategoriaDto>.CreateAsync(query, pageNumber, pageSize, cancellationToken);
+            return Result<PagedList<CategoriaDto>>.Success(pagedList);
         }
 
-        public async Task<CategoriaDto?> GetCategoriaByIdAsync(int id, CancellationToken cancellationToken)
+        public async Task<Result<CategoriaDto>> GetCategoriaByIdAsync(int id, CancellationToken cancellationToken)
         {
-            return await context.Categorias!
+            var categoria = await context.Categorias!
                 .AsNoTracking()
                 .Where(c => c.Id == id)
                 .ProjectTo<CategoriaDto>(mapper.ConfigurationProvider)
                 .FirstOrDefaultAsync(cancellationToken);
+
+            if (categoria == null)
+            {
+                return Result<CategoriaDto>.Failure(ErrorCodes.EntityNotFound, "Categoría no encontrada");
+            }
+
+            return Result<CategoriaDto>.Success(categoria);
         }
 
         public async Task<Result<CategoriaDto>> CreateCategoriaAsync(CategoriaCreateDto createDto, CancellationToken cancellationToken)
         {
-            if (await CategoriaExistsAsync(createDto.Nombre, cancellationToken))
+            if (await CategoriaExistsAsync(createDto.Nombre!, cancellationToken))
             {
                 return Result<CategoriaDto>.Failure(ErrorCodes.FieldExists, $"Ya existe una categoría con el nombre '{createDto.Nombre}'");
             }
@@ -48,16 +56,16 @@ namespace API.Data.Repositories
 
         public async Task<Result> UpdateCategoriaAsync(int id, CategoriaUpdateDto updateDto, CancellationToken cancellationToken)
         {
-            var categorias = await context.Categorias!
-                .Where(c => c.Id == id || c.Nombre.Equals(updateDto.Nombre, StringComparison.CurrentCultureIgnoreCase))
-                .ToListAsync(cancellationToken);
+            var categoria = await context.Categorias!
+                .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
-            var categoria = categorias.FirstOrDefault(c => c.Id == id);
             if (categoria == null)
                 return Result.Failure(ErrorCodes.EntityNotFound, "Categoría no encontrada");
 
-            if (categorias.Any(c => c.Id != id && c.Nombre.Equals(updateDto.Nombre, StringComparison.CurrentCultureIgnoreCase)))
+            if (await CategoriaExistsAsync(updateDto.Nombre!, cancellationToken))
+            {
                 return Result.Failure(ErrorCodes.FieldExists, $"Ya existe una categoría con el nombre '{updateDto.Nombre}'");
+            }
 
             mapper.Map(updateDto, categoria);
             await context.SaveChangesAsync(cancellationToken);
@@ -92,9 +100,12 @@ namespace API.Data.Repositories
 
         public async Task<bool> CategoriaExistsAsync(string nombre, CancellationToken cancellationToken)
         {
-            var query = context.Categorias!.Where(c => c.Nombre.Equals(nombre, StringComparison.CurrentCultureIgnoreCase));
+            if (string.IsNullOrWhiteSpace(nombre)) return false;
 
-            return await query.AnyAsync(cancellationToken);
+            var lowerName = nombre.ToLowerInvariant();
+
+            return await context.Categorias!
+                .AnyAsync(c => c.Nombre!.ToLower() == lowerName, cancellationToken);
         }
     }
 }
