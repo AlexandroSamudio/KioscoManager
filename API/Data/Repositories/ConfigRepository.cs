@@ -2,6 +2,7 @@ using API.DTOs;
 using API.Entities;
 using API.Extensions;
 using API.Interfaces;
+using API.Constants;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,86 +10,95 @@ namespace API.Data.Repositories
 {
     public class ConfigRepository(DataContext context, IMapper mapper) : IConfigRepository
     {
-        private readonly DataContext _context = context;
-        private readonly IMapper _mapper = mapper;
-
-        public async Task<KioscoConfigDto?> GetKioscoConfigAsync(int kioscoId, CancellationToken cancellationToken)
+        public async Task<Result<KioscoConfigDto>> GetKioscoConfigAsync(int kioscoId, CancellationToken cancellationToken)
         {
-            var kioscoConfig = await _context.KioscoConfigs
+            var kioscoConfig = await context.KioscoConfigs
                 .AsNoTracking()
                 .FirstOrDefaultAsync(kc => kc.KioscoId == kioscoId, cancellationToken);
 
-            kioscoConfig ??= await _context.EnsureKioscoConfigAsync(kioscoId);
+            kioscoConfig ??= await context.EnsureKioscoConfigAsync(kioscoId);
 
-            return _mapper.Map<KioscoConfigDto>(kioscoConfig);
+            var configDto = mapper.Map<KioscoConfigDto>(kioscoConfig);
+            return Result<KioscoConfigDto>.Success(configDto);
         }
 
-        public async Task<Result> UpdateKioscoConfigAsync(int kioscoId, KioscoConfigUpdateDto updateDto, CancellationToken cancellationToken)
+        public async Task<Result<KioscoConfigDto>> UpdateKioscoConfigAsync(int kioscoId, KioscoConfigUpdateDto updateDto, CancellationToken cancellationToken)
         {
-            var kioscoConfig = await _context.KioscoConfigs
+            var kioscoConfig = await context.KioscoConfigs
                 .FirstOrDefaultAsync(kc => kc.KioscoId == kioscoId, cancellationToken);
 
-            if (kioscoConfig == null) return Result.Failure("Configuración del kiosco no encontrada");
+            if (kioscoConfig == null) 
+                return Result<KioscoConfigDto>.Failure(ErrorCodes.EntityNotFound, "Configuración del kiosco no encontrada");
             
-            _mapper.Map(updateDto, kioscoConfig);
+            mapper.Map(updateDto, kioscoConfig);
             kioscoConfig.FechaActualizacion = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success();
+            var configDto = mapper.Map<KioscoConfigDto>(kioscoConfig);
+            return Result<KioscoConfigDto>.Success(configDto);
         }
 
-        public async Task<KioscoBasicInfoDto?> GetKioscoBasicInfoAsync(int kioscoId, CancellationToken cancellationToken)
+        public async Task<Result<KioscoBasicInfoDto>> GetKioscoBasicInfoAsync(int kioscoId, CancellationToken cancellationToken)
         {
-            var kiosco = await _context.Kioscos
+            var kiosco = await context.Kioscos
                 .AsNoTracking()
                 .FirstOrDefaultAsync(k => k.Id == kioscoId, cancellationToken);
 
-            return kiosco == null ? null : _mapper.Map<KioscoBasicInfoDto>(kiosco);
+            if (kiosco == null)
+                return Result<KioscoBasicInfoDto>.Failure(ErrorCodes.EntityNotFound, "Kiosco no encontrado");
+
+            var kioscoDto = mapper.Map<KioscoBasicInfoDto>(kiosco);
+            return Result<KioscoBasicInfoDto>.Success(kioscoDto);
         }
 
-        public async Task<Result> UpdateKioscoBasicInfoAsync(int kioscoId, KioscoBasicInfoUpdateDto updateDto, CancellationToken cancellationToken)
+        public async Task<Result<KioscoBasicInfoDto>> UpdateKioscoBasicInfoAsync(int kioscoId, KioscoBasicInfoUpdateDto updateDto, CancellationToken cancellationToken)
         {
-            var kiosco = await _context.Kioscos
+            var kiosco = await context.Kioscos
                 .FirstOrDefaultAsync(k => k.Id == kioscoId, cancellationToken);
 
-            if (kiosco == null) return Result.Failure("Kiosco no encontrado");
+            if (kiosco == null) 
+                return Result<KioscoBasicInfoDto>.Failure(ErrorCodes.EntityNotFound, "Kiosco no encontrado");
 
-            _mapper.Map(updateDto, kiosco);
+            mapper.Map(updateDto, kiosco);
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success();
+            var kioscoDto = mapper.Map<KioscoBasicInfoDto>(kiosco);
+            return Result<KioscoBasicInfoDto>.Success(kioscoDto);
         }
 
-        public async Task<UserPreferencesDto?> GetUserPreferencesAsync(int userId, CancellationToken cancellationToken)
+        public async Task<Result<UserPreferencesDto>> GetUserPreferencesAsync(int userId, CancellationToken cancellationToken)
         {
-            var userPreferences = await _context.UserPreferences
+            var userPreferences = await context.UserPreferences
                 .AsNoTracking()
                 .FirstOrDefaultAsync(up => up.UserId == userId, cancellationToken);
 
             if (userPreferences == null)
             {
-                userPreferences = await _context.EnsureUserPreferencesAsync(userId);
+                userPreferences = await context.EnsureUserPreferencesAsync(userId);
             }
 
-            return _mapper.Map<UserPreferencesDto>(userPreferences);
+            var preferencesDto = mapper.Map<UserPreferencesDto>(userPreferences);
+            return Result<UserPreferencesDto>.Success(preferencesDto);
         }
 
-        public async Task<Result> UpdateUserPreferencesAsync(int userId, UserPreferencesUpdateDto updateDto, CancellationToken cancellationToken)
+        public async Task<Result<UserPreferencesDto>> UpdateUserPreferencesAsync(int userId, UserPreferencesUpdateDto updateDto, CancellationToken cancellationToken)
         {
-            var userPreferences = await _context.UserPreferences
+            var userPreferences = await context.UserPreferences
                 .FirstOrDefaultAsync(up => up.UserId == userId, cancellationToken);
 
-            if (userPreferences == null) return Result.Failure("Preferencias del usuario no encontradas");
+            if (userPreferences == null) 
+                return Result<UserPreferencesDto>.Failure(ErrorCodes.EntityNotFound, "Preferencias del usuario no encontradas");
 
-            _mapper.Map(updateDto, userPreferences);
+            mapper.Map(updateDto, userPreferences);
 
             userPreferences.FechaActualizacion = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
-            return Result.Success();
+            var preferencesDto = mapper.Map<UserPreferencesDto>(userPreferences);
+            return Result<UserPreferencesDto>.Success(preferencesDto);
         }
     }
 }

@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Helpers;
 using API.Interfaces;
+using API.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data.Repositories
@@ -14,7 +15,7 @@ namespace API.Data.Repositories
 
     public class ReporteRepository(DataContext context) : IReporteRepository
     {
-        public async Task<ReporteDto> CalculateKpiReporteAsync(
+        public async Task<Result<ReporteDto>> CalculateKpiReporteAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
@@ -52,7 +53,7 @@ namespace API.Data.Repositories
 
             decimal gananciaBruta = totalVentas - costoMercaderia;
 
-            return new ReporteDto
+            var reporte = new ReporteDto
             {
                 TotalVentas = totalVentas,
                 CostoMercaderiaVendida = costoMercaderia,
@@ -61,9 +62,11 @@ namespace API.Data.Repositories
                 FechaInicio = fechaInicio,
                 FechaFin = fechaFin
             };
+
+            return Result<ReporteDto>.Success(reporte);
         }
 
-        public async Task<PagedList<ProductoMasVendidoDto>> GetTopProductsByVentasAsync(
+        public async Task<Result<PagedList<ProductoMasVendidoDto>>> GetTopProductsByVentasAsync(
             int kioscoId,
             int pageNumber,
             int pageSize,
@@ -72,8 +75,6 @@ namespace API.Data.Repositories
             CancellationToken cancellationToken,
             int limit = 5)
         {
-            limit = Math.Clamp(limit, 1, 50);
-
             var query = context.DetalleVentas!
                 .Include(d => d.Producto)
                 .Include(d => d.Producto!.Categoria)
@@ -100,11 +101,13 @@ namespace API.Data.Repositories
                 .OrderByDescending(p => p.CantidadVendida)
                 .Take(limit);
 
-            return await PagedList<ProductoMasVendidoDto>.CreateAsync(
+            var result = await PagedList<ProductoMasVendidoDto>.CreateAsync(
                 query.AsNoTracking(), pageNumber, pageSize, cancellationToken);
+
+            return Result<PagedList<ProductoMasVendidoDto>>.Success(result);
         }
 
-        public async Task<IReadOnlyList<VentasPorDiaDto>> GetVentasPorDiaAsync(
+        public async Task<Result<IReadOnlyList<VentasPorDiaDto>>> GetVentasPorDiaAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
@@ -177,10 +180,10 @@ namespace API.Data.Repositories
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
 
-            return ventasPorPeriodo;
+            return Result<IReadOnlyList<VentasPorDiaDto>>.Success(ventasPorPeriodo);
         }
 
-        public async Task<IReadOnlyList<CategoriasRentabilidadDto>> GetCategoriasRentabilidadAsync(
+        public async Task<Result<IReadOnlyList<CategoriasRentabilidadDto>>> GetCategoriasRentabilidadAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
@@ -220,9 +223,11 @@ namespace API.Data.Repositories
                 });
             }
 
-            return resultados
+            var categoriasOrdenadas = resultados
                 .OrderByDescending(p => p.PorcentajeVentas)
                 .ToList();
+
+            return Result<IReadOnlyList<CategoriasRentabilidadDto>>.Success(categoriasOrdenadas);
         }
 
 

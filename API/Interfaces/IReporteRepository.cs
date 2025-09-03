@@ -1,17 +1,18 @@
 using API.DTOs;
 using API.Helpers;
+using API.Entities;
 
 namespace API.Interfaces
 {
     public interface IReporteRepository
     {
-        Task<ReporteDto> CalculateKpiReporteAsync(
+        Task<Result<ReporteDto>> CalculateKpiReporteAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
             CancellationToken cancellationToken);
 
-        Task<PagedList<ProductoMasVendidoDto>> GetTopProductsByVentasAsync(
+        Task<Result<PagedList<ProductoMasVendidoDto>>> GetTopProductsByVentasAsync(
             int kioscoId,
             int pageNumber,
             int pageSize,
@@ -20,13 +21,13 @@ namespace API.Interfaces
             CancellationToken cancellationToken,
             int limit = 5);
 
-        Task<IReadOnlyList<VentasPorDiaDto>> GetVentasPorDiaAsync(
+        Task<Result<IReadOnlyList<VentasPorDiaDto>>> GetVentasPorDiaAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
             CancellationToken cancellationToken);
 
-        Task<IReadOnlyList<CategoriasRentabilidadDto>> GetCategoriasRentabilidadAsync(
+        Task<Result<IReadOnlyList<CategoriasRentabilidadDto>>> GetCategoriasRentabilidadAsync(
             int kioscoId,
             DateTime fechaInicio,
             DateTime fechaFin,
