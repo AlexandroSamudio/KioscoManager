@@ -72,8 +72,7 @@ namespace API.Data.Repositories
             int pageSize,
             DateTime fechaInicio,
             DateTime fechaFin,
-            CancellationToken cancellationToken,
-            int limit = 5)
+            CancellationToken cancellationToken)
         {
             var query = context.DetalleVentas!
                 .Include(d => d.Producto)
@@ -98,8 +97,7 @@ namespace API.Data.Repositories
                     CantidadVendida = g.Sum(d => d.Cantidad),
                     TotalVentas = g.Sum(d => d.Cantidad * d.PrecioUnitario)
                 })
-                .OrderByDescending(p => p.CantidadVendida)
-                .Take(limit);
+                .OrderByDescending(p => p.CantidadVendida);
 
             var result = await PagedList<ProductoMasVendidoDto>.CreateAsync(
                 query.AsNoTracking(), pageNumber, pageSize, cancellationToken);

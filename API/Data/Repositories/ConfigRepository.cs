@@ -31,7 +31,6 @@ namespace API.Data.Repositories
                 return Result<KioscoConfigDto>.Failure(ErrorCodes.EntityNotFound, "Configuración del kiosco no encontrada");
             
             mapper.Map(updateDto, kioscoConfig);
-            kioscoConfig.FechaActualizacion = DateTime.UtcNow;
 
             await context.SaveChangesAsync(cancellationToken);
 

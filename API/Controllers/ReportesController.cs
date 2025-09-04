@@ -41,7 +41,6 @@ namespace API.Controllers
         /// <param name="dateRange">Rango de fechas para el reporte</param>
         /// <param name="pageNumber">Número de página (por defecto: 1)</param>
         /// <param name="pageSize">Tamaño de página (por defecto: 10, máximo: 10)</param>
-        /// <param name="limit">Límite de productos a retornar (por defecto: 5, máximo: 50)</param>
         /// <returns>Lista paginada de los productos más vendidos</returns>
         /// <response code="200">Lista de productos más vendidos obtenida exitosamente</response>
         /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
@@ -54,8 +53,7 @@ namespace API.Controllers
             CancellationToken cancellationToken,
             [FromQuery] DateRangeDto dateRange,
             [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1,
-            [FromQuery, Range(1, 10)] int pageSize = 10,
-            [FromQuery, Range(1, 50)] int limit = 5)
+            [FromQuery, Range(1, 10)] int pageSize = 10)
         {
             var result = await reporteRepository.GetTopProductsByVentasAsync(
                 KioscoId,
@@ -63,8 +61,7 @@ namespace API.Controllers
                 pageSize,
                 dateRange.FechaInicio,
                 dateRange.FechaFin,
-                cancellationToken,
-                limit);
+                cancellationToken);
 
             return result.ToActionResult(topProducts =>
             {
@@ -134,7 +131,7 @@ namespace API.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IReadOnlyList<VentaChartDto>>> GetVentasParaChart(
-            [FromQuery] DateTime fecha,
+            [FromQuery] DateTime? fecha,
             CancellationToken cancellationToken)
         {
             var result = await ventaRepository.GetVentasIndividualesDelDiaAsync(KioscoId, cancellationToken, fecha);

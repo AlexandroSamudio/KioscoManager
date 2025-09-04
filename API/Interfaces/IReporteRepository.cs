@@ -18,8 +18,7 @@ namespace API.Interfaces
             int pageSize,
             DateTime fechaInicio,
             DateTime fechaFin,
-            CancellationToken cancellationToken,
-            int limit = 5);
+            CancellationToken cancellationToken);
 
         Task<Result<IReadOnlyList<VentasPorDiaDto>>> GetVentasPorDiaAsync(
             int kioscoId,

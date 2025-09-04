@@ -57,6 +57,8 @@ namespace API.Helpers
 
             CreateMap<KioscoConfig, KioscoConfigDto>();
             CreateMap<KioscoConfigUpdateDto, KioscoConfig>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+            CreateMap<KioscoConfigUpdateDto, KioscoConfig>()
                 .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow));
             
             CreateMap<UserPreferences, UserPreferencesDto>();
@@ -72,7 +74,8 @@ namespace API.Helpers
                 .ForMember(dest => dest.NombreKiosco, opt => opt.Ignore()); 
 
             CreateMap<Kiosco, KioscoBasicInfoDto>();
-            CreateMap<KioscoBasicInfoUpdateDto, Kiosco>();
+            CreateMap<KioscoBasicInfoUpdateDto, Kiosco>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<Categoria, CategoriaDto>();
             CreateMap<CategoriaCreateDto, Categoria>();

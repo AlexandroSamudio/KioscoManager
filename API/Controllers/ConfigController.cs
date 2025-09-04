@@ -22,7 +22,7 @@ namespace API.Controllers
         /// <response code="403">Prohibido. Se requieren permisos de administrador.</response>
         /// <response code="404">Kiosco no encontrado</response>
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpGet("kiosko/info-basico")]
+        [HttpGet("kiosco/info-basico")]
         [ProducesResponseType(typeof(KioscoBasicInfoDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status403Forbidden)]
@@ -88,7 +88,7 @@ namespace API.Controllers
         /// <response code="403">Prohibido. Se requieren permisos de administrador.</response>
         /// <response code="404">Kiosco no encontrado</response>
         [Authorize(Policy = "RequireAdminRole")]
-        [HttpPut("kiosko/info-basico")]
+        [HttpPut("kiosco/info-basico")]
         [ProducesResponseType(typeof(KioscoBasicInfoDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]

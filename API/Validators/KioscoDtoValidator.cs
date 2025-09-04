@@ -15,7 +15,7 @@ public sealed class JoinKioscoDtoValidator : AbstractValidator<JoinKioscoDto>
 {
     public JoinKioscoDtoValidator()
     {
-        RuleFor(x => x.CodigoInvitacion).RequiredField("codigoInvitacion").NameRules(10, 10);
+        RuleFor(x => x.CodigoInvitacion).RequiredField("codigoInvitacion").NameRules(8, 8);
     }
 }
 
