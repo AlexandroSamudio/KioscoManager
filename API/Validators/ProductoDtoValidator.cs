@@ -34,7 +34,7 @@ public sealed class ProductoDtoValidator : AbstractValidator<ProductoDto>
 {
     public ProductoDtoValidator()
     {
-        RuleFor(p => p.Nombre).RequiredField("nombre").NameRules(2, 50);
+        RuleFor(p => p.Nombre).RequiredField("nombre").NameRules();
         RuleFor(p => p.Sku)
             .RequiredField("sku")
             .Must(ProductoValidationHelpers.Ean13IsValid).WithMessage("El SKU debe ser un código EAN-13 válido.");
@@ -44,7 +44,7 @@ public sealed class ProductoDtoValidator : AbstractValidator<ProductoDto>
             .GreaterThanZero("precioVenta")
             .GreaterThan(p => p.PrecioCompra).WithMessage("precioVenta debe ser mayor a precioCompra");
         RuleFor(p => p.Stock).GreaterThanZero("stock");
-        RuleFor(p => p.CategoriaNombre).NameRules(2, 50);
+        RuleFor(p => p.CategoriaNombre).NameRules();
         RuleFor(p => p.CategoriaId).GreaterThanZero("categoriaId");
     }
 }
@@ -56,7 +56,9 @@ public sealed class ProductoUpdateDtoValidator : AbstractValidator<ProductoUpdat
         RuleFor(p => p)
             .AtLeastOneProperty("Se debe proporcionar al menos un campo para actualizar.");
 
-        RuleFor(p => p.Nombre).NameRules(2, 50);
+        RuleFor(p => p.Nombre)
+            .NameRules()
+            .When(p => !string.IsNullOrWhiteSpace(p.Nombre));
         RuleFor(p => p.Sku)
             .Must(ProductoValidationHelpers.Ean13IsValid).WithMessage("El SKU debe ser un código EAN-13 válido.")
             .When(p => !string.IsNullOrWhiteSpace(p.Sku));
@@ -83,7 +85,7 @@ public sealed class ProductoCreateDtoValidator : AbstractValidator<ProductoCreat
 {
     public ProductoCreateDtoValidator()
     {
-        RuleFor(p => p.Nombre).RequiredField("nombre").NameRules(2, 50);
+        RuleFor(p => p.Nombre).RequiredField("nombre").NameRules();
         RuleFor(p => p.Sku)
             .RequiredField("sku")
             .Must(ProductoValidationHelpers.Ean13IsValid).WithMessage("El SKU debe ser un código EAN-13 válido.");

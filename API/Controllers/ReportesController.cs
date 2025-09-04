@@ -1,119 +1,141 @@
 using API.DTOs;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers
 {
     [Authorize]
-    public class ReportesController(IReporteRepository reportRepository, IVentaRepository ventaRepository) : BaseApiController
+    public class ReportesController(IReporteRepository reporteRepository, IVentaRepository ventaRepository) : BaseApiController
     {
         protected int KioscoId => User.GetKioscoId();
 
+        /// <summary>
+        /// Obtiene el reporte general de KPIs del kiosco
+        /// </summary>
+        /// <param name="cancellationToken">Token para cancelar la operación</param>
+        /// <param name="dateRange">Rango de fechas para el reporte</param>
+        /// <returns>Reporte con los KPIs principales del kiosco</returns>
+        /// <response code="200">Reporte generado exitosamente</response>
+        /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+        /// <response code="400">Parámetros de fecha inválidos</response>
         [HttpGet]
+        [ProducesResponseType(typeof(ReporteDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ReporteDto>> GetReporte(
-            CancellationToken cancellationToken,
-            [FromQuery] DateTime? fechaInicio = null,
-            [FromQuery] DateTime? fechaFin = null)
+            [FromQuery] DateRangeDto dateRange,
+            CancellationToken cancellationToken)
         {
-            var (fechaInicioFinal, fechaFinFinal) = NormalizarFechas(fechaInicio, fechaFin, 30);
-
-            var summary = await reportRepository.CalculateKpiReporteAsync(KioscoId, fechaInicioFinal, fechaFinFinal, cancellationToken);
-            return Ok(summary);
+            var result = await reporteRepository.CalculateKpiReporteAsync(KioscoId, dateRange.FechaInicio, dateRange.FechaFin, cancellationToken);
+            return result.ToActionResult();
         }
 
+        /// <summary>
+        /// Obtiene los productos más vendidos en un período específico
+        /// </summary>
+        /// <param name="cancellationToken">Token para cancelar la operación</param>
+        /// <param name="dateRange">Rango de fechas para el reporte</param>
+        /// <param name="pageNumber">Número de página (por defecto: 1)</param>
+        /// <param name="pageSize">Tamaño de página (por defecto: 10, máximo: 10)</param>
+        /// <returns>Lista paginada de los productos más vendidos</returns>
+        /// <response code="200">Lista de productos más vendidos obtenida exitosamente</response>
+        /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+        /// <response code="400">Parámetros inválidos</response>
         [HttpGet("top-productos")]
-        public async Task<ActionResult<IReadOnlyList<ProductoMasVendidoDto>>> GetTopProductos(
+        [ProducesResponseType(typeof(PagedList<ProductoMasVendidoDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PagedList<ProductoMasVendidoDto>>> GetTopProductos(
             CancellationToken cancellationToken,
-            [FromQuery] DateTime? fechaInicio = null,
-            [FromQuery] DateTime? fechaFin = null,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] int limit = 5)
+            [FromQuery] DateRangeDto dateRange,
+            [FromQuery, Range(1, int.MaxValue)] int pageNumber = 1,
+            [FromQuery, Range(1, 10)] int pageSize = 10)
         {
-            var (fechaInicioFinal, fechaFinFinal) = NormalizarFechas(fechaInicio, fechaFin, 90);
-
-            limit = Math.Clamp(limit, 1, 50);
-            pageSize = Math.Clamp(pageSize, 1, 10);
-            pageNumber = Math.Max(pageNumber, 1);
-
-            var topProducts = await reportRepository.GetTopProductsByVentasAsync(
+            var result = await reporteRepository.GetTopProductsByVentasAsync(
                 KioscoId,
                 pageNumber,
                 pageSize,
-                fechaInicioFinal,
-                fechaFinFinal,
-                cancellationToken,
-                limit);
-
-            if (topProducts.Count == 0)
-            {
-                return Ok(new List<ProductoMasVendidoDto>());
-            }
-
-            Response.AddPaginationHeader(topProducts);
-            return Ok(topProducts);
-        }
-
-        [HttpGet("ventas-por-dia")]
-        public async Task<ActionResult<IReadOnlyList<VentasPorDiaDto>>> GetVentasPorDia(
-            CancellationToken cancellationToken,
-            [FromQuery] DateTime? fechaInicio = null,
-            [FromQuery] DateTime? fechaFin = null)
-        {
-            var (fechaInicioFinal, fechaFinFinal) = NormalizarFechas(fechaInicio, fechaFin, 60);
-
-            var salesOverTime = await reportRepository.GetVentasPorDiaAsync(
-                KioscoId,
-                fechaInicioFinal,
-                fechaFinFinal,
+                dateRange.FechaInicio,
+                dateRange.FechaFin,
                 cancellationToken);
 
-            if (salesOverTime.Count == 0)
+            return result.ToActionResult(topProducts =>
             {
-                return Ok(new List<VentasPorDiaDto>());
-            }
-
-            return Ok(salesOverTime);
+                Response.AddPaginationHeader(topProducts);
+                return Ok(topProducts);
+            });
         }
 
+        /// <summary>
+        /// Obtiene las ventas agrupadas por día en un período específico
+        /// </summary>
+        /// <param name="cancellationToken">Token para cancelar la operación</param>
+        /// <param name="dateRange">Rango de fechas para el reporte</param>
+        /// <returns>Lista de ventas agrupadas por día</returns>
+        /// <response code="200">Datos de ventas por día obtenidos exitosamente</response>
+        /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+        /// <response code="400">Parámetros de fecha inválidos</response>
+        [HttpGet("ventas-por-dia")]
+        [ProducesResponseType(typeof(IReadOnlyList<VentasPorDiaDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IReadOnlyList<VentasPorDiaDto>>> GetVentasPorDia(
+            [FromQuery] DateRangeDto dateRange,
+            CancellationToken cancellationToken)
+        {
+            var result = await reporteRepository.GetVentasPorDiaAsync(
+                KioscoId,
+                dateRange.FechaInicio,
+                dateRange.FechaFin,
+                cancellationToken);
+
+            return result.ToActionResult();
+        }
+
+        /// <summary>
+        /// Obtiene el análisis de rentabilidad por categorías
+        /// </summary>
+        /// <param name="cancellationToken">Token para cancelar la operación</param>
+        /// <param name="dateRange">Rango de fechas para el reporte</param>
+        /// <returns>Lista de categorías con su análisis de rentabilidad</returns>
+        /// <response code="200">Análisis de rentabilidad por categorías obtenido exitosamente</response>
+        /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+        /// <response code="400">Parámetros de fecha inválidos</response>
         [HttpGet("rentabilidad-categorias")]
+        [ProducesResponseType(typeof(IReadOnlyList<CategoriasRentabilidadDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IReadOnlyList<CategoriasRentabilidadDto>>> GetCategoriasRentabilidad(
-            CancellationToken cancellationToken,
-            [FromQuery] DateTime? fechaInicio = null,
-            [FromQuery] DateTime? fechaFin = null)
+            [FromQuery] DateRangeDto dateRange,
+            CancellationToken cancellationToken)
         {
-            var (fechaInicioFinal, fechaFinFinal) = NormalizarFechas(fechaInicio, fechaFin, 90);
-
-            var categorias = await reportRepository.GetCategoriasRentabilidadAsync(KioscoId, fechaInicioFinal, fechaFinFinal, cancellationToken);
-
-            if (categorias.Count == 0)
-            {
-                return Ok(new List<CategoriasRentabilidadDto>());
-            }
-
-            return Ok(categorias);
+            var result = await reporteRepository.GetCategoriasRentabilidadAsync(KioscoId, dateRange.FechaInicio, dateRange.FechaFin, cancellationToken);
+            return result.ToActionResult();
         }
 
+        /// <summary>
+        /// Obtiene las ventas individuales del día para gráficos
+        /// </summary>
+        /// <param name="cancellationToken">Token para cancelar la operación</param>
+        /// <param name="fecha">Fecha específica para consultar (opcional, por defecto: hoy)</param>
+        /// <returns>Lista de ventas individuales del día especificado</returns>
+        /// <response code="200">Datos de ventas para gráficos obtenidos exitosamente</response>
+        /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+        /// <response code="400">Fecha inválida</response>
         [HttpGet("ventas-chart")]
+        [ProducesResponseType(typeof(IReadOnlyList<VentaChartDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IReadOnlyList<VentaChartDto>>> GetVentasParaChart(
-            CancellationToken cancellationToken,
-            [FromQuery] DateTime? fecha = null)
+            [FromQuery] DateTime? fecha,
+            CancellationToken cancellationToken)
         {
-            var ventasChart = await ventaRepository.GetVentasIndividualesDelDiaAsync(KioscoId, cancellationToken, fecha);
-            return Ok(ventasChart);
-        }
-
-        private static (DateTime fechaInicio, DateTime fechaFin) NormalizarFechas(
-            DateTime? fechaInicio,
-            DateTime? fechaFin,
-            int defaultDaysBack = 30)
-        {
-            var fechaInicioFinal = fechaInicio ?? DateTime.UtcNow.AddDays(-defaultDaysBack);
-            var fechaFinFinal = fechaFin ?? DateTime.UtcNow;
-
-            return (fechaInicioFinal, fechaFinFinal);
+            var result = await ventaRepository.GetVentasIndividualesDelDiaAsync(KioscoId, cancellationToken, fecha);
+            return result.ToActionResult();
         }
     }
 }

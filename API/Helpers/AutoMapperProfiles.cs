@@ -13,10 +13,21 @@ namespace API.Helpers
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.ToLower()))
                 .ForSourceMember(src => src.Password, opt => opt.DoNotValidate());
 
+            //AppUser mappings
             CreateMap<AppUser, UserDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
+            CreateMap<AppUser, UserManagementDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.KioscoId, opt => opt.MapFrom(src => src.KioscoId))
+                .ForMember(dest => dest.Role, opt => opt.Ignore()) 
+                .ForMember(dest => dest.NombreKiosco, opt => opt.Ignore()); 
+
+
+            //Producto mappings
             CreateMap<Producto, ProductoDto>()
                 .ForMember(dest => dest.CategoriaNombre, opt => opt.MapFrom(src => src.Categoria!.Nombre));
 
@@ -25,14 +36,9 @@ namespace API.Helpers
             CreateMap<ProductoUpdateDto, Producto>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.KioscoId, opt => opt.Ignore())
-                .ForMember(dest => dest.Nombre, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Nombre)))
-                .ForMember(dest => dest.Sku, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Sku)))
-                .ForMember(dest => dest.Descripcion, opt => opt.Condition(src => !string.IsNullOrWhiteSpace(src.Descripcion)))
-                .ForMember(dest => dest.PrecioCompra, opt => opt.Condition(src => src.PrecioCompra.HasValue))
-                .ForMember(dest => dest.PrecioVenta, opt => opt.Condition(src => src.PrecioVenta.HasValue))
-                .ForMember(dest => dest.Stock, opt => opt.Condition(src => src.Stock.HasValue))
-                .ForMember(dest => dest.CategoriaId, opt => opt.Condition(src => src.CategoriaId.HasValue));
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
+            //Venta mappings
             CreateMap<ProductoVentaDto, DetalleVenta>()
                 .ForMember(dest => dest.ProductoId, opt => opt.MapFrom(src => src.ProductoId))
                 .ForMember(dest => dest.Cantidad, opt => opt.MapFrom(src => src.Cantidad))
@@ -44,6 +50,7 @@ namespace API.Helpers
             CreateMap<VentaCreateDto, Venta>()
                 .ForMember(dest => dest.Detalles, opt => opt.MapFrom(src => src.Productos));
 
+            //Compra mappings
             CreateMap<Compra, CompraDto>()
                 .ForMember(dest => dest.Detalles, opt => opt.MapFrom(src => src.Detalles));
 
@@ -55,25 +62,23 @@ namespace API.Helpers
             CreateMap<CompraDetalleDto, CompraDetalle>();
             CreateMap<CompraCreateDto, Compra>();
 
+            //KioscoConfig mappings
             CreateMap<KioscoConfig, KioscoConfigDto>();
             CreateMap<KioscoConfigUpdateDto, KioscoConfig>()
-                .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow));
+                .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
             
+            //UserPreferences mappings
             CreateMap<UserPreferences, UserPreferencesDto>();
             CreateMap<UserPreferencesUpdateDto, UserPreferences>()
-                .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow));
-
-            CreateMap<AppUser, UserManagementDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.KioscoId, opt => opt.MapFrom(src => src.KioscoId))
-                .ForMember(dest => dest.Role, opt => opt.Ignore()) 
-                .ForMember(dest => dest.NombreKiosco, opt => opt.Ignore()); 
-
+                .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow))
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+            //KioscoInfo mappings
             CreateMap<Kiosco, KioscoBasicInfoDto>();
-            CreateMap<KioscoBasicInfoUpdateDto, Kiosco>();
+            CreateMap<KioscoBasicInfoUpdateDto, Kiosco>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
+            //Categoria mappings
             CreateMap<Categoria, CategoriaDto>();
             CreateMap<CategoriaCreateDto, Categoria>();
             CreateMap<CategoriaUpdateDto, Categoria>();
