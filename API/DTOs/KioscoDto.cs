@@ -33,7 +33,6 @@ public class KioscoConfigDto
     public string? PrefijoSku { get; set; }
     public int StockMinimoDefault { get; set; }
     public bool AlertasStockHabilitadas { get; set; }
-    public bool NotificacionesStockBajo { get; set; }
     public DateTime FechaActualizacion { get; set; }
 }
 public class KioscoConfigUpdateDto
@@ -43,5 +42,4 @@ public class KioscoConfigUpdateDto
     public string? PrefijoSku { get; set; }
     public int? StockMinimoDefault { get; set; }
     public bool? AlertasStockHabilitadas { get; set; }
-    public bool? NotificacionesStockBajo { get; set; }
 }

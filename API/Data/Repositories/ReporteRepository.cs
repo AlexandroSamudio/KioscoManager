@@ -37,7 +37,6 @@ namespace API.Data.Repositories
 
             var productosYFechas = detallesVenta
                 .Select(d => (d.ProductoId, d.Venta!.Fecha))
-                .Distinct()
                 .ToList();
 
             var costosHistoricos = await ObtenerCostosHistoricosAsync(productosYFechas, cancellationToken);
@@ -46,9 +45,21 @@ namespace API.Data.Repositories
 
             foreach (var detalle in detallesVenta)
             {
-                var costoHistorico = costosHistoricos.TryGetValue(detalle.ProductoId, out var costo) ? costo : null;
-                decimal costoPorUnidad = costoHistorico ?? detalle.Producto!.PrecioCompra;
-                costoMercaderia += detalle.Cantidad * costoPorUnidad;
+                if (costosHistoricos.TryGetValue(detalle.ProductoId, out var serie))
+                {
+                    var costoHistorico = serie
+                        .Where(c => c.Fecha <= detalle.Venta!.Fecha)
+                        .Select(c => (decimal?)c.CostoUnitario)
+                        .LastOrDefault();
+                    
+                    decimal costoPorUnidad = costoHistorico ?? detalle.Producto!.PrecioCompra;
+                    costoMercaderia += detalle.Cantidad * costoPorUnidad;
+                }
+                else
+                {
+                    decimal costoPorUnidad = detalle.Producto!.PrecioCompra;
+                    costoMercaderia += detalle.Cantidad * costoPorUnidad;
+                }
             }
 
             decimal gananciaBruta = totalVentas - costoMercaderia;
@@ -229,40 +240,28 @@ namespace API.Data.Repositories
         }
 
 
-        private async Task<Dictionary<int, decimal?>> ObtenerCostosHistoricosAsync(
+        private async Task<Dictionary<int, List<(DateTime Fecha, decimal CostoUnitario)>>> ObtenerCostosHistoricosAsync(
             IEnumerable<(int ProductoId, DateTime Fecha)> productosYFechas,
             CancellationToken cancellationToken)
         {
             var productosIds = productosYFechas.Select(p => p.ProductoId).Distinct().ToList();
 
             if (productosIds.Count == 0)
-                return new Dictionary<int, decimal?>();
+                return new Dictionary<int, List<(DateTime Fecha, decimal CostoUnitario)>>();
 
             var compraDetalles = await context.CompraDetalles!
                 .Include(cd => cd.Compra)
                 .Where(cd => productosIds.Contains(cd.ProductoId) && cd.Compra != null)
-                .OrderByDescending(cd => cd.Compra!.Fecha)
+                .Select(cd => new { cd.ProductoId, Fecha = cd.Compra!.Fecha, cd.CostoUnitario })
+                .OrderBy(cd => cd.Fecha)
                 .ToListAsync(cancellationToken);
 
-            var costosHistoricos = new Dictionary<int, decimal?>();
-
-            foreach (var productoId in productosIds)
-            {
-                var fechaMasReciente = productosYFechas
-                    .Where(p => p.ProductoId == productoId)
-                    .Max(p => p.Fecha);
-
-                var costoHistorico = compraDetalles
-                    .Where(cd => cd.ProductoId == productoId &&
-                                cd.Compra != null &&
-                                cd.Compra.Fecha <= fechaMasReciente)
-                    .OrderByDescending(cd => cd.Compra!.Fecha)
-                    .FirstOrDefault()?.CostoUnitario;
-
-                costosHistoricos[productoId] = costoHistorico;
-            }
-
-            return costosHistoricos;
+            return compraDetalles
+                .GroupBy(cd => cd.ProductoId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => (x.Fecha, x.CostoUnitario)).ToList()
+                );
         }
 
         private static GroupingType DetermineGroupingType(int rangeDays)
