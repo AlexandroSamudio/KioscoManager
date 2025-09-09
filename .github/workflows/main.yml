@@ -126,30 +126,38 @@ jobs:
           script: |
             echo "Iniciando despliegue de Backend en el servidor..."
 
-            # Detener servicio
+            # Detener servicio (sudo necesario)
             sudo systemctl stop kioscomanager.service || true
 
-            # Limpiar y copiar archivos directamente (ya no se necesita sudo)
+            # Crear directorio temporal si no existe
+            mkdir -p /tmp/backend_deploy_temp_dir
+
+            # Limpiar el directorio de publicación (ci-cd-deploy tiene permisos)
             rm -rf /var/www/kiosco-manager/publish/*
+
+            # Copiar los archivos desde el directorio temporal
             cp -r /tmp/backend_deploy_temp_dir/publish_backend_temp/. /var/www/kiosco-manager/publish/
 
-            # Limpiar directorio temporal
+            # Limpiar el directorio temporal
             rm -rf /tmp/backend_deploy_temp_dir
 
-            # Cambiar propietario a www-data (opcional, solo para que el servicio tenga control)
+            # Cambiar propietario a www-data (sudo necesario)
             sudo chown -R www-data:www-data /var/www/kiosco-manager/publish
 
-            # Iniciar servicio
+            # Iniciar servicio (sudo necesario)
             sudo systemctl start kioscomanager.service
 
+            # Esperar un momento para que arranque
             sleep 5
+
+            # Verificar que el servicio esté activo
             if ! sudo systemctl is-active --quiet kioscomanager.service; then
               echo "Error: El servicio Backend no está activo después del despliegue."
               exit 1
             fi
 
             sudo systemctl status kioscomanager.service --no-pager
-            echo "Despliegue de Backend completado."
+            echo "Despliegue de Backend completado exitosamente."
 
 
       # --- Despliegue del FRONTEND (Transferencia) ---
