@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feat--modificar-archivo-de-workflow
+      - feat--test-cambios-workflow
     paths:
       - "API/**"
       - "client/**"
@@ -12,7 +12,7 @@ on:
   pull_request:
     branches:
       - main
-      - feat--modificar-archivo-de-workflow
+      - feat--test-cambios-workflow
     paths:
       - "API/**"
       - "client/**"
@@ -129,11 +129,14 @@ jobs:
             # Detener el servicio con sudo (requerido)
             sudo systemctl stop kioscomanager.service || true
             
+            # Eliminar el contenido del directorio con sudo, ya que el propietario es www-data.
+            sudo rm -rf /var/www/kiosco-manager/publish/*
+            
             # Crear el directorio de despliegue si no existe.
+            # Se asume que el directorio principal ya es propiedad de ci-cd-deploy.
             mkdir -p /var/www/kiosco-manager/publish
             
-            # Copiar archivos sin sudo (ya que el usuario ci-cd-deploy es el propietario de los archivos)
-            rm -rf /var/www/kiosco-manager/publish/*
+            # Copiar archivos sin sudo (ya que el usuario ci-cd-deploy tiene permisos sobre /tmp)
             cp -r /tmp/backend_deploy_temp_dir/publish_backend_temp/. /var/www/kiosco-manager/publish/
             
             # Limpiar el directorio temporal de la transferencia
