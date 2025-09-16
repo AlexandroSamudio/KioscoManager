@@ -119,7 +119,9 @@ namespace API.Extensions
                     .AddRequirements(new MiembroBlockRequirement())
                     .Build())
                 .AddPolicy("RequireAdminRole", policy =>
-                    policy.AddRequirements(new AdminOnlyRequirement()));
+                    policy.AddRequirements(new AdminOnlyRequirement()))
+                .AddPolicy("AllowMiembroForKioscoCreation", policy =>
+                    policy.RequireAuthenticatedUser());
 
             return services;
         }
