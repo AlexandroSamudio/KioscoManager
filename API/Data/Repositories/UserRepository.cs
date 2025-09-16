@@ -173,10 +173,8 @@ public class UserRepository(DataContext context, UserManager<AppUser> userManage
         {
             return Result.Failure(ErrorCodes.FieldExists,"El correo electrónico ya está en uso");
         }
-        
-        user.UserName = profileData.UserName;
-        user.Email = profileData.Email;
 
+        mapper.Map(profileData, user);
 
         await context.SaveChangesAsync(cancellationToken);
 

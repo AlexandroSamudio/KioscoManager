@@ -50,7 +50,7 @@ public class UsersController(IUserRepository userRepository) : BaseApiController
     /// <response code="400">Parámetros de paginación inválidos</response>
     /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
     /// <response code="403">Prohibido. Se requieren permisos de administrador.</response>
-    /// <response code="404">Usuario no encontrado</response>
+    /// <response code="404">Kiosco no encontrado</response>
     [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("kiosco/{kioscoId}")]
     [ProducesResponseType(typeof(PagedList<UserManagementDto>), StatusCodes.Status200OK)]
@@ -128,14 +128,14 @@ public class UsersController(IUserRepository userRepository) : BaseApiController
     /// <param name="profileData">Nuevos datos del perfil</param>
     /// <param name="cancellationToken">Token para cancelar la operación</param>
     /// <returns>Confirmación de la actualización del perfil</returns>
-    /// <response code="200">Perfil actualizado exitosamente</response>
+    /// <response code="204">Perfil actualizado exitosamente</response>
     /// <response code="400">Datos del perfil inválidos o nombre de usuario/email ya en uso</response>
     /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
     /// <response code="403">Prohibido. Solo puedes actualizar tu propio perfil.</response>
     /// <response code="404">Usuario no encontrado</response>
     [Authorize]
     [HttpPut("{userId}/perfil")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status403Forbidden)]
@@ -160,14 +160,14 @@ public class UsersController(IUserRepository userRepository) : BaseApiController
     /// <param name="passwordData">Datos para el cambio de contraseña (contraseña actual y nueva)</param>
     /// <param name="cancellationToken">Token para cancelar la operación</param>
     /// <returns>Confirmación del cambio de contraseña</returns>
-    /// <response code="200">Contraseña cambiada exitosamente</response>
+    /// <response code="204">Contraseña cambiada exitosamente</response>
     /// <response code="400">Datos de contraseña inválidos o contraseña actual incorrecta</response>
     /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
     /// <response code="403">Prohibido. Solo puedes actualizar tu propio perfil.</response>
     /// <response code="404">Usuario no encontrado</response>
     [Authorize]
     [HttpPut("{userId}/password")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status403Forbidden)]
@@ -176,7 +176,7 @@ public class UsersController(IUserRepository userRepository) : BaseApiController
     {
         if (UserId != userId)
         {
-            return Result.Failure(ErrorCodes.Forbidden, "Solo puedes actualizar tu propio perfil").ToActionResult();
+            return Result.Failure(ErrorCodes.Forbidden, "Solo puedes cambiar tu propia contraseña").ToActionResult();
         }
 
         var result = await userRepository.ChangePasswordAsync(userId, passwordData, cancellationToken);
