@@ -19,12 +19,11 @@ namespace API.Helpers
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
 
             CreateMap<AppUser, UserManagementDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.KioscoId, opt => opt.MapFrom(src => src.KioscoId))
-                .ForMember(dest => dest.Role, opt => opt.Ignore()) 
-                .ForMember(dest => dest.NombreKiosco, opt => opt.Ignore()); 
+                .ForMember(dest => dest.Role, opt => opt.Ignore())
+                .ForMember(dest => dest.NombreKiosco, opt => opt.Ignore());
+
+            CreateMap<ProfileUpdateDto, AppUser>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
 
             //Producto mappings
@@ -67,7 +66,7 @@ namespace API.Helpers
             CreateMap<KioscoConfigUpdateDto, KioscoConfig>()
                 .ForMember(dest => dest.FechaActualizacion, opt => opt.MapFrom(src => DateTime.UtcNow))
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-            
+
             //UserPreferences mappings
             CreateMap<UserPreferences, UserPreferencesDto>();
             CreateMap<UserPreferencesUpdateDto, UserPreferences>()

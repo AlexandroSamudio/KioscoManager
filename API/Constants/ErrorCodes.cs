@@ -9,6 +9,7 @@ namespace API.Constants
         public const string ValidationError = "ValidationError";
         public const string Forbidden = "Forbidden";
         public const string Unauthorized = "Unauthorized";
+        public const string InvalidCredentials = "InvalidCredentials";
         public const string InvalidCurrentPassword = "InvalidCurrentPassword";
         public const string InsufficientStock = "InsufficientStock";
     }
