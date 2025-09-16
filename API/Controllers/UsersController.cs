@@ -19,7 +19,7 @@ public class UsersController(IUserRepository userRepository) : BaseApiController
     /// <summary>
     /// Obtiene la información de un usuario específico
     /// </summary>
-    /// <param name="id">ID del usuario a consultar</param>
+    /// <param name="userId">ID del usuario a consultar</param>
     /// <param name="cancellationToken">Token para cancelar la operación</param>
     /// <returns>Información detallada del usuario</returns>
     /// <response code="200">Usuario obtenido exitosamente</response>
@@ -27,14 +27,14 @@ public class UsersController(IUserRepository userRepository) : BaseApiController
     /// <response code="403">Prohibido. Se requieren permisos de administrador.</response>
     /// <response code="404">Usuario no encontrado</response>
     [Authorize(Policy = "RequireAdminRole")]
-    [HttpGet("{id}")]
+    [HttpGet("{userId}")]
     [ProducesResponseType(typeof(UserManagementDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UserManagementDto>> GetUser(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserManagementDto>> GetUser(int userId, CancellationToken cancellationToken)
     {
-        var result = await userRepository.GetUserByIdAsync(id, cancellationToken);
+        var result = await userRepository.GetUserByIdAsync(userId, cancellationToken);
         return result.ToActionResult();
     }
 
@@ -163,7 +163,7 @@ public class UsersController(IUserRepository userRepository) : BaseApiController
     /// <response code="204">Contraseña cambiada exitosamente</response>
     /// <response code="400">Datos de contraseña inválidos o contraseña actual incorrecta</response>
     /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
-    /// <response code="403">Prohibido. Solo puedes actualizar tu propio perfil.</response>
+    /// <response code="403">Prohibido. Solo puedes cambiar tu propia contraseña.</response>
     /// <response code="404">Usuario no encontrado</response>
     [Authorize]
     [HttpPut("{userId}/password")]

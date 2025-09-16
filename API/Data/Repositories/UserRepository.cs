@@ -66,8 +66,7 @@ public class UserRepository(DataContext context, UserManager<AppUser> userManage
     {
         var response = new UserRoleResponseDto
         {
-            UserId = userId,
-            Success = false
+            UserId = userId
         };
 
         var requestingUser = await context.Users.FindAsync([requestingUserId], cancellationToken);
@@ -181,7 +180,7 @@ public class UserRepository(DataContext context, UserManager<AppUser> userManage
         return Result.Success();
     }
 
-    public async Task<Result> ChangePasswordAsync(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken = default)
+    public async Task<Result> ChangePasswordAsync(int userId, ChangePasswordDto passwordData, CancellationToken cancellationToken)
     {
         var user = await context.Users.FindAsync([userId], cancellationToken);
         if (user == null)
