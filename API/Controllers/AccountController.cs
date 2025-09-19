@@ -1,309 +1,128 @@
-using API.Data;
 using API.DTOs;
-using API.Entities;
 using API.Extensions;
 using API.Interfaces;
-using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 
 namespace API.Controllers;
 
-public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService
-    , IMapper mapper, DataContext context, ILogger<AccountController> logger) : BaseApiController
+public class AccountController(IAccountRepository accountRepository) : BaseApiController
 {
-
+    /// <summary>
+    /// Registra un nuevo usuario en el sistema
+    /// </summary>
+    /// <param name="registerDto">Datos de registro del usuario</param>
+    /// <param name="cancellationToken">Token para cancelar la operación</param>
+    /// <returns>Usuario registrado con token de autenticación</returns>
+    /// <response code="200">Usuario registrado exitosamente</response>
+    /// <response code="400">Datos de registro inválidos, nombre de usuario o email ya en uso</response>
     [HttpPost("register")]
-    public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto, CancellationToken cancellationToken)
     {
-        if (await UserExists(registerDto.UserName)) return BadRequest("El nombre de usuario ya está en uso");
-
-
-        if (await EmailExists(registerDto.Email)) return BadRequest("El correo electrónico ya está en uso");
-
-        var user = mapper.Map<AppUser>(registerDto);
-
-        var result = await userManager.CreateAsync(user, registerDto.Password);
-
-        if (!result.Succeeded) return BadRequest(result.Errors);
-
-        var roleResult = await userManager.AddToRoleAsync(user, "miembro");
-        if (!roleResult.Succeeded) return BadRequest(roleResult.Errors);
-
-        var userDto = mapper.Map<UserDto>(user);
-        userDto.Token = await tokenService.CreateToken(user);
-
-        return userDto;
+        var result = await accountRepository.RegisterAsync(registerDto, cancellationToken);
+        return result.ToActionResult();
     }
 
+    /// <summary>
+    /// Autentica un usuario en el sistema
+    /// </summary>
+    /// <param name="loginDto">Credenciales de acceso (email y contraseña)</param>
+    /// <param name="cancellationToken">Token para cancelar la operación</param>
+    /// <returns>Usuario autenticado con token de acceso</returns>
+    /// <response code="200">Usuario autenticado exitosamente</response>
+    /// <response code="401">Credenciales inválidas (email o contraseña incorrectos)</response>
     [HttpPost("login")]
-    public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<UserDto>> Login(LoginDto loginDto, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByEmailAsync(loginDto.Email);
-
-        if (user == null) return Unauthorized("Email invalido");
-
-        var result = await userManager.CheckPasswordAsync(user, loginDto.Password);
-
-        if (!result) return Unauthorized("Contraseña invalida");
-
-        var userDto = mapper.Map<UserDto>(user);
-        userDto.Token = await tokenService.CreateToken(user);
-
-        return userDto;
+        var result = await accountRepository.LoginAsync(loginDto, cancellationToken);
+        return result.ToActionResult();
     }
 
+    /// <summary>
+    /// Crea un nuevo kiosco y asigna al usuario como administrador
+    /// </summary>
+    /// <param name="createKioscoDto">Datos del kiosco a crear</param>
+    /// <param name="cancellationToken">Token para cancelar la operación</param>
+    /// <returns>Usuario actualizado con rol de administrador y código de invitación del kiosco</returns>
+    /// <response code="200">Kiosco creado exitosamente</response>
+    /// <response code="400">Datos del kiosco inválidos o error en la creación</response>
+    /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+    [Authorize(Policy = "AllowMiembroForKioscoCreation")]
     [HttpPost("create-kiosco")]
-    public async Task<ActionResult<UserDto>> CreateKiosco(CreateKioscoDto createKioscoDto)
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<UserDto>> CreateKiosco(CreateKioscoDto createKioscoDto, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-
-        var user = await userManager.FindByIdAsync(userId.ToString());
-
-        if (user == null) return Unauthorized("Usuario no encontrado.");
-
-        await using var transaction = await context.Database.BeginTransactionAsync();
-
-        try
-        {
-            var kiosco = new Kiosco
-            {
-                Nombre = createKioscoDto.Nombre
-            }; context.Kioscos.Add(kiosco);
-            await context.SaveChangesAsync();
-
-            var codigoInvitacion = await GenerateAndSaveInvitationCodeAsync(kiosco.Id);
-
-            logger.LogInformation("Código de invitación '{Code}' generado para el kiosco '{KioscoName}' (ID: {KioscoId})",
-                codigoInvitacion.Code, kiosco.Nombre, kiosco.Id);
-
-            user.KioscoId = kiosco.Id;
-
-            var removeRoleResult = await userManager.RemoveFromRoleAsync(user, "miembro");
-            if (!removeRoleResult.Succeeded)
-            {
-                await transaction.RollbackAsync();
-                return BadRequest("Error al remover el rol 'miembro' del usuario.");
-            }
-
-            var addRoleResult = await userManager.AddToRoleAsync(user, "administrador");
-            if (!addRoleResult.Succeeded)
-            {
-                await transaction.RollbackAsync();
-                return BadRequest("Error al añadir el rol 'administrador' al usuario.");
-            }
-
-            var updateUserResult = await userManager.UpdateAsync(user);
-            if (!updateUserResult.Succeeded)
-            {
-                await transaction.RollbackAsync();
-                return BadRequest("Error al actualizar el usuario con el nuevo kiosco y roles.");
-            }
-
-            await transaction.CommitAsync(); var userDto = mapper.Map<UserDto>(user);
-            userDto.Token = await tokenService.CreateToken(user);
-            userDto.CodigoInvitacion = codigoInvitacion.Code;
-
-            return userDto;
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            logger.LogError(ex, "Error en CreateKiosco");
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error inesperado al procesar la solicitud.");
-        }
+        var result = await accountRepository.CreateKioscoAsync(userId, createKioscoDto, cancellationToken);
+        return result.ToActionResult();
     }
 
-        
+    /// <summary>
+    /// Obtiene todos los códigos de invitación del kiosco del usuario autenticado
+    /// </summary>
+    /// <param name="cancellationToken">Token para cancelar la operación</param>
+    /// <returns>Lista de códigos de invitación con su estado</returns>
+    /// <response code="200">Lista de códigos obtenida exitosamente</response>
+    /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+    /// <response code="400">Usuario no asignado a un kiosco</response>
+    [Authorize]
     [HttpGet("kiosco-invitation-codes")]
-    public async Task<ActionResult<IEnumerable<object>>> GetKioscoInvitationCodes()
+    [ProducesResponseType(typeof(IReadOnlyList<GeneratedInvitationCodeDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IReadOnlyList<GeneratedInvitationCodeDto>>> GetKioscoInvitationCodes(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        var user = await userManager.FindByIdAsync(userId.ToString());
-
-        if (user == null) return Unauthorized("Usuario no encontrado.");
-
-        var invitationCodes = await context.CodigosInvitacion
-            .Where(c => c.KioscoId == user.KioscoId!.Value)
-            .OrderByDescending(c => c.Id)
-            .Select(c => new
-            {
-                c.Id,
-                c.Code,
-                c.ExpirationDate,
-                c.IsUsed,
-                IsExpired = c.ExpirationDate < DateTime.UtcNow
-            })
-            .ToListAsync();
-
-        return Ok(invitationCodes);
+        var result = await accountRepository.GetKioscoInvitationCodesAsync(userId, cancellationToken);
+        return result.ToActionResult();
     }
 
+    /// <summary>
+    /// Une al usuario autenticado a un kiosco usando un código de invitación
+    /// </summary>
+    /// <param name="joinKioscoDto">Código de invitación para unirse al kiosco</param>
+    /// <param name="cancellationToken">Token para cancelar la operación</param>
+    /// <returns>Usuario actualizado con asignación al kiosco</returns>
+    /// <response code="200">Usuario unido al kiosco exitosamente</response>
+    /// <response code="400">Código inválido, expirado, usado, o usuario ya asignado a un kiosco</response>
+    /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+    [Authorize]
     [HttpPost("join-kiosco")]
-    public async Task<ActionResult<UserDto>> JoinKiosco(JoinKioscoDto joinKioscoDto)
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<UserDto>> JoinKiosco(JoinKioscoDto joinKioscoDto, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        var user = await userManager.FindByIdAsync(userId.ToString());
-
-        if (user == null) return Unauthorized("Usuario no encontrado.");
-
-        if (user.KioscoId.HasValue)
-        {
-            return BadRequest("El usuario ya está asignado a un kiosco.");
-        }
-
-        var invitationCode = await context.CodigosInvitacion
-            .FirstOrDefaultAsync(c => c.Code == joinKioscoDto.CodigoInvitacion);
-
-        if (invitationCode == null)
-        {
-            return BadRequest("Código de invitación inválido.");
-        }
-
-        if (invitationCode.IsUsed)
-        {
-            return BadRequest("Este código de invitación ya ha sido utilizado.");
-        }
-
-        if (invitationCode.ExpirationDate < DateTime.UtcNow)
-        {
-            return BadRequest("Este código de invitación ha expirado.");
-        }
-
-        await using var transaction = await context.Database.BeginTransactionAsync();
-        try
-        {
-            user.KioscoId = invitationCode.KioscoId;
-            invitationCode.IsUsed = true;
-
-            var updateUserResult = await userManager.UpdateAsync(user);
-            if (!updateUserResult.Succeeded)
-            {
-                await transaction.RollbackAsync();
-                return BadRequest("Error al actualizar el usuario con el nuevo kiosco.");
-            }
-
-            context.CodigosInvitacion.Update(invitationCode);
-            await context.SaveChangesAsync();
-
-            if (await userManager.IsInRoleAsync(user, "miembro"))
-            {
-                await userManager.RemoveFromRoleAsync(user, "miembro");
-                await userManager.AddToRoleAsync(user, "empleado");
-            }
-
-            await transaction.CommitAsync();
-
-            var userDto = mapper.Map<UserDto>(user);
-            userDto.Token = await tokenService.CreateToken(user);
-
-            logger.LogInformation("Usuario '{UserName}' (ID: {UserId}) se unió al kiosco ID: {KioscoId} usando el código '{InvitationCode}'",
-                user.UserName, user.Id, user.KioscoId, joinKioscoDto.CodigoInvitacion);
-
-            return userDto;
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync();
-            logger.LogError(ex, "Error en JoinKiosco");
-            return StatusCode(StatusCodes.Status500InternalServerError, "Ocurrió un error inesperado al procesar la solicitud.");
-        }
+        var result = await accountRepository.JoinKioscoAsync(userId, joinKioscoDto, cancellationToken);
+        return result.ToActionResult();
     }
 
-
+    /// <summary>
+    /// Genera un nuevo código de invitación para el kiosco (solo administradores)
+    /// </summary>
+    /// <param name="cancellationToken">Token para cancelar la operación</param>
+    /// <returns>Nuevo código de invitación con fecha de expiración</returns>
+    /// <response code="200">Código de invitación generado exitosamente</response>
+    /// <response code="400">Error al generar el código o usuario no asignado a un kiosco</response>
+    /// <response code="401">No autorizado. Se requiere un JWT válido.</response>
+    /// <response code="403">Prohibido. Se requieren permisos de administrador.</response>
     [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("generate-invitation-code")]
-    public async Task<ActionResult<GeneratedInvitationCodeDto>> GenerateInvitationCode()
+    [ProducesResponseType(typeof(GeneratedInvitationCodeDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<GeneratedInvitationCodeDto>> GenerateInvitationCode(CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        var user = await userManager.FindByIdAsync(userId.ToString());
-
-        if (user == null) return Unauthorized("Usuario no encontrado.");
-
-        var newCodigoInvitacion = await GenerateAndSaveInvitationCodeAsync(user.KioscoId!.Value);
-
-        logger.LogInformation("Nuevo código de invitación '{Code}' generado por el administrador '{AdminUserName}' (ID: {AdminUserId}) para el kiosco ID: {KioscoId}",
-            newCodigoInvitacion.Code, user.UserName, user.Id, user.KioscoId.Value);
-
-        return Ok(new GeneratedInvitationCodeDto
-        {
-            Code = newCodigoInvitacion.Code,
-            ExpirationDate = newCodigoInvitacion.ExpirationDate
-        });
-    }
-
-    private async Task<CodigoInvitacion> GenerateAndSaveInvitationCodeAsync(int kioscoId)
-    {
-        string uniqueCode;
-        CodigoInvitacion codigoInvitacion;
-        int retryAttempts = 0;
-        const int maxRetryAttempts = 3;
-
-        do
-        {
-            uniqueCode = GenerateUniqueInvitationCode();
-            var expirationDate = DateTime.UtcNow.AddDays(7);
-
-            codigoInvitacion = new CodigoInvitacion
-            {
-                Code = uniqueCode,
-                KioscoId = kioscoId,
-                ExpirationDate = expirationDate,
-                IsUsed = false
-            };
-
-            try
-            {
-                context.CodigosInvitacion.Add(codigoInvitacion);
-                await context.SaveChangesAsync();
-                break;
-            }
-            catch (DbUpdateException ex) when (retryAttempts < maxRetryAttempts)
-            {
-                context.CodigosInvitacion.Remove(codigoInvitacion);
-                retryAttempts++;
-
-                logger.LogWarning("Violación de índice único detectada al generar código de invitación. Intento {Attempt} de {MaxAttempts}. Error: {Error}",
-                    retryAttempts, maxRetryAttempts, ex.Message);
-
-                if (retryAttempts >= maxRetryAttempts)
-                {
-                    logger.LogError("Se alcanzó el máximo de reintentos ({MaxRetryAttempts}) para generar código de invitación único", maxRetryAttempts);
-                    throw new InvalidOperationException("No se pudo generar un código de invitación único después de múltiples intentos.", ex);
-                }
-            }
-        }
-        while (retryAttempts < maxRetryAttempts);
-
-        return codigoInvitacion;
-    }
-    
-    private static string GenerateUniqueInvitationCode()
-    {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        const int codeLength = 8;
-
-        return GenerateRandomCode(chars, codeLength);
-    }
-
-    private static string GenerateRandomCode(string chars, int length)
-    {
-        byte[] byteArray = RandomNumberGenerator.GetBytes(length);
-        return new string(byteArray.Select(b => chars[b % chars.Length]).ToArray());
-    }
-
-    private async Task<bool> UserExists(string username)
-    {
-        var existingUser = await userManager.FindByNameAsync(username);
-        return existingUser != null;
-    }
-
-    private async Task<bool> EmailExists(string email)
-    {
-        var existingUser = await userManager.FindByEmailAsync(email);
-        return existingUser != null;
+        var result = await accountRepository.GenerateInvitationCodeAsync(userId, cancellationToken);
+        return result.ToActionResult();
     }
 }

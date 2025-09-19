@@ -14,11 +14,6 @@ namespace API.Migrations
                 name: "IX_Productos_KioscoId",
                 table: "Productos");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Productos_KioscoId_Sku",
-                table: "Productos",
-                columns: new[] { "KioscoId", "Sku" });
-
             migrationBuilder.DropColumn(
                 name: "Precio",
                 table: "Productos");
@@ -41,6 +36,11 @@ namespace API.Migrations
                 type: "character varying(50)",
                 maxLength: 50,
                 nullable: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Productos_KioscoId_Sku",
+                table: "Productos",
+                columns: new[] { "KioscoId", "Sku" });
 
             // Añadir restricciones CHECK para asegurar valores positivos
             migrationBuilder.Sql("ALTER TABLE \"Productos\" ADD CONSTRAINT CK_Productos_PrecioCompra_Positive CHECK (\"PrecioCompra\" > 0);");

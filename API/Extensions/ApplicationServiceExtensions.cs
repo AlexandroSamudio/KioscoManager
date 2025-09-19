@@ -18,6 +18,7 @@ public static class ApplicationServiceExtensions
         });
 
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IVentaRepository, VentaRepository>();
         services.AddScoped<ICompraRepository, CompraRepository>();

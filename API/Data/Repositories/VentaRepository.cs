@@ -80,7 +80,8 @@ namespace API.Data.Repositories
 
         public async Task<Result<IReadOnlyList<VentaDto>>> GetVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            var baseDate = fecha?.Date ?? DateTime.UtcNow.Date;
+            var argentinaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+            var baseDate = fecha?.Date ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, argentinaTimeZone).Date;
             var fechaInicio = baseDate.Kind == DateTimeKind.Utc ? baseDate : DateTime.SpecifyKind(baseDate, DateTimeKind.Utc);
             var fechaFin = fechaInicio.AddDays(1);
 
@@ -109,7 +110,8 @@ namespace API.Data.Repositories
 
         public async Task<Result<decimal>> GetMontoTotalVentasDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            var baseDate = fecha?.Date ?? DateTime.UtcNow.Date;
+            var argentinaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+            var baseDate = fecha?.Date ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, argentinaTimeZone).Date;
             var fechaInicio = baseDate.Kind == DateTimeKind.Utc ? baseDate : DateTime.SpecifyKind(baseDate, DateTimeKind.Utc);
             var fechaFin = fechaInicio.AddDays(1);
 
@@ -123,13 +125,14 @@ namespace API.Data.Repositories
 
         public async Task<Result<IReadOnlyList<ProductoMasVendidoDto>>> GetProductosMasVendidosDelDiaAsync(int kioscoId, int cantidad, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
-            var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
-            var fechaFin = fechaUtc.AddDays(1);
+            var argentinaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+            var baseDate = fecha?.Date ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, argentinaTimeZone).Date;
+            var fechaInicio = baseDate.Kind == DateTimeKind.Utc ? baseDate : DateTime.SpecifyKind(baseDate, DateTimeKind.Utc);
+            var fechaFin = fechaInicio.AddDays(1);
 
             var productos = await context.DetalleVentas!
                 .AsNoTracking()
-                .Where(dv => dv.Venta!.KioscoId == kioscoId && dv.Venta!.Fecha >= fechaUtc && dv.Venta.Fecha < fechaFin)
+                .Where(dv => dv.Venta!.KioscoId == kioscoId && dv.Venta!.Fecha >= fechaInicio && dv.Venta.Fecha < fechaFin)
                 .GroupBy(dv => new { dv.ProductoId, dv.Producto!.Nombre})
                 .Select(g => new ProductoMasVendidoDto
                 {
@@ -202,12 +205,13 @@ namespace API.Data.Repositories
 
         public async Task<Result<IReadOnlyList<VentaChartDto>>> GetVentasIndividualesDelDiaAsync(int kioscoId, CancellationToken cancellationToken, DateTime? fecha = null)
         {
-            var fechaConsulta = fecha ?? DateTime.UtcNow.Date;
-            var fechaUtc = fechaConsulta.Kind == DateTimeKind.Utc ? fechaConsulta.Date : fechaConsulta.ToUniversalTime().Date;
-            var fechaFin = fechaUtc.AddDays(1);
+            var argentinaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+            var baseDate = fecha?.Date ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, argentinaTimeZone).Date;
+            var fechaInicio = baseDate.Kind == DateTimeKind.Utc ? baseDate : DateTime.SpecifyKind(baseDate, DateTimeKind.Utc);
+            var fechaFin = fechaInicio.AddDays(1);
 
             var ventas = await context.Ventas!
-                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaUtc && v.Fecha < fechaFin)
+                .Where(v => v.KioscoId == kioscoId && v.Fecha >= fechaInicio && v.Fecha < fechaFin)
                 .OrderBy(v => v.Fecha)
                 .AsNoTracking()
                 .Select(v => new VentaChartDto
