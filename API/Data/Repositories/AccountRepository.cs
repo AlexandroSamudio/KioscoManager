@@ -197,8 +197,6 @@ public class AccountRepository(DataContext context, UserManager<AppUser> userMan
 
             await transaction.CommitAsync(cancellationToken);
 
-            await transaction.CommitAsync(cancellationToken);
-
             var userDto = mapper.Map<UserDto>(user);
             userDto.Token = await tokenService.CreateToken(user);
 
