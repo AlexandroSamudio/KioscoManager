@@ -195,26 +195,39 @@ namespace API.Data.Repositories
                 producto.ImageUrl = uploadResult.SecureUrl.AbsoluteUri;
                 producto.ImagePublicId = uploadResult.PublicId;
 
+                mapper.Map(dto, producto);
+
+                try
+                {
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+                {
+                    return Result.Failure(ErrorCodes.FieldExists, "Ya existe un producto con el mismo SKU en este kiosco.");
+                }
+
                 if (oldImagePublicId != null)
                 {
                     var deleteResult = await photoService.DeletePhotoAsync(oldImagePublicId);
                     if (deleteResult.Error != null)
                     {
-                        logger.LogWarning("No se pudo eliminar la imagen antigua con ID público {OldImagePublicId} para el producto {ProductId}: {Error}.", 
+                        logger.LogWarning("No se pudo eliminar la imagen antigua con ID público {OldImagePublicId} para el producto {ProductId}: {Error}. La imagen antigua queda huérfana en Cloudinary.", 
                             oldImagePublicId, producto.Id, deleteResult.Error.Message);
                     }
                 }
             }
-
-            mapper.Map(dto, producto);
-
-            try
+            else
             {
-                await context.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
-            {
-                return Result.Failure(ErrorCodes.FieldExists, "Ya existe un producto con el mismo SKU en este kiosco.");
+                mapper.Map(dto, producto);
+
+                try
+                {
+                    await context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+                {
+                    return Result.Failure(ErrorCodes.FieldExists, "Ya existe un producto con el mismo SKU en este kiosco.");
+                }
             }
 
             return Result.Success();

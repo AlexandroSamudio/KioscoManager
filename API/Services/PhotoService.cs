@@ -25,23 +25,29 @@ public class PhotoService : IPhotoService
     {
         var uploadResult = new ImageUploadResult();
 
-        if (file.Length > 0)
+        if (file.Length == 0)
         {
-            using var stream = file.OpenReadStream();
-            var uploadParams = new ImageUploadParams
+            uploadResult.Error = new Error
             {
-                File = new FileDescription(file.FileName, stream),
-                Transformation = new Transformation()
-                    .Width(500)
-                    .Height(500)
-                    .Crop("limit") 
-                    .Quality("auto") 
-                    .FetchFormat("auto"),
-                Folder = "sistema-gestion-inventario"
+                Message = "El archivo está vacío. Por favor, seleccione un archivo válido con contenido."
             };
-
-            uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            return uploadResult;
         }
+
+        using var stream = file.OpenReadStream();
+        var uploadParams = new ImageUploadParams
+        {
+            File = new FileDescription(file.FileName, stream),
+            Transformation = new Transformation()
+                .Width(500)
+                .Height(500)
+                .Crop("limit") 
+                .Quality("auto") 
+                .FetchFormat("auto"),
+            Folder = "sistema-gestion-inventario"
+        };
+
+        uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
         return uploadResult;
     }

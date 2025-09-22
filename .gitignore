@@ -508,6 +508,7 @@ dev-debug.log
 *.root
 *.taskmaster
 *.roo
+
 # OS specific
 .windsurfrules
 .roomodes
@@ -516,10 +517,4 @@ client/.vscode/tasks.json
 *.sln
 API/Tests/ModelVerificationTest.cs
 API/Migrations/20250726165814_ChangeSKUFormat.Designer.cs
-
-.idea
-.vscode
 .gemini
-# Task files
-# tasks.json
-# tasks/ 
