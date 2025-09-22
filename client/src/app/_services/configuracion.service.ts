@@ -30,11 +30,11 @@ export class ConfiguracionService {
 
   getKioscoConfig(): Observable<KioscoConfig> {
     return this.http
-      .get<KioscoConfig>(`${this.baseUrl}config/kiosko`)
+      .get<KioscoConfig>(`${this.baseUrl}config/kiosco`)
       .pipe(
         catchError(
           this.handleError<KioscoConfig>(
-            `Error al cargar la configuración del kiosko`
+            `Error al cargar la configuración del kiosco`
           )
         )
       );
@@ -42,7 +42,7 @@ export class ConfiguracionService {
 
   updateKioscoConfig(config: KioscoConfig): Observable<KioscoConfig> {
     return this.http
-      .put<KioscoConfig>(`${this.baseUrl}config/kiosko`, config)
+      .put<KioscoConfig>(`${this.baseUrl}config/kiosco`, config)
       .pipe(
         catchError(
           this.handleError<KioscoConfig>(
