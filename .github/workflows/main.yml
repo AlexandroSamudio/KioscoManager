@@ -125,6 +125,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "Iniciando despliegue de Backend en el servidor..."
+            set -eo pipefail
 
             # Detener servicio (sudo necesario)
             sudo systemctl stop kioscomanager.service || true
@@ -133,10 +134,10 @@ jobs:
             mkdir -p /tmp/backend_deploy_temp_dir
 
             # Limpiar el directorio de publicación (ci-cd-deploy tiene permisos)
-            rm -rf /var/www/kiosco-manager/publish/*
+            sudo rm -rf /var/www/kiosco-manager/publish/*
 
             # Copiar los archivos desde el directorio temporal
-            cp -r /tmp/backend_deploy_temp_dir/publish_backend_temp/. /var/www/kiosco-manager/publish/
+            sudo cp -r /tmp/backend_deploy_temp_dir/publish_backend_temp/. /var/www/kiosco-manager/publish/
 
             # Limpiar el directorio temporal
             rm -rf /tmp/backend_deploy_temp_dir
@@ -178,13 +179,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             echo "Iniciando despliegue de Frontend en el servidor..."
+            set -eo pipefail
             
             # Crear el directorio de despliegue si no existe.
-            mkdir -p /var/www/kiosco-manager-frontend/browser
+            sudo mkdir -p /var/www/kiosco-manager-frontend/browser
             
             # Limpiar y copiar los archivos sin sudo
-            rm -rf /var/www/kiosco-manager-frontend/browser/*
-            cp -r /tmp/frontend_deploy_temp_dir/dist_frontend_temp/. /var/www/kiosco-manager-frontend/browser/
+            sudo rm -rf /var/www/kiosco-manager-frontend/browser/*
+            sudo cp -r /tmp/frontend_deploy_temp_dir/dist_frontend_temp/. /var/www/kiosco-manager-frontend/browser/
             
             # Limpiar el directorio temporal
             rm -rf /tmp/frontend_deploy_temp_dir
@@ -193,6 +195,8 @@ jobs:
             sudo chown -R www-data:www-data /var/www/kiosco-manager-frontend/browser
             sudo chmod -R 755 /var/www/kiosco-manager-frontend/browser
             sudo find /var/www/kiosco-manager-frontend/browser -type f -exec chmod 644 {} \;
+            echo "Contenido final en /var/www/kiosco-manager-frontend/browser:"
+            sudo ls -la /var/www/kiosco-manager-frontend/browser | head -n 50
             
             # Reiniciar Nginx con sudo (requerido)
             sudo systemctl restart nginx
