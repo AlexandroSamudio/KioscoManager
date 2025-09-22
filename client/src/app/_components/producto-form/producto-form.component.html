@@ -537,7 +537,6 @@
         </h3>
         <app-photo-upload
           [imageUrl]="imagePreviewUrl"
-          [lowResImageUrl]="initialProduct?.imageUrl ?? null"
           [alt]="productoForm.get('nombre')?.value || 'Product Image'"
           (fileChange)="onFileChange($event)"
         ></app-photo-upload>

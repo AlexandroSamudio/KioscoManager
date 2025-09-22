@@ -10,15 +10,12 @@ import { NotificationService } from '../../_services/notification.service';
 })
 export class PhotoUploadComponent {
   @Input() imageUrl: string | null = null;
-  @Input() lowResImageUrl: string | null = null;
   @Input() alt: string = 'Product Image';
   @Output() fileChange = new EventEmitter<File | null>();
 
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   private notificationService = inject(NotificationService);
-
-  loaded = false;
 
   private readonly allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
   private readonly maxFileSize = 5 * 1024 * 1024;
@@ -58,9 +55,5 @@ export class PhotoUploadComponent {
 
   triggerFileInput(): void {
     this.fileInput.nativeElement.click();
-  }
-
-  onImageLoad() {
-    this.loaded = true;
   }
 }

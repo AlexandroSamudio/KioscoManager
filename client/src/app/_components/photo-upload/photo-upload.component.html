@@ -6,17 +6,9 @@
     class="relative group w-full aspect-square rounded-lg overflow-hidden shadow-inner"
   >
     <img
-      *ngIf="lowResImageUrl && !loaded"
-      [src]="lowResImageUrl"
-      [alt]="alt"
-      class="w-full h-full object-cover filter blur-sm scale-105"
-    />
-    <img
       [src]="imageUrl"
       [alt]="alt"
-      (load)="onImageLoad()"
-      class="w-full h-full object-cover transition-opacity duration-300 ease-in-out"
-      [class.opacity-0]="!loaded"
+      class="w-full h-full object-cover"
     />
     <div
       class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out"
