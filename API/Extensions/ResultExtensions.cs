@@ -88,6 +88,14 @@ namespace API.Extensions
                 TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
                 Key = "authentication",
                 ResultFactory = responseObj => WithProblemContentType(new UnauthorizedObjectResult(responseObj))
+            },
+            [ErrorCodes.InvalidCredentials] = new()
+            {
+                StatusCode = 401,
+                Title = "Credenciales inválidas",
+                TypeUrl = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+                Key = "credentials",
+                ResultFactory = responseObj => WithProblemContentType(new UnauthorizedObjectResult(responseObj))
             }
         };
 

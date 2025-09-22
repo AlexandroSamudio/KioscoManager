@@ -28,6 +28,36 @@ internal static class ProductoValidationHelpers
 
         return checkDigit == providedCheckDigit;
     }
+
+    public static bool BeValidHttpUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            return true; 
+
+        return Uri.TryCreate(url, UriKind.Absolute, out Uri? result)
+            && (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps);
+    }
+
+    public static bool BeValidImageFile(IFormFile? file)
+    {
+        if (file == null)
+            return true;
+
+        
+        const long maxFileSize = 5 * 1024 * 1024;
+        if (file.Length > maxFileSize)
+            return false;
+
+        
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+        var allowedContentTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/webp" };
+
+        var fileExtension = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+        
+        return !string.IsNullOrEmpty(fileExtension) 
+            && allowedExtensions.Contains(fileExtension)
+            && allowedContentTypes.Contains(file.ContentType?.ToLowerInvariant());
+    }
 }
 
 public sealed class ProductoDtoValidator : AbstractValidator<ProductoDto>
@@ -46,6 +76,10 @@ public sealed class ProductoDtoValidator : AbstractValidator<ProductoDto>
         RuleFor(p => p.Stock).GreaterThanZero("stock");
         RuleFor(p => p.CategoriaNombre).NameRules();
         RuleFor(p => p.CategoriaId).GreaterThanZero("categoriaId");
+        RuleFor(p => p.ImageUrl)
+            .MaximumLength(2048).WithMessage("La URL de la imagen no puede exceder los 2048 caracteres.")
+            .Must(ProductoValidationHelpers.BeValidHttpUrl).WithMessage("La URL de la imagen debe ser una URL HTTP o HTTPS válida.")
+            .When(p => !string.IsNullOrWhiteSpace(p.ImageUrl));
     }
 }
 
@@ -78,6 +112,9 @@ public sealed class ProductoUpdateDtoValidator : AbstractValidator<ProductoUpdat
         RuleFor(p => p.CategoriaId)
             .GreaterThanZero("categoriaId")
             .When(p => p.CategoriaId.HasValue);
+        RuleFor(p => p.ImageFile)
+            .Must(ProductoValidationHelpers.BeValidImageFile).WithMessage("El archivo de imagen debe ser JPG, JPEG, PNG o WebP y no exceder los 5MB.")
+            .When(p => p.ImageFile != null);
     }
 }
 
@@ -95,5 +132,8 @@ public sealed class ProductoCreateDtoValidator : AbstractValidator<ProductoCreat
             .GreaterThan(p => p.PrecioCompra).WithMessage("precioVenta debe ser mayor a precioCompra");
         RuleFor(p => p.Stock).GreaterThanZero("stock");
         RuleFor(p => p.CategoriaId).GreaterThanZero("categoriaId");
+        RuleFor(p => p.ImageFile)
+            .Must(ProductoValidationHelpers.BeValidImageFile).WithMessage("El archivo de imagen debe ser JPG, JPEG, PNG o WebP y no exceder los 5MB.")
+            .When(p => p.ImageFile != null);
     }
 }

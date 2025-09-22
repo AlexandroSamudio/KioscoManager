@@ -19,4 +19,3 @@ namespace API.Interfaces
         Result<IAsyncEnumerable<ProductoDto>> GetProductosForExport(int kioscoId, CancellationToken cancellationToken, int? limite = null);
     }
 }
-    
