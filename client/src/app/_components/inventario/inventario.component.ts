@@ -12,6 +12,7 @@ import { setPaginatedResponseSignal } from '../../_services/pagination.helper';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ProductoFormComponent } from '../producto-form/producto-form.component';
 import { NotificationService } from '../../_services/notification.service';
+import { ImagePreviewComponent } from '../image-preview/image-preview.component';
 
 export enum StockStatusEnum {
   LOW = 'low',
@@ -22,7 +23,7 @@ export enum StockStatusEnum {
 @Component({
   selector: 'app-inventario',
   standalone: true,
-  imports: [NavbarComponent, CommonModule, FormsModule, ProductoFormComponent],
+  imports: [NavbarComponent, CommonModule, FormsModule, ProductoFormComponent, ImagePreviewComponent],
   templateUrl: './inventario.component.html',
   styleUrl: './inventario.component.css',
 })
@@ -45,6 +46,10 @@ export class InventarioComponent implements OnInit {
   isProductoFormVisible = false;
   isEditMode = false;
   productoAEditar: Producto | null = null;
+
+  isImagePreviewVisible = false;
+  selectedImageUrl: string | null = null;
+  selectedProductName: string = '';
 
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -251,5 +256,17 @@ export class InventarioComponent implements OnInit {
       this.sortDirection = 'asc';
     }
     this.loadProductos();
+  }
+
+  openImagePreview(producto: Producto): void {
+    this.selectedImageUrl = producto.imageUrl || null;
+    this.selectedProductName = producto.nombre;
+    this.isImagePreviewVisible = true;
+  }
+
+  closeImagePreview(): void {
+    this.isImagePreviewVisible = false;
+    this.selectedImageUrl = null;
+    this.selectedProductName = '';
   }
 }

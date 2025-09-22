@@ -112,6 +112,7 @@ export class ReportesPageComponent implements OnInit {
   isProductosLoading: WritableSignal<boolean> = signal(false);
   isVentasLoading: WritableSignal<boolean> = signal(false);
   isCategoriasLoading: WritableSignal<boolean> = signal(false);
+
   get minDate(): Date {
     const year = new Date().getFullYear();
     const date = new Date(year, 0, 1);
@@ -215,6 +216,7 @@ export class ReportesPageComponent implements OnInit {
 
     const fechaInicio = this.getFechaFromFormControl('fechaInicio');
     const fechaFin = this.getFechaFromFormControl('fechaFin', true);
+
     if (!this.validarFechasSeleccionadas(fechaInicio, fechaFin)) {
       this.isLoading.set(false);
       return;

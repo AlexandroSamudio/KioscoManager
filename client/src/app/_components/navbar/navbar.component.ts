@@ -37,7 +37,7 @@ export class NavbarComponent {
       return { name: 'Usuario', initials: 'U' };
     }
 
-    const name = this.toTitleCase(user.username) || 'Usuario';
+    const name = this.toTitleCase(user.userName) || 'Usuario';
     const initials = this.generateInitials(name);
 
     return { name, initials };

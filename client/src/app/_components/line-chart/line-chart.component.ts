@@ -51,8 +51,7 @@ export class LineChartComponent implements AfterViewInit, OnDestroy {
   }
 
   loadVentasPorDia(): void {
-    const fechaActual = new Date();
-
+    const fechaActual = new Date().toISOString();
     this.reporteService
       .getVentasParaChart(fechaActual)
       .pipe(takeUntilDestroyed(this.destroyRef))

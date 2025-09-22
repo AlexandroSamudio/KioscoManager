@@ -57,7 +57,7 @@ export class ConfiguracionService {
   ): Observable<KioscoBasicInfo> {
     return this.http
       .put<KioscoBasicInfo>(
-        `${this.baseUrl}config/kiosko/info-basico`,
+        `${this.baseUrl}config/kiosco/info-basico`,
         basicInfo
       )
       .pipe(
@@ -71,7 +71,7 @@ export class ConfiguracionService {
 
   getKioscoBasicInfo(): Observable<KioscoBasicInfo> {
     return this.http
-      .get<KioscoBasicInfo>(`${this.baseUrl}config/kiosko/info-basico`)
+      .get<KioscoBasicInfo>(`${this.baseUrl}config/kiosco/info-basico`)
       .pipe(
         catchError(
           this.handleError<KioscoBasicInfo>(

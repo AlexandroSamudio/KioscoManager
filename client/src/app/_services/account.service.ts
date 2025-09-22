@@ -89,7 +89,7 @@ export class AccountService {
   }
 
   setCurrentUser(user: User) {
-    if (!user?.id || !user?.username || !user?.email || !user?.token) {
+    if (!user?.id || !user?.userName || !user?.email || !user?.token) {
       console.error('Usuario inválido, no se puede guardar en localStorage');
       return;
     }

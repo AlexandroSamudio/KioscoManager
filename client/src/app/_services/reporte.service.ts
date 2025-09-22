@@ -79,6 +79,7 @@ export class ReporteService {
       params = params.append('fechaFin', fechaFin);
     }
 
+
     return this.http
       .get<ProductoMasVendido[]>(`${this.baseUrl}reportes/top-productos`, {
         params,
@@ -153,11 +154,11 @@ export class ReporteService {
       );
   }
 
-  getVentasParaChart(fecha?: Date): Observable<VentaChart[]> {
+  getVentasParaChart(fecha?: string): Observable<VentaChart[]> {
     let params = new HttpParams();
 
-    if (fecha) {
-      params = params.append('fecha', fecha.toISOString());
+    if(fecha){
+      params = params.append('fecha', fecha);
     }
 
     return this.http
