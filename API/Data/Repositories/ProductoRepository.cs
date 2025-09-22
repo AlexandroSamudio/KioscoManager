@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace API.Data.Repositories
 {
-    public class ProductoRepository(DataContext context, IMapper mapper) : IProductoRepository
+    public class ProductoRepository(DataContext context, IMapper mapper, IPhotoService photoService) : IProductoRepository
     {
         private const int LowStockThreshold = 3;
         public async Task<Result<ProductoDto>> GetProductoByIdAsync(int kioscoId, int id, CancellationToken cancellationToken)
@@ -119,9 +119,8 @@ namespace API.Data.Repositories
                 return Result<ProductoDto>.Failure(ErrorCodes.EntityNotFound, $"La categoría con ID {createDto.CategoriaId} no existe.");
             }
 
-            var normalizedSku = createDto.Sku?.Trim();
             var exists = await context.Productos!
-                .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == normalizedSku, cancellationToken);
+                .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == createDto.Sku, cancellationToken);
 
             if (exists)
             {
@@ -130,6 +129,15 @@ namespace API.Data.Repositories
 
             var producto = mapper.Map<Producto>(createDto);
             producto.KioscoId = kioscoId;
+
+            if (createDto.ImageFile != null)
+            {
+                var result = await photoService.AddPhotoAsync(createDto.ImageFile);
+                if (result.Error != null) 
+                    return Result<ProductoDto>.Failure(ErrorCodes.InvalidOperation, "Error al subir la imagen. Por favor, intente nuevamente o contacte al administrador.");
+                producto.ImageUrl = result.SecureUrl.AbsoluteUri;
+                producto.ImagePublicId = result.PublicId;
+            }
 
             context.Productos!.Add(producto);
             
@@ -166,14 +174,28 @@ namespace API.Data.Repositories
 
             if (!string.IsNullOrWhiteSpace(dto.Sku))
             {
-                var normalizedSku = dto.Sku.Trim();
                 var exists = await context.Productos!
-                    .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == normalizedSku && p.Id != id, cancellationToken);
+                    .AnyAsync(p => p.KioscoId == kioscoId && p.Sku == dto.Sku && p.Id != id, cancellationToken);
 
                 if (exists)
                 {
                     return Result.Failure(ErrorCodes.FieldExists, "Ya existe un producto con el mismo SKU en este kiosco.");
                 }
+            }
+
+            if (dto.ImageFile != null)
+            {
+                if (producto.ImagePublicId != null)
+                {
+                    var result = await photoService.DeletePhotoAsync(producto.ImagePublicId);
+                    if (result.Error != null) return Result.Failure(ErrorCodes.InvalidOperation, result.Error.Message);
+                }
+
+                var uploadResult = await photoService.AddPhotoAsync(dto.ImageFile);
+                if (uploadResult.Error != null) return Result.Failure(ErrorCodes.InvalidOperation, uploadResult.Error.Message);
+
+                producto.ImageUrl = uploadResult.SecureUrl.AbsoluteUri;
+                producto.ImagePublicId = uploadResult.PublicId;
             }
 
             mapper.Map(dto, producto);
@@ -202,6 +224,12 @@ namespace API.Data.Repositories
             if (hasVentas)
             {
                 return Result.Failure(ErrorCodes.ValidationError, "No se puede eliminar el producto porque tiene ventas asociadas.");
+            }
+
+            if (producto.ImagePublicId != null)
+            {
+                var result = await photoService.DeletePhotoAsync(producto.ImagePublicId);
+                if (result.Error != null) return Result.Failure(ErrorCodes.InvalidOperation, "Error al eliminar la imagen. Por favor, intente nuevamente o contacte al administrador.");
             }
 
             context.Productos!.Remove(producto);

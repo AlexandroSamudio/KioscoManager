@@ -118,7 +118,7 @@ namespace API.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<ProductoDto>> CreateProducto(ProductoCreateDto dto, CancellationToken cancellationToken)
+        public async Task<ActionResult<ProductoDto>> CreateProducto([FromForm] ProductoCreateDto dto, CancellationToken cancellationToken)
         {
             var result = await productoRepository.CreateProductoAsync(KioscoId, dto, cancellationToken);
             return result.ToActionResult(producto => CreatedAtAction(nameof(GetProducto), new { id = producto.Id }, producto));
@@ -142,7 +142,7 @@ namespace API.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ValidationProblemDetailsDto), StatusCodes.Status409Conflict)]
-        public async Task<IActionResult> UpdateProducto(int id, ProductoUpdateDto updateDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateProducto(int id, [FromForm] ProductoUpdateDto updateDto, CancellationToken cancellationToken)
         {
             var result = await productoRepository.UpdateProductoAsync(KioscoId, id, updateDto, cancellationToken);
             return result.ToActionResult();

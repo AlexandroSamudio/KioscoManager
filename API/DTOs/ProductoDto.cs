@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Http;
+
 namespace API.DTOs
 {
     public class ProductoDto
@@ -11,6 +13,7 @@ namespace API.DTOs
         public int Stock { get; set; }
         public string? CategoriaNombre { get; set; }
         public int CategoriaId { get; set; }
+        public string? ImageUrl { get; set; }
     }
     
     public class ProductoUpdateDto
@@ -22,6 +25,7 @@ namespace API.DTOs
         public decimal? PrecioVenta { get; set; }
         public int? Stock { get; set; }
         public int? CategoriaId { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 
     public class ProductoCreateDto
@@ -33,6 +37,7 @@ namespace API.DTOs
         public int Stock { get; set; }
         public string? Descripcion { get; set; }
         public string? Sku { get; set; }
+        public IFormFile? ImageFile { get; set; }
     }
 
     public class ProductoMasVendidoDto

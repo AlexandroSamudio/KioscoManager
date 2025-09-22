@@ -24,5 +24,7 @@ public class Producto
     public Categoria? Categoria { get; set; }
     public int KioscoId { get; set; }   
     public Kiosco? Kiosco { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? ImagePublicId { get; set; }
 }
 
