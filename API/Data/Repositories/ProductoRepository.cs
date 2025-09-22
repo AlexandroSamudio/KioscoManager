@@ -7,11 +7,12 @@ using API.Entities;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 
 namespace API.Data.Repositories
 {
-    public class ProductoRepository(DataContext context, IMapper mapper, IPhotoService photoService) : IProductoRepository
+    public class ProductoRepository(DataContext context, IMapper mapper, IPhotoService photoService, ILogger<ProductoRepository> logger) : IProductoRepository
     {
         private const int LowStockThreshold = 3;
         public async Task<Result<ProductoDto>> GetProductoByIdAsync(int kioscoId, int id, CancellationToken cancellationToken)
@@ -185,17 +186,24 @@ namespace API.Data.Repositories
 
             if (dto.ImageFile != null)
             {
-                if (producto.ImagePublicId != null)
-                {
-                    var result = await photoService.DeletePhotoAsync(producto.ImagePublicId);
-                    if (result.Error != null) return Result.Failure(ErrorCodes.InvalidOperation, result.Error.Message);
-                }
-
                 var uploadResult = await photoService.AddPhotoAsync(dto.ImageFile);
-                if (uploadResult.Error != null) return Result.Failure(ErrorCodes.InvalidOperation, uploadResult.Error.Message);
+                if (uploadResult.Error != null) 
+                    return Result.Failure(ErrorCodes.InvalidOperation, "Error al subir la nueva imagen");
+
+                var oldImagePublicId = producto.ImagePublicId;
 
                 producto.ImageUrl = uploadResult.SecureUrl.AbsoluteUri;
                 producto.ImagePublicId = uploadResult.PublicId;
+
+                if (oldImagePublicId != null)
+                {
+                    var deleteResult = await photoService.DeletePhotoAsync(oldImagePublicId);
+                    if (deleteResult.Error != null)
+                    {
+                        logger.LogWarning("No se pudo eliminar la imagen antigua con ID público {OldImagePublicId} para el producto {ProductId}: {Error}.", 
+                            oldImagePublicId, producto.Id, deleteResult.Error.Message);
+                    }
+                }
             }
 
             mapper.Map(dto, producto);
