@@ -34,23 +34,20 @@ public class PhotoService : IPhotoService
             return uploadResult;
         }
 
-        if (file.Length > 0)
+        using var stream = file.OpenReadStream();
+        var uploadParams = new ImageUploadParams
         {
-            using var stream = file.OpenReadStream();
-            var uploadParams = new ImageUploadParams
-            {
-                File = new FileDescription(file.FileName, stream),
-                Transformation = new Transformation()
-                    .Width(500)
-                    .Height(500)
-                    .Crop("limit") 
-                    .Quality("auto") 
-                    .FetchFormat("auto"),
-                Folder = "sistema-gestion-inventario"
-            };
+            File = new FileDescription(file.FileName, stream),
+            Transformation = new Transformation()
+                .Width(500)
+                .Height(500)
+                .Crop("limit") 
+                .Quality("auto") 
+                .FetchFormat("auto"),
+            Folder = "sistema-gestion-inventario"
+        };
 
-            uploadResult = await _cloudinary.UploadAsync(uploadParams);
-        }
+        uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
         return uploadResult;
     }
