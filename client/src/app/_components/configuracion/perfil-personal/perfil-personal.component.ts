@@ -98,7 +98,7 @@ export class PerfilPersonalComponent implements OnInit {
     }
 
     const profileData = {
-      username: currentUser.username,
+      username: currentUser.userName,
       email: currentUser.email,
     };
 

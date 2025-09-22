@@ -9,11 +9,12 @@ import { CategoriaService } from '../../_services/categoria.service';
 import { Categoria } from '../../_models/categoria.model';
 import { finalize } from 'rxjs';
 import { NotificationService } from '../../_services/notification.service';
+import { PhotoUploadComponent } from '../photo-upload/photo-upload.component';
 
 @Component({
   selector: 'app-producto-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, PhotoUploadComponent],
   templateUrl: './producto-form.component.html',
   styleUrl: './producto-form.component.css',
 })
@@ -28,8 +29,11 @@ export class ProductoFormComponent implements OnInit {
   @Input() isEditMode = false;
 
   private _initialProduct: Producto | null = null;
+  imagePreviewUrl: string | null = null;
+
   @Input() set initialProduct(value: Producto | null) {
     this._initialProduct = value;
+    this.imagePreviewUrl = value?.imageUrl ?? null;
     if (this.isEditMode && value) {
       this.populateForm(value);
     } else {
@@ -53,8 +57,9 @@ export class ProductoFormComponent implements OnInit {
     precioCompra: [0, [Validators.required, Validators.min(0),Validators.max(1000000)]],
     precioVenta: [0, [Validators.required, Validators.min(0),Validators.max(1000000)]],
     stock: [0, [Validators.required, Validators.min(0)]],
-    categoriaId: [null, [Validators.required]]
-  });
+    categoriaId: [null, [Validators.required]],
+    imageFile: [null]
+    });
 
   ngOnInit(): void {
     this.loadCategorias();
@@ -80,8 +85,10 @@ export class ProductoFormComponent implements OnInit {
       precioCompra: 0,
       precioVenta: 0,
       stock: 0,
-      categoriaId: null
+      categoriaId: null,
+      imageFile: null
     });
+    this.imagePreviewUrl = null;
   }
 
   private loadCategorias(): void {
@@ -99,6 +106,20 @@ export class ProductoFormComponent implements OnInit {
           );
         },
       });
+  }
+
+  onFileChange(file: File | null): void {
+    if (file) {
+      this.productoForm.patchValue({ imageFile: file});
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreviewUrl = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      this.productoForm.patchValue({ imageFile: null });
+      this.imagePreviewUrl = null;
+    }
   }
 
   isFieldInvalid(fieldName:string):boolean{
@@ -120,19 +141,21 @@ export class ProductoFormComponent implements OnInit {
     this.isLoading = true;
     const formValue = this.productoForm.value;
 
-    const productoData = {
-      sku: formValue.sku,
-      nombre: formValue.nombre,
-      descripcion: formValue.descripcion,
-      precioCompra: formValue.precioCompra,
-      precioVenta: formValue.precioVenta,
-      stock: formValue.stock,
-      categoriaId: Number(formValue.categoriaId)
-    };
+    const formData = new FormData();
+    formData.append('nombre', formValue.nombre);
+    formData.append('sku', formValue.sku);
+    formData.append('descripcion', formValue.descripcion);
+    formData.append('precioCompra', formValue.precioCompra.toString());
+    formData.append('precioVenta', formValue.precioVenta.toString());
+    formData.append('stock', formValue.stock.toString());
+    formData.append('categoriaId', formValue.categoriaId.toString());
+    if (formValue.imageFile) {
+      formData.append('imageFile', formValue.imageFile);
+    }
 
     const obs = this.isEditMode && this._initialProduct?.id
-      ? this.productoService.updateProducto(this._initialProduct.id, productoData)
-      : this.productoService.createProducto(productoData);
+      ? this.productoService.updateProducto(this._initialProduct.id, formData)
+      : this.productoService.createProducto(formData);
 
     obs
       .pipe(

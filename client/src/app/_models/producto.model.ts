@@ -8,8 +8,5 @@ export interface Producto {
   stock: number;
   categoriaNombre: string;
   categoriaId: number;
-}
-
-export interface ProductoCreate extends Omit<Producto, 'id' | 'categoriaNombre'> {
-  categoriaId: number;
+  imageUrl?: string;
 }

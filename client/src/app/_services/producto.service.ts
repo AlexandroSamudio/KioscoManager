@@ -6,7 +6,6 @@ import { catchError, Observable, throwError } from 'rxjs';
 import { ProductoMasVendido } from '../_models/producto-mas-vendido.model';
 import { NotificationService } from './notification.service';
 import { setPaginationHeaders, PaginatedResult } from './pagination.helper';
-import { ProductoCreate } from '../_models/producto.model';
 
 @Injectable({
   providedIn: 'root',
@@ -102,7 +101,7 @@ export class ProductoService {
       );
   }
 
-  createProducto(producto: ProductoCreate): Observable<Producto> {
+  createProducto(producto: FormData): Observable<Producto> {
     return this.http
       .post<Producto>(`${this.baseUrl}productos`, producto)
       .pipe(
@@ -110,7 +109,7 @@ export class ProductoService {
       );
   }
 
-  updateProducto(id: number, producto: ProductoCreate): Observable<Producto> {
+  updateProducto(id: number, producto: FormData): Observable<Producto> {
     return this.http
       .put<Producto>(`${this.baseUrl}productos/${id}`, producto)
       .pipe(
