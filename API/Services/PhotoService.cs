@@ -25,6 +25,15 @@ public class PhotoService : IPhotoService
     {
         var uploadResult = new ImageUploadResult();
 
+        if (file.Length == 0)
+        {
+            uploadResult.Error = new Error
+            {
+                Message = "El archivo está vacío. Por favor, seleccione un archivo válido con contenido."
+            };
+            return uploadResult;
+        }
+
         if (file.Length > 0)
         {
             using var stream = file.OpenReadStream();
