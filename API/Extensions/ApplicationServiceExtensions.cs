@@ -19,6 +19,7 @@ public static class ApplicationServiceExtensions
         });
 
         services.AddScoped<ITokenService, TokenService>();
+        services.AddSingleton(sp => TimeProvider.System);
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IVentaRepository, VentaRepository>();
@@ -31,6 +32,7 @@ public static class ApplicationServiceExtensions
         services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
     
         services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+        services.AddScoped<ICloudinaryClient, CloudinaryClientAdapter>();
         services.AddScoped<IPhotoService, PhotoService>();
 
         services.AddMemoryCache();

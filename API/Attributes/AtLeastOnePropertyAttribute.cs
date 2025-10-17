@@ -10,7 +10,7 @@ namespace API.Attributes
         {
             if (value == null)
             {
-                return true; // Los objetos nulos no son válidos para validaciones de actualización.
+                return true;
             }
 
             var type = value.GetType();
@@ -20,11 +20,11 @@ namespace API.Attributes
             {
                 if (property.GetValue(value, null) != null)
                 {
-                    return true; // Se encontró al menos una propiedad no nula.
+                    return true;
                 }
             }
 
-            return false; // No se encontró ninguna propiedad con valor.
+            return false;
         }
     }
 }

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{23CF48D3-349D-4880-8355-27E80F00E956}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API.Tests", "API.Tests\API.Tests.csproj", "{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{23CF48D3-349D-4880-8355-27E80F00E956}.Release|x64.Build.0 = Release|Any CPU
 		{23CF48D3-349D-4880-8355-27E80F00E956}.Release|x86.ActiveCfg = Release|Any CPU
 		{23CF48D3-349D-4880-8355-27E80F00E956}.Release|x86.Build.0 = Release|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Debug|x64.Build.0 = Debug|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Debug|x86.Build.0 = Debug|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Release|x64.ActiveCfg = Release|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Release|x64.Build.0 = Release|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Release|x86.ActiveCfg = Release|Any CPU
+		{F35B47C2-8AF1-405A-AA9B-9F0819E7687E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
