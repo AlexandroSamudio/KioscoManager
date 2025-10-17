@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace API.Services;
 
-public class TokenService(IConfiguration config,UserManager<AppUser> userManager) : ITokenService
+public class TokenService(IConfiguration config, UserManager<AppUser> userManager, TimeProvider timeProvider) : ITokenService
 {
 
     public async Task<string> CreateToken(AppUser user)
@@ -29,10 +29,13 @@ public class TokenService(IConfiguration config,UserManager<AppUser> userManager
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddDays(7),
+            NotBefore = now,
+            IssuedAt = now,
+            Expires = now.AddDays(7),
             SigningCredentials = creds
         };
 

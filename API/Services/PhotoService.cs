@@ -1,25 +1,12 @@
-using API.Helpers;
 using API.Interfaces;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using Microsoft.Extensions.Options;
 
 namespace API.Services;
 
-public class PhotoService : IPhotoService
+public class PhotoService(ICloudinaryClient cloudinary) : IPhotoService
 {
-    private readonly Cloudinary _cloudinary;
-    public PhotoService(IOptions<CloudinarySettings> config)
-    {
-        var acc = new Account
-        (
-            config.Value.CloudName,
-            config.Value.ApiKey,
-            config.Value.ApiSecret
-        );
-
-        _cloudinary = new Cloudinary(acc);
-    }
+    private readonly ICloudinaryClient _cloudinary = cloudinary;
 
     public async Task<ImageUploadResult> AddPhotoAsync(IFormFile file)
     {
@@ -41,8 +28,8 @@ public class PhotoService : IPhotoService
             Transformation = new Transformation()
                 .Width(500)
                 .Height(500)
-                .Crop("limit") 
-                .Quality("auto") 
+                .Crop("limit")
+                .Quality("auto")
                 .FetchFormat("auto"),
             Folder = "sistema-gestion-inventario"
         };
