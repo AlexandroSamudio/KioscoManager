@@ -39,6 +39,36 @@ jobs:
         working-directory: ./API
         run: dotnet build ../sistema-gestion-inventario.sln --configuration Release --no-restore
 
+      - name: Test backend with coverage
+        working-directory: ./API.Tests
+        run: dotnet test --collect:"XPlat Code Coverage"
+
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
+
+      - name: Generate backend coverage report
+        run: |
+          COBERTURA_FILE=$(find ./API.Tests/TestResults -type f -name 'coverage.cobertura.xml' | head -n 1)
+          if [ -z "$COBERTURA_FILE" ]; then echo "Cobertura file not found"; exit 1; fi
+          echo "COBERTURA_FILE=$COBERTURA_FILE" >> $GITHUB_ENV
+          reportgenerator -reports:"$COBERTURA_FILE" -targetdir:"./API.Tests/coveragereport" -reporttypes:"HtmlInline_AzurePipelines"
+
+      - name: Enforce backend coverage threshold (>=70% lines)
+        run: |
+          FILE="$COBERTURA_FILE"
+          RATE=$(grep -oP 'line-rate="\K[0-9.]+' "$FILE")
+          PCT=$(awk -v r="$RATE" 'BEGIN{printf "%.0f", r*100}')
+          echo "Backend line coverage: ${PCT}%"
+          if [ "$PCT" -lt 70 ]; then echo "Coverage below 70%"; exit 1; fi
+
+      - name: Upload Backend Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: |
+            ./API.Tests/coveragereport
+            ./API.Tests/TestResults/**/coverage.cobertura.xml
+
       - name: Publish backend
         working-directory: ./API
         run: dotnet publish ../sistema-gestion-inventario.sln --configuration Release --output ${{ github.workspace }}/publish_backend --no-build
@@ -59,6 +89,23 @@ jobs:
       - name: Install dependencies (Frontend)
         working-directory: ./client
         run: npm ci
+
+      - name: Test frontend with coverage
+        working-directory: ./client
+        env:
+          CI: "true"
+        run: npm run test -- --coverage --runInBand
+
+      - name: Enforce frontend coverage threshold (>=60% lines)
+        working-directory: ./client
+        run: |
+          node -e "const s=require('./coverage/coverage-summary.json'); const pct=s.total.lines.pct; console.log('Frontend line coverage:', pct+'%'); if (pct < 60) { console.error('Coverage below 60%'); process.exit(1); }"
+
+      - name: Upload Frontend Coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: ./client/coverage
 
       - name: Build frontend
         working-directory: ./client
