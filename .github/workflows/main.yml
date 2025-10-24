@@ -41,17 +41,25 @@ jobs:
 
       - name: Test backend with coverage
         working-directory: ./API.Tests
-        run: dotnet test --collect:"XPlat Code Coverage"
+        run: dotnet test --collect:"XPlat Code Coverage" --settings ./coverlet.runsettings
 
       - name: Install ReportGenerator
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
       - name: Generate backend coverage report
         run: |
-          COBERTURA_FILE=$(find ./API.Tests/TestResults -type f -name 'coverage.cobertura.xml' | head -n 1)
-          if [ -z "$COBERTURA_FILE" ]; then echo "Cobertura file not found"; exit 1; fi
-          echo "COBERTURA_FILE=$COBERTURA_FILE" >> $GITHUB_ENV
-          reportgenerator -reports:"$COBERTURA_FILE" -targetdir:"./API.Tests/coveragereport" -reporttypes:"HtmlInline_AzurePipelines"
+          COBERTURA_INPUT=$(find ./API.Tests/TestResults -type f -name 'coverage.cobertura.xml' | head -n 1)
+          if [ -z "$COBERTURA_INPUT" ]; then echo "Cobertura file not found"; exit 1; fi
+          # Generate filtered reports (HTML + Cobertura) to exclude noise like EF Migrations and Program.cs
+          reportgenerator \
+            -reports:"$COBERTURA_INPUT" \
+            -targetdir:"./API.Tests/coveragereport" \
+            -reporttypes:"HtmlInline_AzurePipelines;Cobertura" \
+            -assemblyfilters:"+API" \
+            -classfilters:"-API.Migrations.*;-*.Program" \
+            -filefilters:"-*/Migrations/*;-*Program.cs"
+          # Use the filtered Cobertura output for threshold enforcement
+          echo "COBERTURA_FILE=./API.Tests/coveragereport/Cobertura.xml" >> $GITHUB_ENV
 
       - name: Enforce backend coverage threshold (>=70% lines)
         run: |
