@@ -1,7 +1,5 @@
 name: CI/CD Pipeline
 
-# Comentario prueba
-
 on:
   push:
     branches:
@@ -76,58 +74,100 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: (github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feat--test-cambios-workflow')) || (github.event_name == 'pull_request' && (github.base_ref == 'main' || github.base_ref == 'feat--test-cambios-workflow'))
+    env:
+      SSH_HOST: ${{ secrets.SERVER_HOST }}
+      SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      WEB_USER: ${{ vars.WEB_USER }}
+      WEB_GROUP: ${{ vars.WEB_GROUP }}
 
     steps:
+      - name: "Preflight: check SSH connectivity to deployment host"
+        id: preflight_ssh
+        shell: bash
+        run: |
+          set -euo pipefail
+          HOST="${SSH_HOST}"
+          PORT="${SSH_PORT:-22}"
+          if [ -z "$HOST" ]; then
+            echo "SSH host not configured (secrets.SERVER_HOST). Skipping deploy."
+            echo "reachable=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Checking TCP connectivity to $HOST:$PORT ..."
+          if timeout 5 bash -lc "</dev/tcp/$HOST/$PORT" 2>/dev/null; then
+            echo "reachable=true" >> "$GITHUB_OUTPUT"
+            echo "SSH port is reachable. Proceeding with deploy steps."
+          else
+            echo "reachable=false" >> "$GITHUB_OUTPUT"
+            echo "Host unreachable or SSH not listening (connection refused/timeout). Skipping deploy steps."
+          fi
       - name: Download Backend Artifact
+        if: steps.preflight_ssh.outputs.reachable == 'true'
         uses: actions/download-artifact@v4
         with:
           name: backend-build
           path: ./publish_backend_temp
 
       - name: Download Frontend Artifact
+        if: steps.preflight_ssh.outputs.reachable == 'true'
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: ./dist_frontend_temp
 
-      # --- PASOS DE DEPURACIÓN (déjalos por ahora para verificar rutas) ---
       - name: "Debug: Show contents of downloaded Backend Artifact on Runner"
+        if: steps.preflight_ssh.outputs.reachable == 'true'
         run: |
           echo "Content of publish_backend_temp on GitHub Actions runner:"
           ls -la ./publish_backend_temp
-          ls -la ./publish_backend_temp/. # Esto mostrará el contenido real
+          ls -la ./publish_backend_temp/.
 
       - name: "Debug: Show contents of downloaded Frontend Artifact on Runner"
+        if: steps.preflight_ssh.outputs.reachable == 'true'
         run: |
           echo "Content of dist_frontend_temp on GitHub Actions runner:"
           ls -la ./dist_frontend_temp
-          ls -la ./dist_frontend_temp/. # Esto mostrará el contenido real
-      # --- FIN PASOS DE DEPURACIÓN ---
-      # =========================================================================
-      # AHORA SEPARAMOS LA TRANSFERENCIA DE ARCHIVOS DE LA EJECUCIÓN DEL SCRIPT
-      # =========================================================================
+          ls -la ./dist_frontend_temp/.
 
-      # --- Despliegue del BACKEND (Transferencia) ---
-      - name: Transfer Backend Files to Server
+      - name: Transfer Backend Files to Server (with custom port)
+        if: steps.preflight_ssh.outputs.reachable == 'true' && env.SSH_PORT != ''
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "./publish_backend_temp/" # La ruta en el runner de GitHub Actions
-          target: "/tmp/backend_deploy_temp_dir" # La NUEVA ruta temporal en el servidor remoto
-          # SCP copiará el contenido de publish_backend_temp/ dentro de backend_deploy_temp_dir/
-          # Es decir, en el servidor remoto, el backend estará en /tmp/backend_deploy_temp_dir/publish_backend_temp/
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          port: ${{ env.SSH_PORT }}
+          source: "./publish_backend_temp/"
+          target: "/tmp/backend_deploy_temp_dir"
 
-      - name: Deploy Backend on Server (Execute commands on remote server)
+      - name: Transfer Backend Files to Server (default port 22)
+        if: steps.preflight_ssh.outputs.reachable == 'true' && (env.SSH_PORT == '' || env.SSH_PORT == null)
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          source: "./publish_backend_temp/"
+          target: "/tmp/backend_deploy_temp_dir"
+
+      - name: Deploy Backend on Server (custom port)
+        if: steps.preflight_ssh.outputs.reachable == 'true' && env.SSH_PORT != ''
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          port: ${{ env.SSH_PORT }}
+          envs: WEB_USER,WEB_GROUP
           script: |
             echo "Iniciando despliegue de Backend en el servidor..."
             set -eo pipefail
+
+            # Detect default web user/group if not provided (Arch: http, Debian/Ubuntu: www-data)
+            WEB_USER="${WEB_USER:-$(getent passwd http >/dev/null 2>&1 && echo http || echo www-data)}"
+            WEB_GROUP="${WEB_GROUP:-$WEB_USER}"
 
             # Detener servicio (sudo necesario)
             sudo systemctl stop kioscomanager.service || true
@@ -144,8 +184,56 @@ jobs:
             # Limpiar el directorio temporal
             rm -rf /tmp/backend_deploy_temp_dir
 
-            # Cambiar propietario a www-data (sudo necesario)
-            sudo chown -R www-data:www-data /var/www/kiosco-manager/publish
+            # Ajustar propietario del despliegue
+            sudo chown -R "$WEB_USER":"$WEB_GROUP" /var/www/kiosco-manager/publish
+      - name: Deploy Backend on Server (default port 22)
+        if: steps.preflight_ssh.outputs.reachable == 'true' && (env.SSH_PORT == '' || env.SSH_PORT == null)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          envs: WEB_USER,WEB_GROUP
+          script: |
+            echo "Iniciando despliegue de Backend en el servidor..."
+            set -eo pipefail
+
+            # Detect default web user/group if not provided (Arch: http, Debian/Ubuntu: www-data)
+            WEB_USER="${WEB_USER:-$(getent passwd http >/dev/null 2>&1 && echo http || echo www-data)}"
+            WEB_GROUP="${WEB_GROUP:-$WEB_USER}"
+
+            # Detener servicio (sudo necesario)
+            sudo systemctl stop kioscomanager.service || true
+
+            # Crear directorio temporal si no existe
+            mkdir -p /tmp/backend_deploy_temp_dir
+
+            # Limpiar el directorio de publicación (ci-cd-deploy tiene permisos)
+            sudo rm -rf /var/www/kiosco-manager/publish/*
+
+            # Copiar los archivos desde el directorio temporal
+            sudo cp -r /tmp/backend_deploy_temp_dir/publish_backend_temp/. /var/www/kiosco-manager/publish/
+
+            # Limpiar el directorio temporal
+            rm -rf /tmp/backend_deploy_temp_dir
+
+            # Ajustar propietario del despliegue
+            sudo chown -R "$WEB_USER":"$WEB_GROUP" /var/www/kiosco-manager/publish
+
+            # Iniciar servicio (sudo necesario)
+            sudo systemctl start kioscomanager.service
+
+            # Esperar un momento para que arranque
+            sleep 5
+
+            # Verificar que el servicio esté activo
+            if ! sudo systemctl is-active --quiet kioscomanager.service; then
+              echo "Error: El servicio Backend no está activo después del despliegue."
+              exit 1
+            fi
+
+            sudo systemctl status kioscomanager.service --no-pager
+            echo "Despliegue de Backend completado exitosamente."
 
             # Iniciar servicio (sudo necesario)
             sudo systemctl start kioscomanager.service
@@ -163,25 +251,43 @@ jobs:
             echo "Despliegue de Backend completado exitosamente."
 
 
-      # --- Despliegue del FRONTEND (Transferencia) ---
-      - name: Transfer Frontend Files to Server
+      - name: Transfer Frontend Files to Server (with custom port)
+        if: steps.preflight_ssh.outputs.reachable == 'true' && env.SSH_PORT != ''
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          port: ${{ env.SSH_PORT }}
           source: "./dist_frontend_temp/"
-          target: "/tmp/frontend_deploy_temp_dir" # La NUEVA ruta temporal en el servidor remoto
+          target: "/tmp/frontend_deploy_temp_dir"
 
-      - name: Deploy Frontend on Server (Execute commands on remote server)
+      - name: Transfer Frontend Files to Server (default port 22)
+        if: steps.preflight_ssh.outputs.reachable == 'true' && (env.SSH_PORT == '' || env.SSH_PORT == null)
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          source: "./dist_frontend_temp/"
+          target: "/tmp/frontend_deploy_temp_dir"
+
+      - name: Deploy Frontend on Server (custom port)
+        if: steps.preflight_ssh.outputs.reachable == 'true' && env.SSH_PORT != ''
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          port: ${{ env.SSH_PORT }}
+          envs: WEB_USER,WEB_GROUP
           script: |
             echo "Iniciando despliegue de Frontend en el servidor..."
             set -eo pipefail
+            
+            # Detect default web user/group if not provided
+            WEB_USER="${WEB_USER:-$(getent passwd http >/dev/null 2>&1 && echo http || echo www-data)}"
+            WEB_GROUP="${WEB_GROUP:-$WEB_USER}"
             
             # Crear el directorio de despliegue si no existe.
             sudo mkdir -p /var/www/kiosco-manager-frontend/browser
@@ -193,8 +299,57 @@ jobs:
             # Limpiar el directorio temporal
             rm -rf /tmp/frontend_deploy_temp_dir
             
-            # Cambiar el propietario a www-data (requiere sudo)
-            sudo chown -R www-data:www-data /var/www/kiosco-manager-frontend/browser
+            # Cambiar el propietario del despliegue
+            sudo chown -R "$WEB_USER":"$WEB_GROUP" /var/www/kiosco-manager-frontend/browser
+      - name: Deploy Frontend on Server (default port 22)
+        if: steps.preflight_ssh.outputs.reachable == 'true' && (env.SSH_PORT == '' || env.SSH_PORT == null)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          envs: WEB_USER,WEB_GROUP
+          script: |
+            echo "Iniciando despliegue de Frontend en el servidor..."
+            set -eo pipefail
+            
+            # Detect default web user/group if not provided
+            WEB_USER="${WEB_USER:-$(getent passwd http >/dev/null 2>&1 && echo http || echo www-data)}"
+            WEB_GROUP="${WEB_GROUP:-$WEB_USER}"
+            
+            # Crear el directorio de despliegue si no existe.
+            sudo mkdir -p /var/www/kiosco-manager-frontend/browser
+            
+            # Limpiar y copiar los archivos sin sudo
+            sudo rm -rf /var/www/kiosco-manager-frontend/browser/*
+            sudo cp -r /tmp/frontend_deploy_temp_dir/dist_frontend_temp/. /var/www/kiosco-manager-frontend/browser/
+            
+            # Limpiar el directorio temporal
+            rm -rf /tmp/frontend_deploy_temp_dir
+            
+            # Cambiar el propietario del despliegue
+            sudo chown -R "$WEB_USER":"$WEB_GROUP" /var/www/kiosco-manager-frontend/browser
+            sudo chmod -R 755 /var/www/kiosco-manager-frontend/browser
+            sudo find /var/www/kiosco-manager-frontend/browser -type f -exec chmod 644 {} \;
+            echo "Contenido final en /var/www/kiosco-manager-frontend/browser:"
+            sudo ls -la /var/www/kiosco-manager-frontend/browser | head -n 50
+            
+            # Reiniciar Nginx con sudo (requerido)
+            sudo systemctl restart nginx
+            
+            sleep 5
+            if ! sudo systemctl is-active --quiet nginx; then
+              echo "Error: Nginx no está activo después del despliegue."
+              exit 1
+            fi
+            
+            sudo nginx -t
+            echo "Despliegue de Frontend completado exitosamente."
+
+      - name: "Deploy skipped (host unreachable)"
+        if: steps.preflight_ssh.outputs.reachable != 'true'
+        run: |
+          echo "Skipping deploy: cannot reach ${SSH_HOST}:${SSH_PORT:-22}. This is expected if your Arch PC is offline or SSH is disabled."
             sudo chmod -R 755 /var/www/kiosco-manager-frontend/browser
             sudo find /var/www/kiosco-manager-frontend/browser -type f -exec chmod 644 {} \;
             echo "Contenido final en /var/www/kiosco-manager-frontend/browser:"
