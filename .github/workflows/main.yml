@@ -350,19 +350,4 @@ jobs:
         if: steps.preflight_ssh.outputs.reachable != 'true'
         run: |
           echo "Skipping deploy: cannot reach ${SSH_HOST}:${SSH_PORT:-22}. This is expected if your Arch PC is offline or SSH is disabled."
-            sudo chmod -R 755 /var/www/kiosco-manager-frontend/browser
-            sudo find /var/www/kiosco-manager-frontend/browser -type f -exec chmod 644 {} \;
-            echo "Contenido final en /var/www/kiosco-manager-frontend/browser:"
-            sudo ls -la /var/www/kiosco-manager-frontend/browser | head -n 50
-            
-            # Reiniciar Nginx con sudo (requerido)
-            sudo systemctl restart nginx
-            
-            sleep 5
-            if ! sudo systemctl is-active --quiet nginx; then
-              echo "Error: Nginx no está activo después del despliegue."
-              exit 1
-            fi
-            
-            sudo nginx -t
-            echo "Despliegue de Frontend completado exitosamente."
+          exit 0
