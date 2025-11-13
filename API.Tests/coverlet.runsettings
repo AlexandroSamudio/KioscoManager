@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <!-- Generate Cobertura so the existing CI grep step works -->
+          <Format>cobertura</Format>
+          <!-- Only include our API assembly for coverage accounting -->
+          <Include>
+            [API]*
+          </Include>
+          <!-- Exclude common noise to avoid dragging down coverage -->
+          <Exclude>
+            [xunit.*]*
+            [Moq.*]*
+            [Microsoft.*]*
+            [System.*]*
+            <!-- Exclude EF Core migrations compiled in API assembly -->
+            [API]API.Migrations.*
+          </Exclude>
+          <ExcludeByAttribute>ExcludeFromCodeCoverage</ExcludeByAttribute>
+          <!-- Some runners require ';' delimited patterns in a single element -->
+          <ExcludeByFile>**/Migrations/*.cs;**/obj/**/*;**/bin/**/*;**/*Program.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
